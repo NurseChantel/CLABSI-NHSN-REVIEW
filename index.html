@@ -1,74 +1,412 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLABSI Review Calculator</title>
-  <link rel="stylesheet" href="styles.css" />
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NHSN CLABSI Decision Support</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 </head>
+
 <body>
-  <main class="app-shell">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">NHSN PATIENT SAFETY • REVIEW AID</p>
-        <h1>CLABSI Review Calculator</h1>
-        <p class="subtitle">A structured screen for central-line attribution and laboratory-confirmed bloodstream infection review.</p>
-      </div>
-      <div class="version">NHSN-aligned workflow<br><span>Clinical judgment required</span></div>
-    </header>
 
-    <section class="notice"><strong>Review support, not a surveillance determination.</strong> Confirm the current NHSN Patient Safety Component Manual, organism list, and facility-specific reporting rules before finalizing an event.</section>
+<div class="app">
 
-    <div class="layout">
-      <section class="panel form-panel" aria-label="CLABSI review inputs">
-        <div class="panel-heading"><span class="step">01</span><div><h2>Event timeline</h2><p>Enter calendar dates to evaluate the central-line criterion.</p></div></div>
-        <div class="fields three">
-          <label>Date central line first accessed<input id="lineDate" type="date" /></label>
-          <label>Date of event (DOE)<input id="doeDate" type="date" /></label>
-          <label>Line removal date <span class="optional">optional</span><input id="removalDate" type="date" /></label>
-        </div>
-        <div class="timeline-note" id="timelineHint">The device day on the first access date is Day 1.</div>
+    <!-- SIDEBAR -->
 
-        <div class="panel-heading compact"><span class="step">02</span><div><h2>Central line eligibility</h2><p>Document the device that was present for attribution.</p></div></div>
-        <div class="choice-grid" id="lineChoices">
-          <label class="choice"><input type="radio" name="lineEligible" value="yes" /><span><strong>Eligible central line</strong><small>Terminates in or close to the heart / great vessel and is used for infusion, withdrawal of blood, or hemodynamic monitoring.</small></span></label>
-          <label class="choice"><input type="radio" name="lineEligible" value="no" /><span><strong>Not an eligible central line</strong><small>Does not meet the NHSN central-line definition for this location/event.</small></span></label>
+    <aside class="sidebar">
+
+        <h2>CLABSI</h2>
+
+        <p class="subtitle">
+            NHSN Decision Support
+        </p>
+
+        <div class="progress-wrapper">
+
+            <div class="progress-bar">
+                <div id="progressFill"></div>
+            </div>
+
+            <span id="progressText">
+                Step 1 of 8
+            </span>
+
         </div>
 
-        <div class="panel-heading compact"><span class="step">03</span><div><h2>LCBI screen</h2><p>Select the pathway supported by your clinical review.</p></div></div>
-        <div class="fields two">
-          <label>Blood culture pathway<select id="culturePath"><option value="">Select a pathway</option><option value="recognized">Recognized pathogen from ≥1 blood specimen</option><option value="commensal">Common commensal from qualifying blood specimens</option><option value="none">No qualifying blood culture evidence</option></select></label>
-          <label>Alternative infection source<select id="secondary"><option value="">Select finding</option><option value="no">No secondary BSI source identified</option><option value="yes">Secondary BSI attribution criteria met</option><option value="unknown">Still under review</option></select></label>
-        </div>
-        <div class="checklist" id="commensalChecklist" hidden>
-          <p>Common commensal pathway: verify each applicable requirement.</p>
-          <label><input id="commensalCount" type="checkbox" /> Same common commensal identified from ≥2 blood specimens drawn on separate occasions.</label>
-          <label><input id="symptoms" type="checkbox" /> Required signs/symptoms and timing criteria are met for the selected LCBI criterion.</label>
-        </div>
+        <ul class="steps">
 
-        <div class="actions"><button id="calculate" type="button">Review event</button><button id="reset" class="secondary" type="button">Clear form</button></div>
-      </section>
+            <li class="active">
+                Patient
+            </li>
 
-      <aside class="results" aria-live="polite">
-        <section class="result-card pending" id="resultCard">
-          <div class="result-label">Review outcome</div>
-          <h2 id="resultTitle">Enter review details</h2>
-          <p id="resultSummary">The calculator will organize attribution timing and LCBI screening points.</p>
-          <div class="metric-row"><div><span>Line day on DOE</span><strong id="lineDay">—</strong></div><div><span>Attribution window</span><strong id="windowStatus">—</strong></div></div>
+            <li>
+                Blood Culture
+            </li>
+
+            <li>
+                Organism
+            </li>
+
+            <li>
+                Symptoms
+            </li>
+
+            <li>
+                Secondary BSI
+            </li>
+
+            <li>
+                Central Line
+            </li>
+
+            <li>
+                MBI
+            </li>
+
+            <li>
+                Result
+            </li>
+
+        </ul>
+
+    </aside>
+
+    <!-- MAIN -->
+
+    <main>
+
+        <!-- Welcome -->
+
+        <section class="card active" id="welcome">
+
+            <h1>
+                CLABSI Decision Support
+            </h1>
+
+            <p>
+
+                Walk through an NHSN-compliant CLABSI investigation.
+
+            </p>
+
+            <button class="primary" onclick="nextCard()">
+                Begin Workup
+            </button>
+
         </section>
-        <section class="result-card details">
-          <div class="result-label">Checklist</div>
-          <ul id="reviewList"><li>Enter an access date and DOE.</li><li>Confirm central-line eligibility.</li><li>Document the LCBI pathway and secondary-source review.</li></ul>
+
+        <!-- AGE -->
+
+        <section class="card" id="age">
+
+            <h2>
+                Patient Age
+            </h2>
+
+            <div class="answers">
+
+                <button class="answer"
+                    data-value="adult">
+                    ≥ 1 year
+                </button>
+
+                <button class="answer"
+                    data-value="infant">
+                    < 1 year
+                </button>
+
+            </div>
+
         </section>
-        <section class="manual-note">
-          <h3>Quick interpretation</h3>
-          <p>For CLABSI attribution, an eligible central line must have been in place for <strong>more than two consecutive calendar days</strong> on the DOE or the day before.</p>
-          <p class="muted">This tool does not replace application of all NHSN LCBI criteria, including age-specific symptom rules, repeated organism requirements, or infection-window-period logic.</p>
+
+        <!-- BLOOD CULTURE -->
+
+        <section class="card" id="culture">
+
+            <h2>
+
+                Positive Blood Culture?
+
+            </h2>
+
+            <div class="answers">
+
+                <button class="answer"
+                    data-value="yes">
+
+                    Yes
+
+                </button>
+
+                <button class="answer"
+                    data-value="no">
+
+                    No
+
+                </button>
+
+            </div>
+
         </section>
-      </aside>
-    </div>
-    <footer>Designed for infection prevention review • Dates are evaluated in calendar days.</footer>
-  </main>
-  <script src="app.js"></script>
+
+        <!-- ORGANISM -->
+
+        <section class="card" id="organism">
+
+            <h2>
+
+                Organism Category
+
+            </h2>
+
+            <div class="answers">
+
+                <button class="answer"
+                    data-value="recognized">
+
+                    Recognized Pathogen
+
+                </button>
+
+                <button class="answer"
+                    data-value="commensal">
+
+                    Common Commensal
+
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- SYMPTOMS -->
+
+        <section class="card" id="symptoms">
+
+            <h2>
+
+                Symptoms Present
+
+            </h2>
+
+            <label>
+
+                <input type="checkbox" value="fever">
+
+                Fever
+
+            </label>
+
+            <label>
+
+                <input type="checkbox" value="chills">
+
+                Chills
+
+            </label>
+
+            <label>
+
+                <input type="checkbox" value="hypotension">
+
+                Hypotension
+
+            </label>
+
+            <label>
+
+                <input type="checkbox" value="hypothermia">
+
+                Hypothermia
+
+            </label>
+
+            <label>
+
+                <input type="checkbox" value="apnea">
+
+                Apnea
+
+            </label>
+
+            <label>
+
+                <input type="checkbox" value="bradycardia">
+
+                Bradycardia
+
+            </label>
+
+            <button
+                class="primary"
+                onclick="nextCard()">
+
+                Continue
+
+            </button>
+
+        </section>
+
+        <!-- SECONDARY -->
+
+        <section class="card" id="secondary">
+
+            <h2>
+
+                Possible Secondary Bloodstream Infection?
+
+            </h2>
+
+            <div class="answers">
+
+                <button class="answer"
+                    data-value="yes">
+
+                    Yes
+
+                </button>
+
+                <button class="answer"
+                    data-value="no">
+
+                    No
+
+                </button>
+
+                <button class="answer"
+                    data-value="unsure">
+
+                    Unsure
+
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- CENTRAL LINE -->
+
+        <section class="card" id="central">
+
+            <h2>
+
+                Eligible Central Line?
+
+            </h2>
+
+            <div class="answers">
+
+                <button class="answer"
+                    data-value="yes">
+
+                    Yes
+
+                </button>
+
+                <button class="answer"
+                    data-value="no">
+
+                    No
+
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- MBI -->
+
+        <section class="card" id="mbi">
+
+            <h2>
+
+                MBI Risk Factors
+
+            </h2>
+
+            <label>
+
+                <input type="checkbox">
+
+                Neutropenia
+
+            </label>
+
+            <label>
+
+                <input type="checkbox">
+
+                Stem Cell Transplant
+
+            </label>
+
+            <label>
+
+                <input type="checkbox">
+
+                GVHD
+
+            </label>
+
+            <label>
+
+                <input type="checkbox">
+
+                Severe Diarrhea
+
+            </label>
+
+            <button
+                class="primary"
+                onclick="nextCard()">
+
+                Continue
+
+            </button>
+
+        </section>
+
+        <!-- RESULTS -->
+
+        <section class="card" id="results">
+
+            <h1>
+
+                NHSN Determination
+
+            </h1>
+
+            <div id="resultCard">
+
+                Awaiting Calculation...
+
+            </div>
+
+            <div id="reasoning">
+
+            </div>
+
+            <button
+                class="primary"
+                onclick="location.reload()">
+
+                Start New Investigation
+
+            </button>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="app.js"></script>
+
 </body>
 </html>
