@@ -1,399 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>NHSN CLABSI Decision Support</title>
-
-    <meta
-        name="description"
-        content="A guided NHSN CLABSI surveillance review tool."
-    >
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet"
-    >
-
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NHSN CLABSI Review Tool</title>
+  <meta name="description" content="Guided NHSN CLABSI surveillance review with secondary BSI prompts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">NHSN BSI Surveillance</p>
+      <h1>CLABSI Review Tool</h1>
+      <p class="header-copy">Review secondary sources first, then evaluate LCBI, central-line association, MBI-LCBI, and exclusions.</p>
+    </div>
 
-<div class="app">
+    <nav class="section-nav" aria-label="Review sections">
+      <a href="#blood">Blood</a>
+      <a href="#organism">Organism</a>
+      <a href="#secondary">Secondary BSI</a>
+      <a href="#lcbi">LCBI</a>
+      <a href="#line">Central Line</a>
+      <a href="#mbi">MBI</a>
+      <a href="#result">Result</a>
+    </nav>
+  </header>
 
-    <!-- =====================================================
-         STICKY PAGE HEADER
-         ===================================================== -->
+  <main class="page-shell">
+    <section class="review-card intro-card">
+      <div class="section-heading">
+        <span class="section-number">00</span>
+        <div>
+          <h2>How to use this review</h2>
+          <p>Complete the visible questions in order. This page does not hide earlier answers and does not use Continue buttons.</p>
+        </div>
+      </div>
 
-    <header class="sidebar">
+      <div class="alert alert-warning">
+        <strong>Surveillance support only.</strong>
+        Site-specific prompts help direct chart review but do not replace the current UTI, PNEU, SSI, Chapter 17, or BSI definitions.
+      </div>
+    </section>
 
-        <div class="header-title">
-            <h2>CLABSI Decision Support</h2>
+    <section class="review-card" id="blood">
+      <div class="section-heading">
+        <span class="section-number">01</span>
+        <div>
+          <h2>Blood specimen</h2>
+          <p>Document the positive blood finding that triggered review.</p>
+        </div>
+      </div>
 
-            <p class="subtitle">
-                NHSN bloodstream-infection surveillance review
-            </p>
+      <div class="field-grid">
+        <div class="field">
+          <label for="patientAge">
+            Patient age
+            <button class="definition" type="button" data-tooltip="Age determines whether LCBI 2 or the infant LCBI 3 signs and symptoms are evaluated." aria-label="Patient age definition">i</button>
+          </label>
+          <select id="patientAge">
+            <option value="">Choose age group</option>
+            <option value="adult">1 year or older</option>
+            <option value="infant">Younger than 1 year</option>
+          </select>
         </div>
 
-        <!-- Retained for compatibility with app.js -->
-        <div class="progress-wrapper" aria-hidden="true">
-            <div class="progress-bar">
-                <div id="progressFill"></div>
-            </div>
-
-            <span id="progressText">
-                Step 1 of 8
-            </span>
+        <div class="field">
+          <label for="bloodPositive">
+            Eligible positive blood specimen?
+            <button class="definition" type="button" data-tooltip="An eligible bacterial or fungal organism must be identified from blood to evaluate an LCBI." aria-label="Positive blood specimen definition">i</button>
+          </label>
+          <div class="compact-choice" data-name="bloodPositive">
+            <button type="button" data-value="yes">Yes</button>
+            <button type="button" data-value="no">No</button>
+          </div>
         </div>
 
-        <nav aria-label="CLABSI review sections">
-            <ul class="steps">
-                <li class="active">Patient</li>
-                <li>Blood Culture</li>
-                <li>Organism</li>
-                <li>Symptoms</li>
-                <li>Secondary BSI</li>
-                <li>Central Line</li>
-                <li>MBI</li>
-                <li>Result</li>
-            </ul>
-        </nav>
+        <div class="field span-2">
+          <label for="organismName">
+            Blood organism
+            <button class="definition" type="button" data-tooltip="Enter the organism exactly as documented. The tool uses the text only to suggest possible body sites to investigate." aria-label="Blood organism definition">i</button>
+          </label>
+          <input id="organismName" type="text" placeholder="Example: Enterococcus faecalis">
+        </div>
+      </div>
+    </section>
 
-    </header>
+    <section class="review-card" id="organism">
+      <div class="section-heading">
+        <span class="section-number">02</span>
+        <div>
+          <h2>Organism category</h2>
+          <p>Choose the category used for the preliminary LCBI screen.</p>
+        </div>
+      </div>
 
-    <!-- =====================================================
-         CONTINUOUS REVIEW PAGE
-         ===================================================== -->
+      <div class="compact-choice wide-choice" data-name="organismCategory">
+        <button type="button" data-value="recognized">
+          Recognized pathogen
+          <span class="button-help" data-tooltip="A bacterial or fungal pathogen eligible for LCBI 1 when identified from an eligible blood specimen and not related to another site.">i</span>
+        </button>
+        <button type="button" data-value="commensal">
+          Common commensal
+          <span class="button-help" data-tooltip="LCBI 2 or 3 requires the same NHSN common commensal from at least two blood specimens collected on separate occasions, plus qualifying signs or symptoms.">i</span>
+        </button>
+      </div>
 
-    <main>
-
-        <!-- INTRODUCTION -->
-
-        <section
-            class="card active"
-            id="welcome"
-            aria-labelledby="welcome-title"
-        >
-            <h1 id="welcome-title">
-                NHSN CLABSI Decision Support
-            </h1>
-
-            <p>
-                Review laboratory-confirmed bloodstream infection,
-                possible secondary BSI attribution, central-line
-                eligibility, MBI-LCBI criteria, and reporting exclusions.
-            </p>
-
-            <div class="notice warning">
-                <strong>Surveillance support only:</strong>
-                Confirm all final classifications against the current
-                NHSN Patient Safety Component Manual.
-            </div>
-
-            <button class="primary" type="button">
-                Begin Review
-            </button>
-        </section>
-
-        <!-- PATIENT AGE -->
-
-        <section
-            class="card"
-            id="age"
-            aria-labelledby="age-title"
-        >
-            <h2 id="age-title">
-                Patient Age
-            </h2>
-
-            <p>
-                Age determines whether the adult LCBI 2 or infant
-                LCBI 3 sign-and-symptom criteria are evaluated.
-            </p>
-
-            <div class="answers">
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="adult"
-                >
-                    Patient is 1 year or older
-                </button>
-
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="infant"
-                >
-                    Patient is younger than 1 year
-                </button>
-            </div>
-        </section>
-
-        <!-- BLOOD CULTURE -->
-
-        <section
-            class="card"
-            id="culture"
-            aria-labelledby="culture-title"
-        >
-            <h2 id="culture-title">
-                Positive Blood Specimen
-            </h2>
-
-            <p>
-                Was an eligible bacterial or fungal organism identified
-                from a blood specimen?
-            </p>
-
-            <div class="answers">
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="yes"
-                >
-                    Yes
-                </button>
-
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="no"
-                >
-                    No
-                </button>
-            </div>
-        </section>
-
-        <!-- ORGANISM -->
-
-        <section
-            class="card"
-            id="organism"
-            aria-labelledby="organism-title"
-        >
-            <h2 id="organism-title">
-                Organism Category
-            </h2>
-
-            <p>
-                Select how the blood organism is categorized for the
-                LCBI review.
-            </p>
-
-            <div class="answers">
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="recognized"
-                >
-                    Recognized Pathogen
-                </button>
-
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="commensal"
-                >
-                    Common Commensal
-                </button>
-            </div>
-
-            <!-- app.js inserts organism questions here -->
-        </section>
-
-        <!-- SYMPTOMS -->
-
-        <section
-            class="card"
-            id="symptoms"
-            aria-labelledby="symptoms-title"
-        >
-            <h2 id="symptoms-title">
-                Qualifying Signs and Symptoms
-            </h2>
-
-            <p>
-                Select all qualifying signs or symptoms documented during
-                the applicable infection window period.
-            </p>
-
-            <!-- These labels are replaced dynamically by app.js -->
-
+      <div id="commensalQuestions" class="conditional-panel hidden">
+        <div class="field-grid">
+          <div class="field">
             <label>
-                <input
-                    type="checkbox"
-                    value="fever"
-                >
-                Fever
+              Same common commensal in at least two blood specimens?
+              <button class="definition" type="button" data-tooltip="The same NHSN common commensal must be identified from two or more blood specimens." aria-label="Matching commensal definition">i</button>
             </label>
+            <div class="compact-choice" data-name="commensalMatch">
+              <button type="button" data-value="yes">Yes</button>
+              <button type="button" data-value="no">No</button>
+            </div>
+          </div>
 
+          <div class="field">
             <label>
-                <input
-                    type="checkbox"
-                    value="chills"
-                >
-                Chills
+              Specimens collected on separate occasions?
+              <button class="definition" type="button" data-tooltip="Separate occasions means separate blood draws that meet the NHSN collection timing requirement." aria-label="Separate occasions definition">i</button>
             </label>
+            <div class="compact-choice" data-name="separateOccasions">
+              <button type="button" data-value="yes">Yes</button>
+              <button type="button" data-value="no">No</button>
+              <button type="button" data-value="unsure">Unsure</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div id="symptomPanel" class="conditional-panel">
+        <h3>
+          Qualifying signs or symptoms
+          <button class="definition" type="button" data-tooltip="LCBI 2 uses fever above 38°C, chills, or hypotension. LCBI 3 uses the applicable infant signs or symptoms." aria-label="LCBI symptom definition">i</button>
+        </h3>
+        <div id="symptomChoices" class="check-grid"></div>
+      </div>
+    </section>
+
+    <section class="review-card secondary-card" id="secondary">
+      <div class="section-heading">
+        <span class="section-number">03</span>
+        <div>
+          <h2>Secondary BSI investigation</h2>
+          <p>Do not classify the event as a primary BSI until another NHSN-defined infection site has been reasonably evaluated.</p>
+        </div>
+      </div>
+
+      <div class="stop-banner">
+        <strong>STOP: look for a source before calling this a CLABSI.</strong>
+        A secondary BSI requires a complete NHSN site-specific infection definition plus an eligible blood-to-site relationship and timing.
+      </div>
+
+      <div id="organismSuggestions" class="suggestion-box">
+        Enter a blood organism above to see suggested body systems to review.
+      </div>
+
+      <h3>Choose each plausible source to review</h3>
+      <div id="siteButtons" class="site-button-grid"></div>
+
+      <div id="siteGuidance"></div>
+
+      <div class="attribution-panel">
+        <h3>
+          Secondary BSI attribution check
+          <button class="definition" type="button" data-tooltip="Scenario 1 uses a matching site and blood organism with blood collected during the SBAP. Scenario 2 uses the blood organism as an element of the site-specific criterion during that site's infection window." aria-label="Secondary BSI attribution definition">i</button>
+        </h3>
+
+        <div class="field-grid">
+          <div class="field">
             <label>
-                <input
-                    type="checkbox"
-                    value="hypotension"
-                >
-                Hypotension
+              Complete NHSN site-specific definition met?
+              <button class="definition" type="button" data-tooltip="Do not answer Yes based only on a diagnosis. Verify every required criterion element in the applicable NHSN chapter." aria-label="Site-specific definition">i</button>
             </label>
-
-            <button class="primary" type="button">
-                Continue to Secondary BSI Review
-            </button>
-        </section>
-
-        <!-- SECONDARY BSI -->
-
-        <section
-            class="card"
-            id="secondary"
-            aria-labelledby="secondary-title"
-        >
-            <h2 id="secondary-title">
-                Possible Secondary Bloodstream Infection
-            </h2>
-
-            <p>
-                Before identifying a primary LCBI or CLABSI, evaluate
-                whether the blood organism can be attributed to an
-                infection at another NHSN-defined body site.
-            </p>
-
-            <div class="notice info">
-                Review the applicable site-specific infection criterion,
-                organism matching requirements, and secondary BSI
-                attribution period.
+            <div class="compact-choice" data-name="siteDefinitionMet">
+              <button type="button" data-value="yes">Yes</button>
+              <button type="button" data-value="no">No</button>
+              <button type="button" data-value="unsure">Not yet</button>
             </div>
+          </div>
 
-            <div class="answers">
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="yes"
-                >
-                    Yes
-                </button>
-
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="no"
-                >
-                    No
-                </button>
-
-                <button
-                    class="answer"
-                    type="button"
-                    data-value="unsure"
-                >
-                    Unsure
-                </button>
+          <div class="field">
+            <label>
+              Blood-to-site organism relationship met?
+              <button class="definition" type="button" data-tooltip="Confirm either an eligible matching organism between site and blood or that the blood organism is a permitted criterion element for that site." aria-label="Organism relationship definition">i</button>
+            </label>
+            <div class="compact-choice" data-name="organismRelationship">
+              <button type="button" data-value="yes">Yes</button>
+              <button type="button" data-value="no">No</button>
+              <button type="button" data-value="unsure">Unsure</button>
             </div>
+          </div>
 
-            <!-- app.js inserts secondary-BSI questions here -->
-        </section>
-
-        <!-- CENTRAL LINE -->
-
-        <section
-            class="card"
-            id="central"
-            aria-labelledby="central-title"
-        >
-            <h2 id="central-title">
-                Central-Line Association
-            </h2>
-
-            <div class="notice info">
-                A CLABSI requires an eligible central line on the LCBI
-                date of event or the day before. Central-line eligibility
-                generally begins on central-line day 3 after first
-                inpatient access during the current admission.
+          <div class="field">
+            <label>
+              Blood collected in the required attribution period?
+              <button class="definition" type="button" data-tooltip="For Scenario 1, the blood specimen must fall within the site's secondary BSI attribution period. For Scenario 2, it is collected during the site-specific infection window as a criterion element." aria-label="Attribution period definition">i</button>
+            </label>
+            <div class="compact-choice" data-name="attributionTiming">
+              <button type="button" data-value="yes">Yes</button>
+              <button type="button" data-value="no">No</button>
+              <button type="button" data-value="unsure">Unsure</button>
             </div>
+          </div>
+        </div>
 
-            <p>
-                Loading central-line eligibility questions…
-            </p>
+        <div id="secondaryConclusion" class="mini-result neutral">
+          Complete the three attribution checks.
+        </div>
+      </div>
+    </section>
 
-            <!-- app.js replaces this section content -->
-        </section>
+    <section class="review-card" id="lcbi">
+      <div class="section-heading">
+        <span class="section-number">04</span>
+        <div>
+          <h2>Preliminary LCBI screen</h2>
+          <p>The result remains preliminary until secondary attribution has been resolved.</p>
+        </div>
+      </div>
 
-        <!-- MBI AND EXCLUSIONS -->
+      <div id="lcbiResult" class="mini-result neutral">Complete blood and organism questions.</div>
+    </section>
 
-        <section
-            class="card"
-            id="mbi"
-            aria-labelledby="mbi-title"
-        >
-            <h2 id="mbi-title">
-                MBI-LCBI and Reporting Exclusions
-            </h2>
+    <section class="review-card" id="line">
+      <div class="section-heading">
+        <span class="section-number">05</span>
+        <div>
+          <h2>Central-line association</h2>
+          <p>Evaluate device definition, access, duration, and timing.</p>
+        </div>
+      </div>
 
-            <div class="notice info">
-                MBI-LCBI is evaluated only after an LCBI criterion is
-                fully met. Both organism and host-factor requirements
-                must be satisfied.
-            </div>
+      <div class="field-grid">
+        <div class="field">
+          <label>
+            Device meets the NHSN central-line definition?
+            <button class="definition" type="button" data-tooltip="The catheter terminates at, in, or close to the heart or in a great vessel and is used for infusion, blood withdrawal, or hemodynamic monitoring." aria-label="Central line definition">i</button>
+          </label>
+          <div class="compact-choice" data-name="centralDefinition">
+            <button type="button" data-value="yes">Yes</button>
+            <button type="button" data-value="no">No</button>
+            <button type="button" data-value="unsure">Unsure</button>
+          </div>
+        </div>
 
-            <p>
-                Loading MBI-LCBI and exclusion questions…
-            </p>
+        <div class="field">
+          <label>
+            Line placed or accessed during this inpatient admission?
+            <button class="definition" type="button" data-tooltip="Access includes placement, infusion, blood withdrawal, or hemodynamic monitoring during the current inpatient admission." aria-label="Central line access definition">i</button>
+          </label>
+          <div class="compact-choice" data-name="centralAccessed">
+            <button type="button" data-value="yes">Yes</button>
+            <button type="button" data-value="no">No</button>
+            <button type="button" data-value="unsure">Unsure</button>
+          </div>
+        </div>
 
-            <!-- app.js replaces this section content -->
-        </section>
+        <div class="field">
+          <label>
+            On or after central-line day 3?
+            <button class="definition" type="button" data-tooltip="The eligible central line must have been in place for more than two consecutive calendar days following first inpatient access." aria-label="Central line day definition">i</button>
+          </label>
+          <div class="compact-choice" data-name="centralDay3">
+            <button type="button" data-value="yes">Yes</button>
+            <button type="button" data-value="no">No</button>
+            <button type="button" data-value="unsure">Unsure</button>
+          </div>
+        </div>
 
-        <!-- RESULTS -->
+        <div class="field">
+          <label>
+            Eligible line present on the LCBI DOE or day before?
+            <button class="definition" type="button" data-tooltip="CLABSI association requires the eligible central line to be present on the LCBI date of event or the previous calendar day." aria-label="Line timing definition">i</button>
+          </label>
+          <div class="compact-choice" data-name="lineOnDoe">
+            <button type="button" data-value="yes">Yes</button>
+            <button type="button" data-value="no">No</button>
+            <button type="button" data-value="unsure">Unsure</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <section
-            class="card"
-            id="results"
-            aria-labelledby="results-title"
-        >
-            <h2 id="results-title">
-                NHSN Determination
-            </h2>
+    <section class="review-card" id="mbi">
+      <div class="section-heading">
+        <span class="section-number">06</span>
+        <div>
+          <h2>MBI-LCBI and exclusions</h2>
+          <p>Screen only after an LCBI criterion is met.</p>
+        </div>
+      </div>
 
-            <div
-                id="resultCard"
-                role="status"
-                aria-live="polite"
-            >
-                Awaiting calculation…
-            </div>
+      <h3>
+        MBI host and organism factors
+        <button class="definition" type="button" data-tooltip="MBI-LCBI requires the corresponding LCBI criterion, an eligible organism pattern, and a qualifying host factor." aria-label="MBI-LCBI definition">i</button>
+      </h3>
 
-            <div id="reasoning"></div>
+      <div class="check-grid">
+        <label><input type="checkbox" data-state="neutropenia"> Neutropenia criterion documented <span class="inline-info" data-tooltip="Verify the required ANC and/or WBC values on the required separate days in the qualifying period.">i</span></label>
+        <label><input type="checkbox" data-state="transplant"> Allogeneic HSCT within the past year <span class="inline-info" data-tooltip="This host pathway also requires the applicable GI GVHD or qualifying diarrhea condition.">i</span></label>
+        <label><input type="checkbox" data-state="gvhd"> Grade III or IV GI GVHD <span class="inline-info" data-tooltip="Confirm the grade and timing in the medical record.">i</span></label>
+        <label><input type="checkbox" data-state="diarrhea"> Qualifying diarrhea documented <span class="inline-info" data-tooltip="Verify the required volume and timing in the current NHSN protocol.">i</span></label>
+        <label><input type="checkbox" data-state="mbiOrganisms"> Only eligible MBI organisms present <span class="inline-info" data-tooltip="Confirm every organism against the current NHSN MBI organism list.">i</span></label>
+        <label><input type="checkbox" data-state="vgsRothia"> VGS and/or Rothia-only commensal event <span class="inline-info" data-tooltip="This applies to the corresponding common-commensal MBI-LCBI pathway.">i</span></label>
+      </div>
 
-            <button
-                class="primary"
-                type="button"
-                onclick="window.location.reload()"
-            >
-                Start New Investigation
-            </button>
-        </section>
+      <h3>
+        CLABSI exclusion fields
+        <button class="definition" type="button" data-tooltip="Some qualifying LCBIs are reported with an exclusion field and are not counted as central-line associated for SIR purposes." aria-label="CLABSI exclusions definition">i</button>
+      </h3>
 
-    </main>
+      <div class="check-grid">
+        <label><input type="checkbox" data-exclusion="ECMO/ECLS"> ECMO/ECLS exclusion <span class="inline-info" data-tooltip="Confirm device presence and the required duration.">i</span></label>
+        <label><input type="checkbox" data-exclusion="VAD"> Ventricular assist device exclusion <span class="inline-info" data-tooltip="Confirm device presence and the required duration.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Total artificial heart"> Total artificial heart exclusion <span class="inline-info" data-tooltip="Confirm device presence and the required duration.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Patient injection"> Observed or suspected patient injection <span class="inline-info" data-tooltip="Confirm the event occurred during the applicable BSI infection window period.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Epidermolysis bullosa"> Eligible epidermolysis bullosa exclusion <span class="inline-info" data-tooltip="Confirm all protocol requirements before selecting.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Factitious disorder imposed on another"> Factitious disorder imposed on another <span class="inline-info" data-tooltip="Confirm known or suspected documentation under the current protocol.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Other vascular access site"> Pus at another eligible vascular-access site <span class="inline-info" data-tooltip="Confirm a matching organism and all current protocol requirements.">i</span></label>
+      </div>
+    </section>
 
-</div>
+    <section class="review-card result-card" id="result">
+      <div class="section-heading">
+        <span class="section-number">07</span>
+        <div>
+          <h2>Preliminary determination</h2>
+          <p>The result updates automatically as the review is completed.</p>
+        </div>
+      </div>
 
-<script src="app.js"></script>
+      <div id="finalResult" class="final-result neutral">
+        Complete the review above.
+      </div>
 
+      <div id="resultDetails" class="result-details"></div>
+
+      <div class="result-actions">
+        <button id="copySummary" class="small-action" type="button">Copy summary</button>
+        <button id="clearReview" class="small-action secondary" type="button">Clear form</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+  <script src="app.js"></script>
 </body>
 </html>
