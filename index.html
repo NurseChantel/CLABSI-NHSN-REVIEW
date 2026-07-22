@@ -81,9 +81,44 @@
         <div class="field span-2">
           <label for="organismName">
             Blood organism
-            <button class="definition" type="button" data-tooltip="Enter the organism exactly as documented. The tool uses the text only to suggest possible body sites to investigate." aria-label="Blood organism definition">i</button>
+            <button class="definition" type="button" data-tooltip="Select the organism documented in blood. The list is a selection aid, not a complete eligibility determination; use Other documented organism when it is not listed and verify the current NHSN protocol." aria-label="Blood organism definition">i</button>
           </label>
-          <input id="organismName" type="text" placeholder="Example: Enterococcus faecalis">
+          <select id="organismName">
+            <option value="">Choose organism</option>
+            <optgroup label="Common commensals">
+              <option value="Aerococcus species">Aerococcus species</option>
+              <option value="Bacillus species (not B. anthracis)">Bacillus species (not B. anthracis)</option>
+              <option value="Corynebacterium species">Corynebacterium species</option>
+              <option value="Cutibacterium acnes">Cutibacterium acnes</option>
+              <option value="Micrococcus species">Micrococcus species</option>
+              <option value="Rhodococcus species">Rhodococcus species</option>
+              <option value="Staphylococcus, coagulase negative">Staphylococcus, coagulase negative</option>
+              <option value="Viridans group streptococci">Viridans group streptococci</option>
+            </optgroup>
+            <optgroup label="Common recognized pathogens">
+              <option value="Acinetobacter species">Acinetobacter species</option>
+              <option value="Bacteroides species">Bacteroides species</option>
+              <option value="Candida albicans">Candida albicans</option>
+              <option value="Candida auris">Candida auris</option>
+              <option value="Candida glabrata">Candida glabrata</option>
+              <option value="Candida parapsilosis">Candida parapsilosis</option>
+              <option value="Candida tropicalis">Candida tropicalis</option>
+              <option value="Enterobacter species">Enterobacter species</option>
+              <option value="Enterococcus faecalis">Enterococcus faecalis</option>
+              <option value="Enterococcus faecium">Enterococcus faecium</option>
+              <option value="Escherichia coli">Escherichia coli</option>
+              <option value="Klebsiella pneumoniae">Klebsiella pneumoniae</option>
+              <option value="Proteus mirabilis">Proteus mirabilis</option>
+              <option value="Pseudomonas aeruginosa">Pseudomonas aeruginosa</option>
+              <option value="Serratia marcescens">Serratia marcescens</option>
+              <option value="Staphylococcus aureus">Staphylococcus aureus</option>
+              <option value="Stenotrophomonas maltophilia">Stenotrophomonas maltophilia</option>
+              <option value="Streptococcus agalactiae">Streptococcus agalactiae</option>
+              <option value="Streptococcus pneumoniae">Streptococcus pneumoniae</option>
+            </optgroup>
+            <option value="Other documented organism">Other documented organism</option>
+          </select>
+          <p class="field-help">This curated list includes common selections. Choose “Other documented organism” when the reported organism is not shown.</p>
         </div>
       </div>
     </section>
