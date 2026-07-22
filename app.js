@@ -454,6 +454,39 @@ const organismHints = [
   }
 ];
 
+const commensalOrganisms = new Set([
+  "Aerococcus species",
+  "Bacillus species (not B. anthracis)",
+  "Corynebacterium species",
+  "Cutibacterium acnes",
+  "Micrococcus species",
+  "Rhodococcus species",
+  "Staphylococcus, coagulase negative",
+  "Viridans group streptococci"
+]);
+
+const recognizedPathogens = new Set([
+  "Acinetobacter species",
+  "Bacteroides species",
+  "Candida albicans",
+  "Candida auris",
+  "Candida glabrata",
+  "Candida parapsilosis",
+  "Candida tropicalis",
+  "Enterobacter species",
+  "Enterococcus faecalis",
+  "Enterococcus faecium",
+  "Escherichia coli",
+  "Klebsiella pneumoniae",
+  "Proteus mirabilis",
+  "Pseudomonas aeruginosa",
+  "Serratia marcescens",
+  "Staphylococcus aureus",
+  "Stenotrophomonas maltophilia",
+  "Streptococcus agalactiae",
+  "Streptococcus pneumoniae"
+]);
+
 document.addEventListener("DOMContentLoaded", init);
 
 function init() {
@@ -517,10 +550,36 @@ function bindInputs() {
 
   document
     .getElementById("organismName")
-    .addEventListener("input", (event) => {
-      state.organismName = event.target.value.trim();
-      renderOrganismSuggestions();
+    .addEventListener("change", (event) => {
+      state.organismName = event.target.value;
+      applyOrganismCategory();
+      updateAll();
     });
+}
+
+function applyOrganismCategory() {
+  let category = "";
+
+  if (commensalOrganisms.has(state.organismName)) {
+    category = "commensal";
+  } else if (recognizedPathogens.has(state.organismName)) {
+    category = "recognized";
+  }
+
+  state.organismCategory = category;
+
+  document
+    .querySelectorAll('[data-name="organismCategory"] button')
+    .forEach((button) => {
+      button.classList.toggle(
+        "selected",
+        button.dataset.value === category
+      );
+    });
+
+  document
+    .getElementById("commensalQuestions")
+    .classList.toggle("hidden", category !== "commensal");
 }
 
 function bindCheckboxes() {
