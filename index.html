@@ -31,17 +31,19 @@
 
   <main class="page-shell">
     <section class="review-card intro-card">
-      <div class="section-heading">
-        <span class="section-number">00</span>
-        <div>
-          <h2>How to use this review</h2>
-          <p>Complete the visible questions in order. This page does not hide earlier answers and does not use Continue buttons.</p>
-        </div>
-      </div>
-
       <div class="alert alert-warning">
         <strong>Surveillance support only.</strong>
         Site-specific prompts help direct chart review but do not replace the current UTI, PNEU, SSI, Chapter 17, or BSI definitions.
+      </div>
+
+      <div class="surveillance-window">
+        <div class="field">
+          <label for="bloodOrganismDate">Date of blood organism</label>
+          <input id="bloodOrganismDate" type="date">
+        </div>
+        <p id="surveillanceWindow" class="window-guidance" aria-live="polite">
+          Select the blood organism date to view the 7-day CLABSI surveillance window.
+        </p>
       </div>
     </section>
 

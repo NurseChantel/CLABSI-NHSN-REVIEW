@@ -1,6 +1,7 @@
 "use strict";
 
 const state = {
+  bloodOrganismDate: "",
   patientAge: "",
   bloodPositive: "",
   organismName: "",
@@ -498,6 +499,13 @@ function bindChoiceGroups() {
 }
 
 function bindInputs() {
+  document
+    .getElementById("bloodOrganismDate")
+    .addEventListener("change", (event) => {
+      state.bloodOrganismDate = event.target.value;
+      renderSurveillanceWindow();
+    });
+
   document
     .getElementById("patientAge")
     .addEventListener("change", (event) => {
@@ -1370,10 +1378,49 @@ function renderFinalResult() {
 }
 
 function updateAll() {
+  renderSurveillanceWindow();
   renderOrganismSuggestions();
   renderSecondaryConclusion();
   renderLcbiResult();
   renderFinalResult();
+}
+
+function renderSurveillanceWindow() {
+  const guidance = document.getElementById("surveillanceWindow");
+
+  if (!guidance) {
+    return;
+  }
+
+  if (!state.bloodOrganismDate) {
+    guidance.textContent =
+      "Select the blood organism date to view the 7-day CLABSI surveillance window.";
+    return;
+  }
+
+  const bloodDate = new Date(`${state.bloodOrganismDate}T00:00:00`);
+
+  if (Number.isNaN(bloodDate.getTime())) {
+    guidance.textContent =
+      "Enter a valid blood organism date to view the CLABSI surveillance window.";
+    return;
+  }
+
+  const windowStart = new Date(bloodDate);
+  const windowEnd = new Date(bloodDate);
+
+  windowStart.setDate(windowStart.getDate() - 3);
+  windowEnd.setDate(windowEnd.getDate() + 3);
+
+  const formatDate = (date) =>
+    new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }).format(date);
+
+  guidance.textContent =
+    `7-day CLABSI surveillance window: ${formatDate(windowStart)} through ${formatDate(windowEnd)} (3 calendar days before and after the blood organism date). Confirm the date of event and infection window period against the current NHSN protocol.`;
 }
 
 function setResult(element, status, text) {
@@ -1698,7 +1745,6 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
 
 
 
