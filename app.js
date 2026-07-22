@@ -1868,25 +1868,22 @@ function goToScreen(screenId) {
     }
 
     currentScreenIndex = targetIndex;
-    renderCurrentScreen();
     updateProgress();
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+    const target = byId(screenId);
+
+    if (target) {
+        target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
 }
 
 function renderCurrentScreen() {
     document.querySelectorAll(".card").forEach((card) => {
-        card.classList.remove("active");
+        card.classList.add("active");
     });
-
-    const activeScreen = byId(screenOrder[currentScreenIndex]);
-
-    if (activeScreen) {
-        activeScreen.classList.add("active");
-    }
 }
 
 function updateProgress() {
