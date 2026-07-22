@@ -1,34 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<title>NHSN CLABSI Decision Support</title>
+    <title>NHSN CLABSI Decision Support</title>
 
-<link rel="stylesheet" href="style.css">
+    <meta
+        name="description"
+        content="A guided NHSN CLABSI surveillance review tool."
+    >
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
 <div class="app">
 
-    <!-- SIDEBAR -->
+    <!-- =====================================================
+         STICKY PAGE HEADER
+         ===================================================== -->
 
-    <aside class="sidebar">
+    <header class="sidebar">
 
-        <h2>CLABSI</h2>
+        <div class="header-title">
+            <h2>CLABSI Decision Support</h2>
 
-        <p class="subtitle">
-            NHSN Decision Support
-        </p>
+            <p class="subtitle">
+                NHSN bloodstream-infection surveillance review
+            </p>
+        </div>
 
-        <div class="progress-wrapper">
-
+        <!-- Retained for compatibility with app.js -->
+        <div class="progress-wrapper" aria-hidden="true">
             <div class="progress-bar">
                 <div id="progressFill"></div>
             </div>
@@ -36,370 +53,340 @@
             <span id="progressText">
                 Step 1 of 8
             </span>
-
         </div>
 
-        <ul class="steps">
+        <nav aria-label="CLABSI review sections">
+            <ul class="steps">
+                <li class="active">Patient</li>
+                <li>Blood Culture</li>
+                <li>Organism</li>
+                <li>Symptoms</li>
+                <li>Secondary BSI</li>
+                <li>Central Line</li>
+                <li>MBI</li>
+                <li>Result</li>
+            </ul>
+        </nav>
 
-            <li class="active">
-                Patient
-            </li>
+    </header>
 
-            <li>
-                Blood Culture
-            </li>
-
-            <li>
-                Organism
-            </li>
-
-            <li>
-                Symptoms
-            </li>
-
-            <li>
-                Secondary BSI
-            </li>
-
-            <li>
-                Central Line
-            </li>
-
-            <li>
-                MBI
-            </li>
-
-            <li>
-                Result
-            </li>
-
-        </ul>
-
-    </aside>
-
-    <!-- MAIN -->
+    <!-- =====================================================
+         CONTINUOUS REVIEW PAGE
+         ===================================================== -->
 
     <main>
 
-        <!-- Welcome -->
+        <!-- INTRODUCTION -->
 
-        <section class="card active" id="welcome">
-
-            <h1>
-                CLABSI Decision Support
+        <section
+            class="card active"
+            id="welcome"
+            aria-labelledby="welcome-title"
+        >
+            <h1 id="welcome-title">
+                NHSN CLABSI Decision Support
             </h1>
 
             <p>
-
-                Walk through an NHSN-compliant CLABSI investigation.
-
+                Review laboratory-confirmed bloodstream infection,
+                possible secondary BSI attribution, central-line
+                eligibility, MBI-LCBI criteria, and reporting exclusions.
             </p>
 
-            <button class="primary" onclick="nextCard()">
-                Begin Workup
-            </button>
+            <div class="notice warning">
+                <strong>Surveillance support only:</strong>
+                Confirm all final classifications against the current
+                NHSN Patient Safety Component Manual.
+            </div>
 
+            <button class="primary" type="button">
+                Begin Review
+            </button>
         </section>
 
-        <!-- AGE -->
+        <!-- PATIENT AGE -->
 
-        <section class="card" id="age">
-
-            <h2>
+        <section
+            class="card"
+            id="age"
+            aria-labelledby="age-title"
+        >
+            <h2 id="age-title">
                 Patient Age
             </h2>
 
+            <p>
+                Age determines whether the adult LCBI 2 or infant
+                LCBI 3 sign-and-symptom criteria are evaluated.
+            </p>
+
             <div class="answers">
-
-                <button class="answer"
-                    data-value="adult">
-                    ≥ 1 year
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="adult"
+                >
+                    Patient is 1 year or older
                 </button>
 
-                <button class="answer"
-                    data-value="infant">
-                    < 1 year
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="infant"
+                >
+                    Patient is younger than 1 year
                 </button>
-
             </div>
-
         </section>
 
         <!-- BLOOD CULTURE -->
 
-        <section class="card" id="culture">
-
-            <h2>
-
-                Positive Blood Culture?
-
+        <section
+            class="card"
+            id="culture"
+            aria-labelledby="culture-title"
+        >
+            <h2 id="culture-title">
+                Positive Blood Specimen
             </h2>
 
+            <p>
+                Was an eligible bacterial or fungal organism identified
+                from a blood specimen?
+            </p>
+
             <div class="answers">
-
-                <button class="answer"
-                    data-value="yes">
-
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="yes"
+                >
                     Yes
-
                 </button>
 
-                <button class="answer"
-                    data-value="no">
-
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="no"
+                >
                     No
-
                 </button>
-
             </div>
-
         </section>
 
         <!-- ORGANISM -->
 
-        <section class="card" id="organism">
-
-            <h2>
-
+        <section
+            class="card"
+            id="organism"
+            aria-labelledby="organism-title"
+        >
+            <h2 id="organism-title">
                 Organism Category
-
             </h2>
 
+            <p>
+                Select how the blood organism is categorized for the
+                LCBI review.
+            </p>
+
             <div class="answers">
-
-                <button class="answer"
-                    data-value="recognized">
-
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="recognized"
+                >
                     Recognized Pathogen
-
                 </button>
 
-                <button class="answer"
-                    data-value="commensal">
-
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="commensal"
+                >
                     Common Commensal
-
                 </button>
-
             </div>
 
+            <!-- app.js inserts organism questions here -->
         </section>
 
         <!-- SYMPTOMS -->
 
-        <section class="card" id="symptoms">
-
-            <h2>
-
-                Symptoms Present
-
+        <section
+            class="card"
+            id="symptoms"
+            aria-labelledby="symptoms-title"
+        >
+            <h2 id="symptoms-title">
+                Qualifying Signs and Symptoms
             </h2>
 
+            <p>
+                Select all qualifying signs or symptoms documented during
+                the applicable infection window period.
+            </p>
+
+            <!-- These labels are replaced dynamically by app.js -->
+
             <label>
-
-                <input type="checkbox" value="fever">
-
+                <input
+                    type="checkbox"
+                    value="fever"
+                >
                 Fever
-
             </label>
 
             <label>
-
-                <input type="checkbox" value="chills">
-
+                <input
+                    type="checkbox"
+                    value="chills"
+                >
                 Chills
-
             </label>
 
             <label>
-
-                <input type="checkbox" value="hypotension">
-
+                <input
+                    type="checkbox"
+                    value="hypotension"
+                >
                 Hypotension
-
             </label>
 
-            <label>
-
-                <input type="checkbox" value="hypothermia">
-
-                Hypothermia
-
-            </label>
-
-            <label>
-
-                <input type="checkbox" value="apnea">
-
-                Apnea
-
-            </label>
-
-            <label>
-
-                <input type="checkbox" value="bradycardia">
-
-                Bradycardia
-
-            </label>
-
-            <button
-                class="primary"
-                onclick="nextCard()">
-
-                Continue
-
+            <button class="primary" type="button">
+                Continue to Secondary BSI Review
             </button>
-
         </section>
 
-        <!-- SECONDARY -->
+        <!-- SECONDARY BSI -->
 
-        <section class="card" id="secondary">
-
-            <h2>
-
-                Possible Secondary Bloodstream Infection?
-
+        <section
+            class="card"
+            id="secondary"
+            aria-labelledby="secondary-title"
+        >
+            <h2 id="secondary-title">
+                Possible Secondary Bloodstream Infection
             </h2>
 
-            <div class="answers">
+            <p>
+                Before identifying a primary LCBI or CLABSI, evaluate
+                whether the blood organism can be attributed to an
+                infection at another NHSN-defined body site.
+            </p>
 
-                <button class="answer"
-                    data-value="yes">
-
-                    Yes
-
-                </button>
-
-                <button class="answer"
-                    data-value="no">
-
-                    No
-
-                </button>
-
-                <button class="answer"
-                    data-value="unsure">
-
-                    Unsure
-
-                </button>
-
+            <div class="notice info">
+                Review the applicable site-specific infection criterion,
+                organism matching requirements, and secondary BSI
+                attribution period.
             </div>
 
+            <div class="answers">
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="yes"
+                >
+                    Yes
+                </button>
+
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="no"
+                >
+                    No
+                </button>
+
+                <button
+                    class="answer"
+                    type="button"
+                    data-value="unsure"
+                >
+                    Unsure
+                </button>
+            </div>
+
+            <!-- app.js inserts secondary-BSI questions here -->
         </section>
 
         <!-- CENTRAL LINE -->
 
-        <section class="card" id="central">
-
-            <h2>
-
-                Eligible Central Line?
-
+        <section
+            class="card"
+            id="central"
+            aria-labelledby="central-title"
+        >
+            <h2 id="central-title">
+                Central-Line Association
             </h2>
 
-            <div class="answers">
-
-                <button class="answer"
-                    data-value="yes">
-
-                    Yes
-
-                </button>
-
-                <button class="answer"
-                    data-value="no">
-
-                    No
-
-                </button>
-
+            <div class="notice info">
+                A CLABSI requires an eligible central line on the LCBI
+                date of event or the day before. Central-line eligibility
+                generally begins on central-line day 3 after first
+                inpatient access during the current admission.
             </div>
 
+            <p>
+                Loading central-line eligibility questions…
+            </p>
+
+            <!-- app.js replaces this section content -->
         </section>
 
-        <!-- MBI -->
+        <!-- MBI AND EXCLUSIONS -->
 
-        <section class="card" id="mbi">
-
-            <h2>
-
-                MBI Risk Factors
-
+        <section
+            class="card"
+            id="mbi"
+            aria-labelledby="mbi-title"
+        >
+            <h2 id="mbi-title">
+                MBI-LCBI and Reporting Exclusions
             </h2>
 
-            <label>
+            <div class="notice info">
+                MBI-LCBI is evaluated only after an LCBI criterion is
+                fully met. Both organism and host-factor requirements
+                must be satisfied.
+            </div>
 
-                <input type="checkbox">
+            <p>
+                Loading MBI-LCBI and exclusion questions…
+            </p>
 
-                Neutropenia
-
-            </label>
-
-            <label>
-
-                <input type="checkbox">
-
-                Stem Cell Transplant
-
-            </label>
-
-            <label>
-
-                <input type="checkbox">
-
-                GVHD
-
-            </label>
-
-            <label>
-
-                <input type="checkbox">
-
-                Severe Diarrhea
-
-            </label>
-
-            <button
-                class="primary"
-                onclick="nextCard()">
-
-                Continue
-
-            </button>
-
+            <!-- app.js replaces this section content -->
         </section>
 
         <!-- RESULTS -->
 
-        <section class="card" id="results">
-
-            <h1>
-
+        <section
+            class="card"
+            id="results"
+            aria-labelledby="results-title"
+        >
+            <h2 id="results-title">
                 NHSN Determination
+            </h2>
 
-            </h1>
-
-            <div id="resultCard">
-
-                Awaiting Calculation...
-
+            <div
+                id="resultCard"
+                role="status"
+                aria-live="polite"
+            >
+                Awaiting calculation…
             </div>
 
-            <div id="reasoning">
-
-            </div>
+            <div id="reasoning"></div>
 
             <button
                 class="primary"
-                onclick="location.reload()">
-
+                type="button"
+                onclick="window.location.reload()"
+            >
                 Start New Investigation
-
             </button>
-
         </section>
 
     </main>
