@@ -676,12 +676,24 @@ function renderSymptoms() {
           ["bradycardia", "Bradycardia"]
         ]
       : [
-          ["fever", "Fever above 38°C"],
-          ["chills", "Chills"],
-          ["hypotension", "Hypotension"]
+          [
+            "fever",
+            "Fever above 38°C",
+            "Confirm the finding occurred within the applicable BSI infection window period."
+          ],
+          [
+            "chills",
+            "Chills",
+            'If the medical record documents "chills," "rigors," or similar terminology, the criterion is met.'
+          ],
+          [
+            "hypotension",
+            "Hypotension",
+            'SBP <90 mmHg or MAP <65 mmHg, or provider documentation such as "patient is hypotensive" also satisfies the criterion.'
+          ]
         ];
 
-  choices.forEach(([value, label]) => {
+  choices.forEach(([value, label, definition]) => {
     const row = document.createElement("label");
 
     row.innerHTML = `
@@ -690,11 +702,14 @@ function renderSymptoms() {
       <span
         class="inline-info"
         tabindex="0"
-        data-tooltip="Confirm the finding occurred within the applicable BSI infection window period."
       >
         i
       </span>
     `;
+
+    row.querySelector(".inline-info").dataset.tooltip =
+      definition ||
+      "Confirm the finding occurred within the applicable BSI infection window period.";
 
     row
       .querySelector("input")
