@@ -425,33 +425,54 @@
         </div>
 
         <div id="evidencePanel" class="tab-panel" role="tabpanel" aria-labelledby="evidenceTab" hidden>
-          <h3>NHSN evidence for primary LCBI</h3>
-          <div class="lcbi-evidence-grid">
-            <article class="lcbi-evidence-card">
-              <h4>LCBI 1 <span>Any age</span></h4>
-              <ul>
-                <li>Recognized bacterial or fungal pathogen identified from one or more blood specimens.</li>
-                <li>Organism is not related to an infection at another site.</li>
-              </ul>
+          <h3>NHSN primary LCBI criteria</h3>
+          <p class="manual-source-note">January 2026 · Device-associated Module · BSI. Presented in the manual's criterion format; use the full manual for surveillance determinations.</p>
+
+          <div class="lcbi-manual-criteria">
+            <article class="lcbi-manual-criterion">
+              <aside class="criterion-label"><strong>LCBI 1</strong><span>If LCBI 1 criterion is met, consider MBI-LCBI 1</span></aside>
+              <div class="criterion-content">
+                <p>Patient of any age has a recognized bacterial or fungal pathogen, not included on the NHSN common commensal list:</p>
+                <ol>
+                  <li>Identified from one or more blood specimens obtained by a culture<br><span class="criterion-or">OR</span></li>
+                  <li>Identified to the genus or species level by non-culture based microbiologic testing (NCT)<sup>*</sup> methods (for example, T2 Magnetic Resonance [T2MR] or next-generation sequencing [NGS]).</li>
+                </ol>
+                <p class="criterion-note"><strong>Note:</strong> If blood is collected for culture within 2 days before, or 1 day after the NCT, disregard the result of the NCT and use only the result of the culture to make an LCBI surveillance determination. If no blood is collected for culture within this time period, use the result of the NCT for LCBI surveillance determination.</p>
+                <p class="criterion-and">AND</p>
+                <p>Organism(s) identified in blood is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
+                <p class="criterion-footnote"><sup>*</sup> For the purposes of meeting LCBI 1, NCT is defined as a methodology that identifies an organism directly from a blood specimen without inoculation of the blood specimen to any culture media.</p>
+                <div class="criterion-notes"><strong>Notes:</strong><ol><li>If a patient meets both LCBI 1 and LCBI 2 or LCBI 3 criteria, report LCBI 1 with the recognized pathogen entered as pathogen #1 and the common commensal as pathogen #2.</li><li>An eligible organism in the blood specimen is the only element needed to meet LCBI 1 criterion; therefore, the LCBI 1 DOE will always be the collection date of the first positive blood specimen used to set the BSI IWP.</li></ol></div>
+              </div>
             </article>
-            <article class="lcbi-evidence-card">
-              <h4>LCBI 2 <span>Age 1 year or older</span></h4>
-              <ul>
-                <li>Fever above 38°C, chills, or hypotension.</li>
-                <li>Symptoms and organism are not related to an infection at another site.</li>
-                <li>Same common commensal identified from at least two blood specimens collected on separate occasions.</li>
-              </ul>
+
+            <article class="lcbi-manual-criterion">
+              <aside class="criterion-label"><strong>LCBI 2</strong><span>If LCBI 2 criterion is met, consider MBI-LCBI 2</span></aside>
+              <div class="criterion-content">
+                <p>Patient of any age has at least one of the following signs or symptoms: fever (&gt;38.0°C), chills, or hypotension</p>
+                <p class="criterion-and">AND</p>
+                <p>Organism(s) identified in blood is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
+                <p class="criterion-and">AND</p>
+                <p>The same NHSN common commensal is identified by culture from two or more blood specimens collected on separate occasions (see Blood Specimen Collection).</p>
+                <p>For common commensal organisms, refer to the NHSN Terminology Browser.</p>
+                <div class="criterion-notes"><strong>Notes:</strong><ol><li>Criterion elements must occur within the 7-day IWP (as defined in Chapter 2), which includes the collection date of the positive blood specimen, the 3 calendar days before, and the 3 calendar days after.</li><li>The two matching common commensal specimens represent a single element for use in meeting LCBI 2 criterion, and the collection date of the first specimen is used to determine the BSI IWP.</li><li>At least one element (specifically, a sign or symptom of fever, chills, or hypotension) is required to meet LCBI 2 criterion; the LCBI 2 DOE will always be the date the first element occurs for the first time during the BSI IWP, whether that be a sign or symptom or the positive blood specimen.</li></ol></div>
+                <div class="criterion-example"><strong>Example: LCBI 2 DOE</strong><table><tbody><tr><th>6/1</th><td>Fever &gt; 38.0°C</td><td rowspan="7">Single element</td><td rowspan="7">Date of 1st diagnostic test = 6/4</td><td rowspan="7">LCBI 2 DOE = 6/1</td></tr><tr><th>6/2</th><td>No LCBI element</td></tr><tr><th>6/3</th><td>No LCBI element</td></tr><tr><th>6/4</th><td><em>S. epidermidis</em> (1 of 2)</td></tr><tr><th>6/5</th><td><em>S. epidermidis</em> (2 of 2)</td></tr><tr><th>6/6</th><td>No LCBI element</td></tr><tr><th>6/7</th><td>No LCBI element</td></tr></tbody></table></div>
+              </div>
             </article>
-            <article class="lcbi-evidence-card">
-              <h4>LCBI 3 <span>Younger than 1 year</span></h4>
-              <ul>
-                <li>Fever above 38°C (core), hypothermia below 36°C (core), apnea, or bradycardia.</li>
-                <li>Symptoms and organism are not related to an infection at another site.</li>
-                <li>Same common commensal identified from at least two blood specimens collected on separate occasions.</li>
-              </ul>
+
+            <article class="lcbi-manual-criterion">
+              <aside class="criterion-label"><strong>LCBI 3</strong><span>If LCBI 3 criterion is met, consider MBI-LCBI 3</span></aside>
+              <div class="criterion-content">
+                <p>Patient ≤ 1 year of age has at least one of the following signs or symptoms: fever (&gt;38.0°C), hypothermia (&lt;36.0°C), apnea, or bradycardia</p>
+                <p class="criterion-and">AND</p>
+                <p>Organism(s) identified in blood is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
+                <p class="criterion-and">AND</p>
+                <p>The same NHSN common commensal is identified by a culture from two or more blood specimens collected on separate occasions (see Blood Specimen Collection).</p>
+                <p>For common commensal organisms, refer to the NHSN Terminology Browser.</p>
+                <div class="criterion-notes"><strong>Notes:</strong><ol><li>Criterion elements must occur within the 7-day IWP (as defined in Chapter 2), which includes the collection date of the positive blood specimen, the 3 calendar days before, and the 3 calendar days after.</li><li>The two matching common commensal specimens represent a single element for use in meeting LCBI 3 criterion, and the date of the first is used to determine the BSI IWP.</li><li>At least one element (specifically, a sign or symptom of fever, hypothermia, apnea, or bradycardia) is required to meet LCBI 3 criterion; the LCBI 3 DOE will always be the date the first element occurs for the first time during the BSI IWP whether that be a sign or symptom or the positive blood specimen.</li></ol></div>
+                <div class="criterion-example"><strong>Example: LCBI 3 DOE</strong><table><tbody><tr><th>5/31</th><td>No LCBI element</td><td rowspan="7">Single element</td><td rowspan="7">Date of 1st diagnostic test = 6/3</td><td rowspan="7">LCBI 3 DOE = 6/3</td></tr><tr><th>6/1</th><td>No LCBI element</td></tr><tr><th>6/2</th><td>No LCBI element</td></tr><tr><th>6/3</th><td><em>S. epidermidis</em> (1 of 2)</td></tr><tr><th>6/4</th><td><em>S. epidermidis</em> (2 of 2)</td></tr><tr><th>6/5</th><td>Apnea documented</td></tr><tr><th>6/6</th><td>No LCBI element</td></tr></tbody></table></div>
+              </div>
             </article>
           </div>
-          <p class="reference-note"><strong>Important:</strong> This is a review aid, not the full case definition. Confirm exact organism eligibility, collection timing, date of event, and attribution rules in the current protocol.</p>
         </div>
 
         <div id="referencesPanel" class="tab-panel" role="tabpanel" aria-labelledby="referencesTab" hidden>

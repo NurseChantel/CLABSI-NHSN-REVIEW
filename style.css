@@ -399,12 +399,29 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 .tab-panel h3{margin:0 0 12px;font-size:1.18rem}
 .tab-panel ul{margin:0;padding-left:20px;color:var(--text)}
 .tab-panel li+li{margin-top:5px}
-.lcbi-evidence-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
-.lcbi-evidence-card{padding:13px;border:1px solid #cfe2dd;border-radius:9px;background:#fbfefd}
-.lcbi-evidence-card h4{margin:0 0 8px;color:var(--green-dark);font-size:.88rem}
-.lcbi-evidence-card h4 span{display:block;margin-top:2px;color:var(--muted);font-size:.7rem;font-weight:700}
-.lcbi-evidence-card ul{font-size:.76rem}
-.reference-note{margin:14px 0 0;padding:10px 12px;border-left:4px solid var(--amber);border-radius:6px;background:var(--amber-soft);color:#745019;font-size:.78rem}
+.manual-source-note{margin:0 0 16px;font-size:.78rem}
+.lcbi-manual-criteria{display:grid;gap:18px}
+.lcbi-manual-criterion{display:grid;grid-template-columns:155px minmax(0,1fr);border:1px solid #c8d7d3;background:#fff}
+.criterion-label{display:flex;flex-direction:column;gap:9px;padding:16px 14px;background:var(--green-soft);border-right:1px solid #c8d7d3;color:var(--green-dark)}
+.criterion-label strong{font-size:1.05rem}
+.criterion-label span{font-size:.76rem;font-weight:800;line-height:1.35}
+.criterion-content{padding:16px 18px;color:var(--text);font-size:.84rem}
+.criterion-content p{margin:0;color:var(--text)}
+.criterion-content p+p{margin-top:10px}
+.criterion-content ol{margin:10px 0;padding-left:22px}
+.criterion-content li+li{margin-top:6px}
+.criterion-or,.criterion-and{display:block;color:var(--green-dark);font-size:.75rem;font-weight:900;letter-spacing:.06em;text-align:center}
+.criterion-or{margin:8px 0 2px}
+.criterion-and{margin:14px 0!important}
+.criterion-note{padding:10px 12px;background:#f5f8fa;font-size:.78rem;line-height:1.45}
+.criterion-footnote{margin-top:14px!important;color:var(--muted)!important;font-size:.75rem;line-height:1.4}
+.criterion-notes{margin-top:15px;padding:11px 13px;border-left:4px solid var(--amber);background:var(--amber-soft);color:#745019;font-size:.76rem;line-height:1.42}
+.criterion-notes ol{margin:7px 0 0;padding-left:18px}
+.criterion-example{margin-top:15px;overflow-x:auto;color:var(--text);font-size:.75rem}
+.criterion-example table{width:100%;min-width:570px;margin-top:6px;border-collapse:collapse;background:#fff}
+.criterion-example th,.criterion-example td{padding:5px 7px;border:1px solid var(--border-dark);text-align:left;vertical-align:top}
+.criterion-example th{width:48px;background:#f5f8fa;color:var(--navy);font-weight:800}
+.criterion-example td[rowspan]{vertical-align:middle;background:#fbfefd;font-weight:700}
 .reference-list{margin:0;padding-left:20px;color:var(--text)}
 .reference-list li+li{margin-top:12px}
 .reference-list a{color:var(--blue);font-weight:800}
@@ -413,5 +430,6 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 @media(max-width:760px){
   .reference-tabs__header,.tab-panels{padding:16px 14px}
   .tab-button{padding:9px 5px;font-size:.72rem}
-  .lcbi-evidence-grid{grid-template-columns:1fr}
+  .lcbi-manual-criterion{grid-template-columns:1fr}
+  .criterion-label{border-right:0;border-bottom:1px solid #c8d7d3}
 }
