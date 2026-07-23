@@ -204,10 +204,17 @@
     <section class="review-card secondary-card" id="secondary">
       <div class="section-heading">
         <span class="section-number">03</span>
-        <div>
+        <div class="section-heading-copy">
           <h2>Secondary BSI investigation</h2>
           <p>Do not classify the event as a primary BSI until another NHSN-defined infection site has been reasonably evaluated.</p>
         </div>
+        <button id="openSecondaryGuide" class="manual-book secondary-guide-book" type="button" aria-haspopup="dialog" aria-controls="secondaryGuideDialog">
+          <span class="manual-book-cover" aria-hidden="true">
+            <span class="manual-book-mark"></span>
+            <span class="manual-book-title">Secondary<br>BSI Guide</span>
+          </span>
+          <span class="manual-book-label">Open Secondary BSI guide</span>
+        </button>
       </div>
 
       <div class="stop-banner">
@@ -474,6 +481,17 @@
       <button id="closeManual" class="manual-close" type="button" aria-label="Close CLABSI NHSN manual">×</button>
     </div>
     <iframe class="manual-frame" src="./clabsi%20nhsn.pdf" title="CLABSI NHSN Manual"></iframe>
+  </dialog>
+
+  <dialog id="secondaryGuideDialog" class="manual-dialog" aria-labelledby="secondaryGuideDialogTitle">
+    <div class="manual-dialog-header">
+      <div>
+        <p class="eyebrow">Reference guide</p>
+        <h2 id="secondaryGuideDialogTitle">Secondary BSI Guide</h2>
+      </div>
+      <button id="closeSecondaryGuide" class="manual-close" type="button" aria-label="Close Secondary BSI guide">×</button>
+    </div>
+    <iframe class="manual-frame" src="https://www.cdc.gov/nhsn/pdfs/pscmanual/17pscsurveillanceguidance.pdf" title="NHSN Secondary Bloodstream Infection Guide"></iframe>
   </dialog>
 
   <div id="tooltip" class="tooltip" role="tooltip" hidden></div>

@@ -131,6 +131,7 @@ button{cursor:pointer}
 }
 .intro-card,.result-card{border-top:5px solid var(--green)}
 .section-heading{display:flex;gap:12px;align-items:flex-start;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid #e7edf2}
+.section-heading-copy{min-width:0}
 .section-number{
   display:inline-grid;
   place-items:center;
@@ -271,6 +272,9 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   background:#fbfefd;
 }
 .site-guide h3{margin-top:0}
+.secondary-card .section-heading{position:relative;padding-right:150px}
+.secondary-guide-book{top:0;right:0}
+.secondary-guide-book .manual-book-label{max-width:82px}
 .guide-intro{margin:0 0 10px;font-size:.8rem}
 .evidence-group{margin-top:12px;padding-top:12px;border-top:1px solid #e0ece9}
 .evidence-group h4{margin:0 0 7px;color:var(--navy);font-size:.8rem}
@@ -364,6 +368,8 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   .surveillance-window .field{width:100%}
   .surveillance-banner{grid-template-columns:1fr;gap:12px}
   .site-button-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .secondary-card .section-heading{padding-right:92px}
+  .secondary-guide-book .manual-book-label{display:none}
   .wide-choice button{min-width:0;flex:1 1 150px}
   .manual-dialog{width:calc(100vw - 16px);height:calc(100vh - 16px)}
   .manual-dialog-header{padding:10px 12px}
