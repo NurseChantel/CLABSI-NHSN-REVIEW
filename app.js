@@ -1445,23 +1445,24 @@ function updateAll() {
 }
 
 function renderSurveillanceWindow() {
-  const guidance = document.getElementById("surveillanceWindow");
+  const bloodDateLabel = document.getElementById("surveillanceBloodDate");
+  const dateRangeLabel = document.getElementById("surveillanceDateRange");
 
-  if (!guidance) {
+  if (!bloodDateLabel || !dateRangeLabel) {
     return;
   }
 
   if (!state.bloodOrganismDate) {
-    guidance.textContent =
-      "Select the blood organism date to view the 7-day CLABSI surveillance window.";
+    bloodDateLabel.textContent = "Not selected";
+    dateRangeLabel.textContent = "Select a date to calculate";
     return;
   }
 
   const bloodDate = new Date(`${state.bloodOrganismDate}T00:00:00`);
 
   if (Number.isNaN(bloodDate.getTime())) {
-    guidance.textContent =
-      "Enter a valid blood organism date to view the CLABSI surveillance window.";
+    bloodDateLabel.textContent = "Invalid date";
+    dateRangeLabel.textContent = "Enter a valid date to calculate";
     return;
   }
 
@@ -1478,8 +1479,8 @@ function renderSurveillanceWindow() {
       year: "numeric"
     }).format(date);
 
-  guidance.textContent =
-    `7-day CLABSI surveillance window: ${formatDate(windowStart)} through ${formatDate(windowEnd)} (3 calendar days before and after the blood organism date). Confirm the date of event and infection window period against the current NHSN protocol.`;
+  bloodDateLabel.textContent = formatDate(bloodDate);
+  dateRangeLabel.textContent = `${formatDate(windowStart)} through ${formatDate(windowEnd)}`;
 }
 
 function setResult(element, status, text) {

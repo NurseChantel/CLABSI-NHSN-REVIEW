@@ -41,9 +41,23 @@
           <label for="bloodOrganismDate">Date of blood organism</label>
           <input id="bloodOrganismDate" type="date">
         </div>
-        <p id="surveillanceWindow" class="window-guidance" aria-live="polite">
-          Select the blood organism date to view the 7-day CLABSI surveillance window.
-        </p>
+        <div id="surveillanceWindow" class="surveillance-banner" aria-live="polite">
+          <div class="surveillance-stat">
+            <span class="surveillance-label">Surveillance period</span>
+            <strong>7 calendar days</strong>
+            <span class="surveillance-detail">3 days before and after</span>
+          </div>
+          <div class="surveillance-stat">
+            <span class="surveillance-label">Blood organism date</span>
+            <strong id="surveillanceBloodDate">Not selected</strong>
+            <span class="surveillance-detail">Use the documented specimen date</span>
+          </div>
+          <div class="surveillance-stat">
+            <span class="surveillance-label">Surveillance window</span>
+            <strong id="surveillanceDateRange">Select a date to calculate</strong>
+            <span class="surveillance-detail">Confirm date of event and infection window period against the current NHSN protocol.</span>
+          </div>
+        </div>
       </div>
     </section>
 
