@@ -4,7 +4,7 @@ const state = {
   bloodOrganismDate: "",
   patientAge: "adult",
   bloodPositive: "",
-  organismName: "",
+  organismNames: [],
   organismCategory: "",
   commensalMatch: "",
   separateOccasions: "",
@@ -458,7 +458,7 @@ const commensalOrganisms = new Set([
   "Aerococcus species",
   "Bacillus species (not B. anthracis)",
   "Corynebacterium species",
-  "Cutibacterium acnes",
+  "Cutibacterium species",
   "Micrococcus species",
   "Rhodococcus species",
   "Staphylococcus, coagulase negative",
@@ -469,6 +469,7 @@ const recognizedPathogens = new Set([
   "Acinetobacter species",
   "Bacteroides species",
   "Candida albicans",
+  "Candida species",
   "Candida auris",
   "Candida glabrata",
   "Candida parapsilosis",
@@ -476,15 +477,19 @@ const recognizedPathogens = new Set([
   "Enterobacter species",
   "Enterococcus faecalis",
   "Enterococcus faecium",
+  "Enterococcus species",
   "Escherichia coli",
   "Klebsiella pneumoniae",
+  "Klebsiella species",
   "Proteus mirabilis",
   "Pseudomonas aeruginosa",
   "Serratia marcescens",
   "Staphylococcus aureus",
   "Stenotrophomonas maltophilia",
   "Streptococcus agalactiae",
-  "Streptococcus pneumoniae"
+  "Streptococcus pneumoniae",
+  "Other bacterial recognized pathogen",
+  "Other fungal recognized pathogen"
 ]);
 
 document.addEventListener("DOMContentLoaded", init);
@@ -625,7 +630,9 @@ function bindInputs() {
   document
     .getElementById("organismName")
     .addEventListener("change", (event) => {
-      state.organismName = event.target.value;
+      state.organismNames = Array.from(event.target.selectedOptions).map(
+        (option) => option.value
+      );
       applyOrganismCategory();
       updateAll();
     });
@@ -634,10 +641,13 @@ function bindInputs() {
 function applyOrganismCategory() {
   let category = "";
 
-  if (commensalOrganisms.has(state.organismName)) {
-    category = "commensal";
-  } else if (recognizedPathogens.has(state.organismName)) {
+  if (state.organismNames.some((organism) => recognizedPathogens.has(organism))) {
     category = "recognized";
+  } else if (
+    state.organismNames.length > 0 &&
+    state.organismNames.every((organism) => commensalOrganisms.has(organism))
+  ) {
+    category = "commensal";
   }
 
   state.organismCategory = category;
@@ -782,37 +792,42 @@ function buildSiteButtons() {
 
 function renderOrganismSuggestions() {
   const box = document.getElementById("organismSuggestions");
-  const organism = state.organismName.toLowerCase();
+  const organisms = state.organismNames;
 
-  if (!organism) {
+  if (!organisms.length) {
     box.textContent =
       "Enter a blood organism above to see suggested body systems to review.";
 
     return;
   }
 
-  const match = organismHints.find((entry) =>
-    entry.terms.some((term) => organism.includes(term))
-  );
+  const suggestedSiteKeys = new Set();
 
-  if (!match) {
+  organisms.forEach((organism) => {
+    organismHints.forEach((entry) => {
+      if (entry.terms.some((term) => organism.toLowerCase().includes(term))) {
+        entry.sites.forEach((site) => suggestedSiteKeys.add(site));
+      }
+    });
+  });
+
+  if (!suggestedSiteKeys.size) {
     box.innerHTML = `
       <strong>Source review:</strong>
-      No targeted suggestion is available for this entry.
+      No targeted suggestion is available for the selected organism(s).
       Review the chart for any NHSN-defined site-specific infection.
     `;
 
     return;
   }
 
-  const labels = match.sites.map(
+  const labels = Array.from(suggestedSiteKeys).map(
     (key) => siteLibrary[key].label
   );
 
   box.innerHTML = `
     <strong>
-      Suggested chart-review starting points for
-      ${escapeHtml(state.organismName)}:
+      Suggested chart-review starting points for selected organism(s):
     </strong>
 
     <ul>
@@ -1868,7 +1883,6 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
 
 
 

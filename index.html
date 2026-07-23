@@ -103,33 +103,35 @@
 
         <div class="field span-2">
           <label for="organismName">
-            Blood organism
-            <button class="definition" type="button" data-tooltip="Select the organism documented in blood. The list is a selection aid, not a complete eligibility determination; use Other documented organism when it is not listed and verify the current NHSN protocol." aria-label="Blood organism definition">i</button>
+            Blood organism(s)
+            <button class="definition" type="button" data-tooltip="Select every bacterial or fungal organism reported from the eligible blood specimen(s). The common-commensal group is the complete NHSN common commensal list. For LCBI 1, any bacterial or fungal pathogen not on that list is a recognized pathogen." aria-label="Blood organism definition">i</button>
           </label>
-          <select id="organismName">
-            <option value="">Choose organism</option>
-            <optgroup label="Common commensals">
+          <select id="organismName" class="organism-select" multiple size="12" aria-describedby="organismHelp">
+            <optgroup label="NHSN common commensals (complete list)">
               <option value="Aerococcus species">Aerococcus species</option>
               <option value="Bacillus species (not B. anthracis)">Bacillus species (not B. anthracis)</option>
               <option value="Corynebacterium species">Corynebacterium species</option>
-              <option value="Cutibacterium acnes">Cutibacterium acnes</option>
+              <option value="Cutibacterium species">Cutibacterium species</option>
               <option value="Micrococcus species">Micrococcus species</option>
               <option value="Rhodococcus species">Rhodococcus species</option>
               <option value="Staphylococcus, coagulase negative">Staphylococcus, coagulase negative</option>
               <option value="Viridans group streptococci">Viridans group streptococci</option>
             </optgroup>
-            <optgroup label="Common recognized pathogens">
+            <optgroup label="Recognized pathogens — common selections">
               <option value="Acinetobacter species">Acinetobacter species</option>
               <option value="Bacteroides species">Bacteroides species</option>
+              <option value="Candida species">Candida species</option>
               <option value="Candida albicans">Candida albicans</option>
               <option value="Candida auris">Candida auris</option>
               <option value="Candida glabrata">Candida glabrata</option>
               <option value="Candida parapsilosis">Candida parapsilosis</option>
               <option value="Candida tropicalis">Candida tropicalis</option>
               <option value="Enterobacter species">Enterobacter species</option>
+              <option value="Enterococcus species">Enterococcus species</option>
               <option value="Enterococcus faecalis">Enterococcus faecalis</option>
               <option value="Enterococcus faecium">Enterococcus faecium</option>
               <option value="Escherichia coli">Escherichia coli</option>
+              <option value="Klebsiella species">Klebsiella species</option>
               <option value="Klebsiella pneumoniae">Klebsiella pneumoniae</option>
               <option value="Proteus mirabilis">Proteus mirabilis</option>
               <option value="Pseudomonas aeruginosa">Pseudomonas aeruginosa</option>
@@ -139,9 +141,12 @@
               <option value="Streptococcus agalactiae">Streptococcus agalactiae</option>
               <option value="Streptococcus pneumoniae">Streptococcus pneumoniae</option>
             </optgroup>
-            <option value="Other documented organism">Other documented organism</option>
+            <optgroup label="Other eligible recognized pathogens">
+              <option value="Other bacterial recognized pathogen">Other bacterial recognized pathogen (not an NHSN common commensal)</option>
+              <option value="Other fungal recognized pathogen">Other fungal recognized pathogen (not an NHSN common commensal)</option>
+            </optgroup>
           </select>
-          <p class="field-help">This curated list includes common selections. Choose “Other documented organism” when the reported organism is not shown.</p>
+          <p id="organismHelp" class="field-help">Select all that apply. Use Ctrl (Windows) or Command (Mac) to select more than one item. NHSN recognizes any bacterial or fungal pathogen not on the common-commensal list for LCBI 1; use an “Other” option when needed.</p>
         </div>
       </div>
     </section>

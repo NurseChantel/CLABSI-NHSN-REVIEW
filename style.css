@@ -169,6 +169,9 @@ input[type="text"],input[type="date"],select{
   outline:none;
 }
 input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(20,129,109,.1)}
+.organism-select{height:252px;padding:4px 6px}
+.organism-select option{padding:4px 6px}
+.field-help{margin:7px 0 0;font-size:.74rem;line-height:1.4}
 
 .compact-choice{display:flex;flex-wrap:wrap;gap:6px}
 .age-choice button{flex:1 1 150px}
