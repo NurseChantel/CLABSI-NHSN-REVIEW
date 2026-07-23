@@ -430,15 +430,25 @@
 
     <section class="reference-tabs" aria-labelledby="referenceTabsTitle">
       <div class="reference-tabs__header">
+        <div>
+          <p class="eyebrow">NHSN protocol companion</p>
+          <h2 id="referenceTabsTitle">LCBI review guide</h2>
+          <p>Use this quick reference alongside the current NHSN Bloodstream Infection (BSI) protocol.</p>
+        </div>
+        <button id="minimizeReferenceGuide" class="minimize-guide" type="button" aria-expanded="true" aria-controls="referenceGuideContent">
+          <span class="minimize-guide__icon" aria-hidden="true">−</span>
+          <span class="minimize-guide__label">Minimize</span>
+        </button>
         <p class="eyebrow">NHSN protocol companion</p>
         <h2 id="referenceTabsTitle">LCBI review guide</h2>
       </div>
 
-      <div class="tab-list" role="tablist" aria-label="LCBI review guide sections">
-        <button id="nextStepsTab" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="nextStepsPanel">Next Steps</button>
-        <button id="evidenceTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="evidencePanel" tabindex="-1">NHSN Evidence</button>
-        <button id="referencesTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="referencesPanel" tabindex="-1">References</button>
-      </div>
+      <div id="referenceGuideContent">
+        <div class="tab-list" role="tablist" aria-label="LCBI review guide sections">
+          <button id="nextStepsTab" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="nextStepsPanel">Next Steps</button>
+          <button id="evidenceTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="evidencePanel" tabindex="-1">NHSN Evidence</button>
+          <button id="referencesTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="referencesPanel" tabindex="-1">References</button>
+        </div>
 
       <div class="tab-panels">
         <div id="nextStepsPanel" class="tab-panel" role="tabpanel" aria-labelledby="nextStepsTab">
@@ -510,6 +520,7 @@
             <li><a href="https://www.cdc.gov/nhsn/psc/index.html" target="_blank" rel="noopener">CDC NHSN Patient Safety Component Manual</a>. Use the currently effective protocol and associated definitions when completing surveillance.</li>
           </ol>
         </div>
+      </div>
       </div>
     </section>
   </main>
