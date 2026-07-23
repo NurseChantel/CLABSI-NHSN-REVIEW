@@ -495,8 +495,28 @@ function init() {
   bindChoiceGroups();
   bindInputs();
   bindCheckboxes();
+  bindManual();
   setupTooltips();
   updateAll();
+}
+
+function bindManual() {
+  const openButton = document.getElementById("openManual");
+  const closeButton = document.getElementById("closeManual");
+  const dialog = document.getElementById("manualDialog");
+
+  if (!openButton || !closeButton || !dialog) {
+    return;
+  }
+
+  openButton.addEventListener("click", () => dialog.showModal());
+  closeButton.addEventListener("click", () => dialog.close());
+
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) {
+      dialog.close();
+    }
+  });
 }
 
 function bindChoiceGroups() {
@@ -1805,7 +1825,6 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
 
 
 
