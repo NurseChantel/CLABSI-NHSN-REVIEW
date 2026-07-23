@@ -48,10 +48,15 @@ button{cursor:pointer}
   backdrop-filter:blur(10px);
 }
 .header-title-group{min-width:0}
-.manual-book{
+.header-resource-actions{
   position:absolute;
   top:11px;
   right:24px;
+  display:flex;
+  align-items:flex-start;
+  gap:18px;
+}
+.manual-book{
   display:flex;
   align-items:center;
   gap:10px;
@@ -289,9 +294,6 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   background:#fbfefd;
 }
 .site-guide h3{margin-top:0}
-.secondary-card .section-heading{position:relative;padding-right:150px}
-.secondary-guide-book{top:0;right:0}
-.secondary-guide-book .manual-book-label{max-width:82px}
 .guide-intro{margin:0 0 10px;font-size:.8rem}
 .evidence-group{margin-top:12px;padding-top:12px;border-top:1px solid #e0ece9}
 .evidence-group h4{margin:0 0 7px;color:var(--navy);font-size:.8rem}
@@ -372,7 +374,8 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 @media(max-width:760px){
   html{scroll-padding-top:145px}
   .app-header{padding:11px 13px 8px}
-  .manual-book{top:9px;right:13px;gap:6px}
+  .header-resource-actions{top:9px;right:13px;gap:9px}
+  .manual-book{gap:6px}
   .manual-book-cover{width:35px;height:45px}
   .manual-book-title{font-size:.43rem}
   .manual-book-label{max-width:64px;font-size:.62rem}
