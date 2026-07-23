@@ -495,9 +495,34 @@ function init() {
   bindChoiceGroups();
   bindInputs();
   bindCheckboxes();
+  bindManualDialogs();
   bindReferenceTabs();
   setupTooltips();
   updateAll();
+}
+
+function bindManualDialogs() {
+  [
+    ["openManual", "manualDialog", "closeManual"],
+    ["openSecondaryGuide", "secondaryGuideDialog", "closeSecondaryGuide"]
+  ].forEach(([openId, dialogId, closeId]) => {
+    const openButton = document.getElementById(openId);
+    const dialog = document.getElementById(dialogId);
+    const closeButton = document.getElementById(closeId);
+
+    if (!openButton || !dialog || !closeButton) {
+      return;
+    }
+
+    openButton.addEventListener("click", () => dialog.showModal());
+    closeButton.addEventListener("click", () => dialog.close());
+
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) {
+        dialog.close();
+      }
+    });
+  });
 }
 
 function bindReferenceTabs() {
@@ -1828,7 +1853,6 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
 
 
 
