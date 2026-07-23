@@ -512,6 +512,7 @@ function init() {
   bindCheckboxes();
   bindManualDialogs();
   bindReferenceTabs();
+  bindReferenceGuideMinimize();
   setupTooltips();
   updateAll();
 }
@@ -537,6 +538,29 @@ function bindManualDialogs() {
         dialog.close();
       }
     });
+  });
+}
+
+function bindReferenceGuideMinimize() {
+  const guide = document.querySelector(".reference-tabs");
+  const button = document.getElementById("minimizeReferenceGuide");
+  const content = document.getElementById("referenceGuideContent");
+
+  if (!guide || !button || !content) {
+    return;
+  }
+
+  button.addEventListener("click", () => {
+    const isMinimized = guide.classList.toggle("is-minimized");
+
+    content.hidden = isMinimized;
+    button.setAttribute("aria-expanded", String(!isMinimized));
+    button.querySelector(".minimize-guide__icon").textContent = isMinimized
+      ? "+"
+      : "−";
+    button.querySelector(".minimize-guide__label").textContent = isMinimized
+      ? "Expand"
+      : "Minimize";
   });
 }
 
@@ -1968,6 +1992,5 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
 
 
