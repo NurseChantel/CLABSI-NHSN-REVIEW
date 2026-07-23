@@ -71,8 +71,8 @@ button{cursor:pointer}
   position:relative;
   display:grid;
   place-items:center;
-  width:45px;
-  height:57px;
+  width:52px;
+  height:66px;
   overflow:hidden;
   border:1px solid #0c4f63;
   border-radius:3px 6px 6px 3px;
@@ -93,8 +93,7 @@ button{cursor:pointer}
   box-shadow:2px 0 rgba(0,0,0,.12);
 }
 .manual-book-mark{position:absolute;top:0;right:7px;width:8px;height:15px;background:#e5b54d;clip-path:polygon(0 0,100% 0,100% 100%,50% 77%,0 100%)}
-.manual-book-title{margin-left:5px;color:#fff;font-size:.54rem;line-height:1.18;letter-spacing:.04em;text-transform:uppercase}
-.manual-book-label{font-size:.72rem;line-height:1.2}
+.manual-book-title{margin-left:5px;color:#fff;font-size:.6rem;line-height:1.18;letter-spacing:.04em;text-transform:uppercase}
 .manual-book:hover .manual-book-cover,.manual-book:focus-visible .manual-book-cover{box-shadow:4px 4px 0 #b5dacf,8px 8px 14px rgba(17,48,70,.3),inset 3px 0 rgba(255,255,255,.17);transform:perspective(180px) rotateY(-15deg) rotateZ(-2deg) translateY(-2px)}
 .manual-book:focus-visible{outline:3px solid rgba(20,129,109,.3);outline-offset:4px;border-radius:6px}
 .app-header h1{
@@ -376,9 +375,8 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   .app-header{padding:11px 13px 8px}
   .header-resource-actions{top:9px;right:13px;gap:9px}
   .manual-book{gap:6px}
-  .manual-book-cover{width:35px;height:45px}
-  .manual-book-title{font-size:.43rem}
-  .manual-book-label{max-width:64px;font-size:.62rem}
+  .manual-book-cover{width:40px;height:51px}
+  .manual-book-title{font-size:.48rem}
   .header-copy{display:none}
   .page-shell{padding:12px 8px 30px}
   .review-card{padding:15px 12px}
@@ -390,7 +388,6 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   .site-button-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .source-review-heading{align-items:flex-start;flex-direction:column}
   .secondary-card .section-heading{padding-right:92px}
-  .secondary-guide-book .manual-book-label{display:none}
   .wide-choice button{min-width:0;flex:1 1 150px}
   .manual-dialog{width:calc(100vw - 16px);height:calc(100vh - 16px)}
   .manual-dialog-header{padding:10px 12px}
