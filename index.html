@@ -118,10 +118,10 @@
           </label>
           <div class="organism-search">
             <label class="visually-hidden" for="organismSearch">Find a blood organism</label>
-            <input id="organismSearch" type="search" placeholder="Start typing to find an organism" autocomplete="off" aria-controls="organismName" aria-describedby="organismSearchStatus organismHelp">
+            <input id="organismSearch" type="search" placeholder="Start typing to find an organism" autocomplete="off" aria-controls="organismName" aria-describedby="organismSearchStatus">
             <span id="organismSearchStatus" class="organism-search-status" role="status" aria-live="polite"></span>
           </div>
-          <select id="organismName" class="organism-select" multiple size="12" aria-describedby="organismHelp">
+          <select id="organismName" class="organism-select" multiple size="12">
             <optgroup label="NHSN common commensals (complete list)">
               <option value="Aerococcus species">Aerococcus species</option>
               <option value="Bacillus species (not B. anthracis)">Bacillus species (not B. anthracis)</option>
@@ -161,7 +161,6 @@
               <option value="Other fungal recognized pathogen">Other fungal recognized pathogen (not an NHSN common commensal)</option>
             </optgroup>
           </select>
-          <p id="organismHelp" class="field-help">Start typing to narrow the list, then select all that apply. Use Ctrl (Windows) or Command (Mac) to select more than one item. NHSN recognizes any bacterial or fungal pathogen not on the common-commensal list for LCBI 1; use an “Other” option when needed.</p>
         </div>
       </div>
     </section>
