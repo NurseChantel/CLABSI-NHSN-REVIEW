@@ -71,7 +71,6 @@
           <div class="surveillance-stat">
             <span class="surveillance-label">Surveillance window</span>
             <strong id="surveillanceDateRange">Select a date to calculate</strong>
-            <span class="surveillance-detail">Confirm date of event and infection window period against the current NHSN protocol.</span>
           </div>
         </div>
       </div>
@@ -94,7 +93,7 @@
           </div>
           <div class="compact-choice age-choice" data-name="patientAge" role="group" aria-labelledby="patientAgeLabel">
             <button type="button" data-value="adult" class="selected" aria-pressed="true">1 year or older</button>
-            <button type="button" data-value="infant" aria-pressed="false">Younger than 1 year</button>
+            <button type="button" data-value="infant" aria-pressed="false">1 year or younger</button>
           </div>
         </div>
 
@@ -111,16 +110,16 @@
 
         <div class="field span-2">
           <label for="organismName">
-            Blood organism(s)
+            Organism(s)
             <button class="definition" type="button" data-tooltip="Select every bacterial or fungal organism reported from the eligible blood specimen(s). The common-commensal group is the complete NHSN common commensal list. For LCBI 1, any bacterial or fungal pathogen not on that list is a recognized pathogen." aria-label="Blood organism definition">i</button>
           </label>
           <div class="organism-search">
-            <label class="visually-hidden" for="organismSearch">Find a blood organism</label>
+            <label class="visually-hidden" for="organismSearch">Find an organism</label>
             <input id="organismSearch" type="search" placeholder="Start typing to find an organism" autocomplete="off" aria-controls="organismName" aria-describedby="organismSearchStatus">
             <span id="organismSearchStatus" class="organism-search-status" role="status" aria-live="polite"></span>
           </div>
           <select id="organismName" class="organism-select" multiple size="12">
-            <optgroup label="NHSN common commensals (complete list)">
+            <optgroup label="Common Commensals">
               <option value="Aerococcus species">Aerococcus species</option>
               <option value="Bacillus species (not B. anthracis)">Bacillus species (not B. anthracis)</option>
               <option value="Corynebacterium species">Corynebacterium species</option>
@@ -130,7 +129,7 @@
               <option value="Staphylococcus, coagulase negative">Staphylococcus, coagulase negative</option>
               <option value="Viridans group streptococci">Viridans group streptococci</option>
             </optgroup>
-            <optgroup label="Recognized pathogens — common selections">
+            <optgroup label="Recognized pathogens">
               <option value="Acinetobacter species">Acinetobacter species</option>
               <option value="Bacteroides species">Bacteroides species</option>
               <option value="Candida species">Candida species</option>
@@ -154,9 +153,6 @@
               <option value="Streptococcus agalactiae">Streptococcus agalactiae</option>
               <option value="Streptococcus pneumoniae">Streptococcus pneumoniae</option>
             </optgroup>
-            <optgroup label="Other eligible recognized pathogens">
-              <option value="Other bacterial recognized pathogen">Other bacterial recognized pathogen (not an NHSN common commensal)</option>
-              <option value="Other fungal recognized pathogen">Other fungal recognized pathogen (not an NHSN common commensal)</option>
             </optgroup>
           </select>
         </div>
@@ -238,8 +234,7 @@
 
       <div class="source-review-heading">
         <div>
-          <h3>Choose each plausible source to review</h3>
-          <p id="sourceReviewHelp" class="source-review-help">Select an organism to highlight the body-system pathways worth checking first.</p>
+          <p id="sourceReviewHelp" class="source-review-help">Select an organism to highlight a reccommended pathway.</p>
         </div>
         <span id="pathwayCount" class="pathway-count" aria-live="polite">All pathways</span>
       </div>
@@ -426,7 +421,6 @@
       <div class="reference-tabs__header">
         <p class="eyebrow">NHSN protocol companion</p>
         <h2 id="referenceTabsTitle">LCBI review guide</h2>
-        <p>Use this quick reference alongside the current NHSN Bloodstream Infection (BSI) protocol.</p>
       </div>
 
       <div class="tab-list" role="tablist" aria-label="LCBI review guide sections">
