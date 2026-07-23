@@ -895,9 +895,6 @@ function renderOrganismSuggestions() {
       ${notes.map((note) => escapeHtml(note)).join(" ")}
     </p>
 
-    <small>
-      Highlighted pathways are chart-review prompts only. The selected site's current NHSN definition—not this suggestion—determines whether the blood organism can be used as a criterion element or must match a site organism.
-    </small>
   `;
 }
 
