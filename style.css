@@ -190,8 +190,8 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 }
 .compact-choice button.selected,.site-button-grid button.selected{
   border-color:var(--green);
-  background:var(--green-soft);
-  color:var(--green-dark);
+  background:var(--green);
+  color:#fff;
   box-shadow:0 0 0 2px rgba(20,129,109,.1);
 }
 .wide-choice button{min-width:180px;display:inline-flex;align-items:center;justify-content:space-between;gap:8px}
