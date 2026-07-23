@@ -864,16 +864,6 @@ function renderOrganismSuggestions() {
     return;
   }
 
-  const suggestedSiteKeys = new Set();
-
-  organisms.forEach((organism) => {
-    organismHints.forEach((entry) => {
-      if (entry.terms.some((term) => organism.toLowerCase().includes(term))) {
-        entry.sites.forEach((site) => suggestedSiteKeys.add(site));
-      }
-    });
-  });
-
   if (!suggestedSiteKeys.size) {
     box.innerHTML = `
       <strong>Source review:</strong>
