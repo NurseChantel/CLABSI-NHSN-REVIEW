@@ -1,9 +1,9 @@
 "use strict";
 
 const state = {
-  bloodOrganismDate: "",
+  cultureOrganismDate: "",
   patientAge: "adult",
-  bloodPositive: "",
+  culturePositive: "",
   organismNames: [],
   organismCategory: "",
   commensalMatch: "",
@@ -94,8 +94,8 @@ const siteLibrary = {
             "Eligible lung-tissue or histopathologic evidence."
           ],
           [
-            "bloodAllowed",
-            "Blood organism is permitted for the selected PNEU pathway."
+            "cultureAllowed",
+            "culture organism is permitted for the selected PNEU pathway."
           ],
           [
             "viralEvidence",
@@ -140,12 +140,12 @@ const siteLibrary = {
             "Urinary-catheter presence and timing reviewed."
           ],
           [
-            "bloodMatch",
-            "At least one blood organism matches an eligible urine organism when required."
+            "cultureMatch",
+            "At least one culture organism matches an eligible urine organism when required."
           ],
           [
-            "bloodAsElement",
-            "Blood organism may be used as an allowed criterion element for the selected UTI pathway."
+            "cultureAsElement",
+            "culture organism may be used as an allowed criterion element for the selected UTI pathway."
           ]
         ]
       }
@@ -198,8 +198,8 @@ const siteLibrary = {
             "Eligible physician or designee diagnosis when permitted by the criterion."
           ],
           [
-            "bloodMatch",
-            "Blood organism matches the SSI site organism or is an allowed criterion element."
+            "cultureMatch",
+            "culture organism matches the SSI site organism or is an allowed criterion element."
           ]
         ]
       }
@@ -233,15 +233,15 @@ const siteLibrary = {
         ]
       },
       {
-        title: "Blood relationship",
+        title: "culture relationship",
         items: [
           [
-            "bloodMatch",
-            "Blood organism matches the eligible site organism."
+            "cultureMatch",
+            "culture organism matches the eligible site organism."
           ],
           [
-            "bloodElement",
-            "Blood organism can be used as an element of the selected site-specific criterion."
+            "cultureElement",
+            "culture organism can be used as an element of the selected site-specific criterion."
           ],
           [
             "necException",
@@ -274,8 +274,8 @@ const siteLibrary = {
             "Imaging, operative, gross anatomic, or histopathologic evidence."
           ],
           [
-            "bloodMatch",
-            "Blood organism matches the qualifying site organism or is allowed by the selected criterion."
+            "cultureMatch",
+            "culture organism matches the qualifying site organism or is allowed by the selected criterion."
           ]
         ]
       }
@@ -308,8 +308,8 @@ const siteLibrary = {
             "Eligible bone, joint, disc, or other site specimen."
           ],
           [
-            "bloodMatch",
-            "Blood organism relationship is permitted for the selected criterion."
+            "cultureMatch",
+            "culture organism relationship is permitted for the selected criterion."
           ]
         ]
       }
@@ -333,8 +333,8 @@ const siteLibrary = {
             "Applicable fever, embolic, vascular, immunologic, or cardiac findings."
           ],
           [
-            "bloodPattern",
-            "Required blood-culture pattern and eligible organisms."
+            "culturePattern",
+            "Required culture-culture pattern and eligible organisms."
           ],
           [
             "device",
@@ -371,8 +371,8 @@ const siteLibrary = {
             "Operative, gross anatomic, or histopathologic evidence."
           ],
           [
-            "bloodRelationship",
-            "Blood organism is permitted by the selected CNS definition."
+            "cultureRelationship",
+            "culture organism is permitted by the selected CNS definition."
           ]
         ]
       }
@@ -382,7 +382,7 @@ const siteLibrary = {
   other: {
     label: "Other NHSN site",
     intro:
-      "Identify the exact NHSN Chapter 17 definition before deciding that the bloodstream infection is primary.",
+      "Identify the exact NHSN Chapter 17 definition before deciding that the culturestream infection is primary.",
     groups: [
       {
         title: "Required review",
@@ -510,6 +510,7 @@ function init() {
   bindInputs();
   bindOrganismSearch();
   bindCheckboxes();
+  bindSectionResets();
   bindManualDialogs();
   bindReferenceTabs();
   bindReferenceGuideMinimize();
@@ -655,9 +656,9 @@ function bindChoiceGroups() {
 
 function bindInputs() {
   document
-    .getElementById("bloodOrganismDate")
+    .getElementById("cultureOrganismDate")
     .addEventListener("change", (event) => {
-      state.bloodOrganismDate = event.target.value;
+      state.cultureOrganismDate = event.target.value;
       renderSurveillanceWindow();
     });
 
@@ -773,6 +774,118 @@ function bindCheckboxes() {
     });
 }
 
+function bindSectionResets() {
+  document.querySelectorAll("[data-reset-section]").forEach((button) => {
+    button.addEventListener("click", () => {
+      resetSection(button.dataset.resetSection);
+    });
+  });
+}
+
+function resetSection(section) {
+  const resets = {
+    intro: resetIntroSection,
+    blood: resetBloodSection,
+    organism: resetOrganismSection,
+    secondary: resetSecondarySection,
+    lcbi: resetLcbiInputs,
+    line: resetLineSection,
+    mbi: resetMbiSection,
+    result: resetEntireReview
+  };
+
+  const reset = resets[section];
+  if (reset) {
+    reset();
+  }
+}
+
+function resetIntroSection() {
+  state.bloodOrganismDate = "";
+  document.getElementById("bloodOrganismDate").value = "";
+  renderSurveillanceWindow();
+}
+
+function resetBloodSection() {
+  state.patientAge = "adult";
+  state.bloodPositive = "";
+  state.organismNames = [];
+  state.symptoms.clear();
+  document.getElementById("organismName").selectedIndex = -1;
+  document.getElementById("organismSearch").value = "";
+  document.getElementById("organismSearchStatus").textContent = "";
+  document.querySelectorAll("#organismName option, #organismName optgroup").forEach((item) => {
+    item.hidden = false;
+  });
+  setChoiceValue("patientAge", "adult");
+  setChoiceValue("bloodPositive", "");
+  renderSymptoms();
+  applyOrganismCategory();
+  updateAll();
+}
+
+function resetOrganismSection() {
+  state.organismCategory = "";
+  state.commensalMatch = "";
+  state.separateOccasions = "";
+  state.symptoms.clear();
+  setChoiceValue("organismCategory", "");
+  setChoiceValue("commensalMatch", "");
+  setChoiceValue("separateOccasions", "");
+  document.getElementById("commensalQuestions").classList.add("hidden");
+  renderSymptoms();
+  updateAll();
+}
+
+function resetSecondarySection() {
+  state.selectedSite = "";
+  state.siteEvidence = {};
+  state.siteDefinitionMet = "";
+  state.organismRelationship = "";
+  state.attributionTiming = "";
+  setChoiceValue("siteDefinitionMet", "");
+  setChoiceValue("organismRelationship", "");
+  setChoiceValue("attributionTiming", "");
+  renderSiteGuide();
+  updateAll();
+}
+
+function resetLcbiInputs() {
+  resetBloodSection();
+  resetOrganismSection();
+}
+
+function resetLineSection() {
+  ["centralDefinition", "centralAccessed", "centralDay3", "lineOnDoe"].forEach((name) => {
+    state[name] = "";
+    setChoiceValue(name, "");
+  });
+  updateAll();
+}
+
+function resetMbiSection() {
+  Object.keys(state.mbi).forEach((key) => {
+    state.mbi[key] = false;
+  });
+  state.exclusions.clear();
+  document.querySelectorAll("[data-state], [data-exclusion]").forEach((input) => {
+    input.checked = false;
+  });
+  updateAll();
+}
+
+function resetEntireReview() {
+  window.location.reload();
+}
+
+function setChoiceValue(name, value) {
+  document.querySelectorAll(`[data-name="${name}"] button[data-value]`).forEach((button) => {
+    const isSelected = button.dataset.value === value;
+    button.classList.toggle("selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
+}
+
 function renderSymptoms() {
   const container = document.getElementById("symptomChoices");
 
@@ -883,7 +996,7 @@ function renderOrganismSuggestions() {
 
   if (!organisms.length) {
     box.textContent =
-      "Enter a blood organism above to see suggested body systems to review.";
+      "Enter a culture organism above to see suggested body systems to review.";
 
     return;
   }
@@ -919,9 +1032,6 @@ function renderOrganismSuggestions() {
       ${notes.map((note) => escapeHtml(note)).join(" ")}
     </p>
 
-    <small>
-      Highlighted pathways are chart-review prompts only. The selected site's current NHSN definition—not this suggestion—determines whether the blood organism can be used as a criterion element or must match a site organism.
-    </small>
   `;
 }
 
@@ -1047,13 +1157,13 @@ function renderSiteGuide() {
 }
 
 function determineLcbi() {
-  if (state.bloodPositive !== "yes") {
+  if (state.culturePositive !== "yes") {
     return {
       met: false,
       criterion: "",
       label: "No LCBI",
       reason:
-        "An eligible positive blood specimen has not been confirmed."
+        "An eligible positive culture specimen has not been confirmed."
     };
   }
 
@@ -1074,7 +1184,7 @@ function determineLcbi() {
         criterion: "",
         label: "LCBI not met",
         reason:
-          "The same common commensal has not been confirmed in at least two blood specimens."
+          "The same common commensal has not been confirmed in at least two culture specimens."
       };
     }
 
@@ -1084,7 +1194,7 @@ function determineLcbi() {
         criterion: "",
         label: "LCBI not met",
         reason:
-          "The common-commensal blood specimens have not been confirmed as collected on separate occasions."
+          "The common-commensal culture specimens have not been confirmed as collected on separate occasions."
       };
     }
 
@@ -1132,7 +1242,7 @@ function determineLcbi() {
     criterion: "",
     label: "Incomplete LCBI review",
     reason:
-      "Select whether the blood organism is a recognized pathogen or a common commensal."
+      "Select whether the culture organism is a recognized pathogen or a common commensal."
   };
 }
 
@@ -1632,29 +1742,29 @@ function updateAll() {
 }
 
 function renderSurveillanceWindow() {
-  const bloodDateLabel = document.getElementById("surveillanceBloodDate");
+  const cultureDateLabel = document.getElementById("surveillancecultureDate");
   const dateRangeLabel = document.getElementById("surveillanceDateRange");
 
-  if (!bloodDateLabel || !dateRangeLabel) {
+  if (!cultureDateLabel || !dateRangeLabel) {
     return;
   }
 
-  if (!state.bloodOrganismDate) {
-    bloodDateLabel.textContent = "Not selected";
+  if (!state.cultureOrganismDate) {
+    cultureDateLabel.textContent = "Not selected";
     dateRangeLabel.textContent = "Select a date to calculate";
     return;
   }
 
-  const bloodDate = new Date(`${state.bloodOrganismDate}T00:00:00`);
+  const cultureDate = new Date(`${state.cultureOrganismDate}T00:00:00`);
 
-  if (Number.isNaN(bloodDate.getTime())) {
-    bloodDateLabel.textContent = "Invalid date";
+  if (Number.isNaN(cultureDate.getTime())) {
+    cultureDateLabel.textContent = "Invalid date";
     dateRangeLabel.textContent = "Enter a valid date to calculate";
     return;
   }
 
-  const windowStart = new Date(bloodDate);
-  const windowEnd = new Date(bloodDate);
+  const windowStart = new Date(cultureDate);
+  const windowEnd = new Date(cultureDate);
 
   windowStart.setDate(windowStart.getDate() - 3);
   windowEnd.setDate(windowEnd.getDate() + 3);
@@ -1666,7 +1776,7 @@ function renderSurveillanceWindow() {
       year: "numeric"
     }).format(date);
 
-  bloodDateLabel.textContent = formatDate(bloodDate);
+  cultureDateLabel.textContent = formatDate(cultureDate);
   dateRangeLabel.textContent = `${formatDate(windowStart)} through ${formatDate(windowEnd)}`;
 }
 
