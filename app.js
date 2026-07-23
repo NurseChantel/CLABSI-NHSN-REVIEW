@@ -982,9 +982,6 @@ function determineSecondaryStatus() {
 
   const allYes = answers.every((answer) => answer === "yes");
   const anyNo = answers.some((answer) => answer === "no");
-  const anyUnsure = answers.some(
-    (answer) => answer === "unsure"
-  );
   const incomplete = answers.some((answer) => !answer);
 
   if (allYes) {
@@ -994,16 +991,6 @@ function determineSecondaryStatus() {
       label: "Secondary BSI attribution appears satisfied",
       reason:
         "A complete site-specific definition, eligible organism relationship, and required timing relationship were all selected as Yes."
-    };
-  }
-
-  if (anyUnsure) {
-    return {
-      met: false,
-      status: "unresolved",
-      label: "Secondary BSI review unresolved",
-      reason:
-        "At least one secondary attribution element remains unsure."
     };
   }
 
@@ -1046,9 +1033,6 @@ function determineCentralLineStatus() {
 
   const allYes = values.every((value) => value === "yes");
   const anyNo = values.some((value) => value === "no");
-  const anyUnsure = values.some(
-    (value) => value === "unsure"
-  );
   const incomplete = values.some((value) => !value);
 
   if (allYes) {
@@ -1058,16 +1042,6 @@ function determineCentralLineStatus() {
       label: "Central-line association established",
       reason:
         "The selected device meets the central-line definition, was placed or accessed during the admission, was eligible by day count, and was present on the date of event or previous day."
-    };
-  }
-
-  if (anyUnsure) {
-    return {
-      eligible: false,
-      status: "unresolved",
-      label: "Central-line association unresolved",
-      reason:
-        "At least one central-line eligibility or timing element remains unsure."
     };
   }
 
