@@ -183,7 +183,15 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 .field-help{margin:7px 0 0;font-size:.74rem;line-height:1.4}
 
 .compact-choice{display:flex;flex-wrap:wrap;gap:6px}
-.age-choice button{flex:1 1 150px}
+.age-choice{
+  gap:5px;
+}
+.age-choice button{
+  flex:0 1 auto;
+  min-height:30px;
+  padding:4px 9px;
+  font-size:.7rem;
+}
 .compact-choice button,.site-button-grid button{
   min-height:34px;
   padding:6px 10px;
