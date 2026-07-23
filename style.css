@@ -173,6 +173,7 @@ input[type="text"]:focus,input[type="date"]:focus,input[type="search"]:focus,sel
 .organism-search{position:relative;margin-bottom:8px}
 .organism-search input{padding-right:120px}
 .organism-search-status{position:absolute;top:50%;right:10px;transform:translateY(-50%);color:var(--muted);font-size:.72rem;pointer-events:none}
+input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(20,129,109,.1)}
 .organism-select{height:252px;padding:4px 6px}
 .organism-select option{padding:4px 6px}
 .field-help{margin:7px 0 0;font-size:.74rem;line-height:1.4}
@@ -267,9 +268,18 @@ input[type="text"]:focus,input[type="date"]:focus,input[type="search"]:focus,sel
 .stop-banner{margin-bottom:14px;border:1px solid #efb7bd;border-left:5px solid var(--red);background:var(--red-soft);color:#842b35}
 .suggestion-box{margin-bottom:14px;border:1px solid #b9d1ed;background:var(--blue-soft);color:#315371}
 .suggestion-box ul{margin:7px 0 0;padding-left:18px}
+.suggestion-box .suggestion-rationale{margin:9px 0 5px;color:#315371;font-size:.75rem;font-weight:700;line-height:1.42}
+.source-review-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-top:18px}
+.source-review-heading h3{margin:0 0 2px}
+.source-review-help{margin:0;font-size:.75rem;line-height:1.4}
+.pathway-count{flex:0 0 auto;padding:4px 8px;border:1px solid #b9d1ed;border-radius:999px;background:var(--blue-soft);color:#315371;font-size:.68rem;font-weight:900;white-space:nowrap}
 
 .site-button-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 .site-button-grid button{text-align:left}
+.site-button-grid button.suggested{position:relative;border-color:var(--green);background:var(--green-soft);color:var(--green-dark)}
+.site-button-grid button.suggested::after{content:"Suggested";display:block;margin-top:2px;color:var(--green-dark);font-size:.6rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.site-button-grid button.not-suggested{opacity:.58}
+.site-button-grid button.selected{opacity:1}
 
 .site-guide{
   margin-top:14px;
@@ -375,6 +385,7 @@ input[type="text"]:focus,input[type="date"]:focus,input[type="search"]:focus,sel
   .surveillance-window .field{width:100%}
   .surveillance-banner{grid-template-columns:1fr;gap:12px}
   .site-button-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .source-review-heading{align-items:flex-start;flex-direction:column}
   .secondary-card .section-heading{padding-right:92px}
   .secondary-guide-book .manual-book-label{display:none}
   .wide-choice button{min-width:0;flex:1 1 150px}

@@ -412,15 +412,18 @@ const siteLibrary = {
 const organismHints = [
   {
     terms: ["enterococcus"],
-    sites: ["uti", "gi", "skin", "cardiovascular"]
+    sites: ["uti", "gi", "skin", "cardiovascular"],
+    note: "Urinary, intra-abdominal, skin/soft-tissue, and endovascular sources are reasonable starting points."
   },
   {
     terms: ["escherichia coli", "e. coli", "ecoli"],
-    sites: ["uti", "gi"]
+    sites: ["uti", "gi"],
+    note: "Start with urinary and gastrointestinal / intra-abdominal source definitions."
   },
   {
     terms: ["klebsiella"],
-    sites: ["uti", "pneu", "gi"]
+    sites: ["uti", "pneu", "gi"],
+    note: "Start with urinary, respiratory, and gastrointestinal / intra-abdominal definitions."
   },
   {
     terms: ["staphylococcus aureus", "s. aureus"],
@@ -430,27 +433,33 @@ const organismHints = [
       "boneJoint",
       "cardiovascular",
       "pneu"
-    ]
+    ],
+    note: "Start with skin/soft tissue, surgical-site, bone/joint, endovascular, and respiratory definitions."
   },
   {
     terms: ["candida"],
-    sites: ["gi", "uti"]
+    sites: ["gi", "uti"],
+    note: "Start with gastrointestinal / intra-abdominal and urinary definitions; verify the exact site-specific organism rule."
   },
   {
     terms: ["pseudomonas"],
-    sites: ["pneu", "uti", "skin", "gi"]
+    sites: ["pneu", "uti", "skin", "gi"],
+    note: "Start with respiratory, urinary, skin/soft-tissue, and gastrointestinal / intra-abdominal definitions."
   },
   {
     terms: ["streptococcus pneumoniae", "s. pneumoniae"],
-    sites: ["pneu", "cns"]
+    sites: ["pneu", "cns"],
+    note: "Start with respiratory and central-nervous-system definitions."
   },
   {
     terms: ["bacteroides"],
-    sites: ["gi", "skin"]
+    sites: ["gi", "skin"],
+    note: "Start with gastrointestinal / intra-abdominal and skin/soft-tissue definitions."
   },
   {
     terms: ["viridans", "rothia"],
-    sites: ["cardiovascular", "other"]
+    sites: ["cardiovascular", "other"],
+    note: "Start with endovascular and other site-specific definitions when the chart supports a source."
   }
 ];
 
@@ -816,15 +825,20 @@ function buildSiteButtons() {
     button.type = "button";
     button.dataset.site = key;
     button.textContent = site.label;
+    button.setAttribute("aria-pressed", "false");
 
     button.addEventListener("click", () => {
       state.selectedSite = key;
 
       container
         .querySelectorAll("button")
-        .forEach((item) => item.classList.remove("selected"));
+        .forEach((item) => {
+          item.classList.remove("selected");
+          item.setAttribute("aria-pressed", "false");
+        });
 
       button.classList.add("selected");
+      button.setAttribute("aria-pressed", "true");
 
       renderSiteGuide();
     });
@@ -836,6 +850,12 @@ function buildSiteButtons() {
 function renderOrganismSuggestions() {
   const box = document.getElementById("organismSuggestions");
   const organisms = state.organismNames;
+  const matchingHints = getOrganismHints(organisms);
+  const suggestedSiteKeys = new Set(
+    matchingHints.flatMap((entry) => entry.sites)
+  );
+
+  renderSuggestedSiteButtons(suggestedSiteKeys);
 
   if (!organisms.length) {
     box.textContent =
@@ -868,6 +888,8 @@ function renderOrganismSuggestions() {
     (key) => siteLibrary[key].label
   );
 
+  const notes = [...new Set(matchingHints.map((entry) => entry.note))];
+
   box.innerHTML = `
     <strong>
       Suggested chart-review starting points for selected organism(s):
@@ -879,10 +901,48 @@ function renderOrganismSuggestions() {
         .join("")}
     </ul>
 
+    <p class="suggestion-rationale">
+      ${notes.map((note) => escapeHtml(note)).join(" ")}
+    </p>
+
     <small>
-      These are prompts only, not organism-to-source attribution rules.
+      Highlighted pathways are chart-review prompts only. The selected site's current NHSN definition—not this suggestion—determines whether the blood organism can be used as a criterion element or must match a site organism.
     </small>
   `;
+}
+
+function getOrganismHints(organisms) {
+  return organismHints.filter((entry) =>
+    organisms.some((organism) =>
+      entry.terms.some((term) => organism.toLowerCase().includes(term))
+    )
+  );
+}
+
+function renderSuggestedSiteButtons(suggestedSiteKeys) {
+  const buttons = document.querySelectorAll("#siteButtons button");
+  const count = document.getElementById("pathwayCount");
+  const help = document.getElementById("sourceReviewHelp");
+  const hasSelection = state.organismNames.length > 0;
+  const hasSuggestions = suggestedSiteKeys.size > 0;
+
+  buttons.forEach((button) => {
+    const isSuggested = hasSuggestions && suggestedSiteKeys.has(button.dataset.site);
+    button.classList.toggle("suggested", isSuggested);
+    button.classList.toggle("not-suggested", hasSuggestions && !isSuggested);
+    button.setAttribute("data-suggested", String(isSuggested));
+  });
+
+  if (!hasSelection) {
+    count.textContent = "All pathways";
+    help.textContent = "Select an organism to highlight the body-system pathways worth checking first.";
+  } else if (hasSuggestions) {
+    count.textContent = `${suggestedSiteKeys.size} suggested`;
+    help.textContent = "Highlighted pathways are organism-informed starting points. You can still review any clinically plausible source.";
+  } else {
+    count.textContent = "No targeted pathway";
+    help.textContent = "No organism-specific starting point is available; review every clinically plausible NHSN-defined site.";
+  }
 }
 
 function renderSiteGuide() {
