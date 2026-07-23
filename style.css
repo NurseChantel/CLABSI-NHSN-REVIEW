@@ -71,8 +71,8 @@ button{cursor:pointer}
   position:relative;
   display:grid;
   place-items:center;
-  width:52px;
-  height:66px;
+  width:55px;
+  height:68px;
   overflow:hidden;
   border:1px solid #0c4f63;
   border-radius:3px 6px 6px 3px;
