@@ -1004,14 +1004,6 @@ function renderSiteGuide() {
         )
         .join("")}
 
-      <div
-        class="alert alert-warning"
-        style="margin-top: 12px;"
-      >
-        Checked prompts do not automatically establish the
-        definition. Use the applicable NHSN chapter to confirm
-        the required combination of elements.
-      </div>
     </div>
   `;
 
@@ -1976,7 +1968,6 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
 
 
 
