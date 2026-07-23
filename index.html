@@ -35,7 +35,7 @@
     </div>
 
     <nav class="section-nav" aria-label="Review sections">
-      <a href="#blood">Blood</a>
+      <a href="#culture">culture</a>
       <a href="#organism">Organism</a>
       <a href="#secondary">Secondary BSI</a>
       <a href="#lcbi">LCBI</a>
@@ -54,7 +54,7 @@
 
       <div class="surveillance-window">
         <div class="field">
-          <label for="CultureOrganismDate">Date of blood organism</label>
+          <label for="CultureOrganismDate">Date of Culture</label>
           <input id="CultureOrganismDate" type="date">
         </div>
         <div id="surveillanceWindow" class="surveillance-banner" aria-live="polite">
@@ -64,8 +64,8 @@
             <span class="surveillance-detail">3 days before and after</span>
           </div>
           <div class="surveillance-stat">
-            <span class="surveillance-label">Blood organism date</span>
-            <strong id="surveillanceBloodDate">Not selected</strong>
+            <span class="surveillance-label">Culture Date</span>
+            <strong id="surveillancecultureDate">Not selected</strong>
             <span class="surveillance-detail">Use the documented specimen date</span>
           </div>
           <div class="surveillance-stat">
@@ -76,12 +76,12 @@
       </div>
     </section>
 
-    <section class="review-card" id="blood">
+    <section class="review-card" id="culture">
       <div class="section-heading">
         <span class="section-number">01</span>
         <div>
-          <h2>Blood specimen</h2>
-          <p>Document the positive blood finding that triggered review.</p>
+          <h2>Culture Specimen</h2>
+          <p>Document the positive culture finding that triggered review.</p>
         </div>
       </div>
 
@@ -98,11 +98,11 @@
         </div>
 
         <div class="field">
-          <label for="bloodPositive">
-            Eligible positive blood specimen?
-            <button class="definition" type="button" data-tooltip="An eligible bacterial or fungal organism must be identified from blood to evaluate an LCBI." aria-label="Positive blood specimen definition">i</button>
+          <label for="culturePositive">
+            Eligible positive culture specimen?
+            <button class="definition" type="button" data-tooltip="An eligible bacterial or fungal organism must be identified from culture to evaluate an LCBI." aria-label="Positive culture specimen definition">i</button>
           </label>
-          <div class="compact-choice" data-name="bloodPositive">
+          <div class="compact-choice" data-name="culturePositive">
             <button type="button" data-value="yes">Yes</button>
             <button type="button" data-value="no">No</button>
           </div>
@@ -111,7 +111,7 @@
         <div class="field span-2">
           <label for="organismName">
             Organism(s)
-            <button class="definition" type="button" data-tooltip="Select every bacterial or fungal organism reported from the eligible blood specimen(s). The common-commensal group is the complete NHSN common commensal list. For LCBI 1, any bacterial or fungal pathogen not on that list is a recognized pathogen." aria-label="Blood organism definition">i</button>
+            <button class="definition" type="button" data-tooltip="Select every bacterial or fungal organism reported from the eligible culture specimen(s). The common-commensal group is the complete NHSN common commensal list. For LCBI 1, any bacterial or fungal pathogen not on that list is a recognized pathogen." aria-label="culture organism definition">i</button>
           </label>
           <div class="organism-search">
             <label class="visually-hidden" for="organismSearch">Find an organism</label>
@@ -171,11 +171,11 @@
       <div class="compact-choice wide-choice" data-name="organismCategory">
         <button type="button" data-value="recognized">
           Recognized pathogen
-          <span class="button-help" data-tooltip="A bacterial or fungal pathogen eligible for LCBI 1 when identified from an eligible blood specimen and not related to another site.">i</span>
+          <span class="button-help" data-tooltip="A bacterial or fungal pathogen eligible for LCBI 1 when identified from an eligible culture specimen and not related to another site.">i</span>
         </button>
         <button type="button" data-value="commensal">
           Common commensal
-          <span class="button-help" data-tooltip="LCBI 2 or 3 requires the same NHSN common commensal from at least two blood specimens collected on separate occasions, plus qualifying signs or symptoms.">i</span>
+          <span class="button-help" data-tooltip="LCBI 2 or 3 requires the same NHSN common commensal from at least two culture specimens collected on separate occasions, plus qualifying signs or symptoms.">i</span>
         </button>
       </div>
 
@@ -183,8 +183,8 @@
         <div class="field-grid">
           <div class="field">
             <label>
-              Same common commensal in at least two blood specimens?
-              <button class="definition" type="button" data-tooltip="The same NHSN common commensal must be identified from two or more blood specimens." aria-label="Matching commensal definition">i</button>
+              Same common commensal in at least two culture specimens?
+              <button class="definition" type="button" data-tooltip="The same NHSN common commensal must be identified from two or more culture specimens." aria-label="Matching commensal definition">i</button>
             </label>
             <div class="compact-choice" data-name="commensalMatch">
               <button type="button" data-value="yes">Yes</button>
@@ -195,7 +195,7 @@
           <div class="field">
             <label>
               Specimens collected on separate occasions?
-              <button class="definition" type="button" data-tooltip="Separate occasions means separate blood draws that meet the NHSN collection timing requirement." aria-label="Separate occasions definition">i</button>
+              <button class="definition" type="button" data-tooltip="Separate occasions means separate culture draws that meet the NHSN collection timing requirement." aria-label="Separate occasions definition">i</button>
             </label>
             <div class="compact-choice" data-name="separateOccasions">
               <button type="button" data-value="yes">Yes</button>
@@ -225,11 +225,11 @@
 
       <div class="stop-banner">
         <strong>STOP: look for a source before calling this a CLABSI.</strong>
-        A secondary BSI requires a complete NHSN site-specific infection definition plus an eligible blood-to-site relationship and timing.
+        A secondary BSI requires a complete NHSN site-specific infection definition plus an eligible culture-to-site relationship and timing.
       </div>
 
       <div id="organismSuggestions" class="suggestion-box">
-        Enter a blood organism above to see suggested body systems to review.
+        Enter a culture organism above to see suggested body systems to review.
       </div>
 
       <div class="source-review-heading">
@@ -245,7 +245,7 @@
       <div class="attribution-panel">
         <h3>
           Secondary BSI attribution check
-          <button class="definition" type="button" data-tooltip="Scenario 1 uses a matching site and blood organism with blood collected during the SBAP. Scenario 2 uses the blood organism as an element of the site-specific criterion during that site's infection window." aria-label="Secondary BSI attribution definition">i</button>
+          <button class="definition" type="button" data-tooltip="Scenario 1 uses a matching site and culture organism with culture collected during the SBAP. Scenario 2 uses the culture organism as an element of the site-specific criterion during that site's infection window." aria-label="Secondary BSI attribution definition">i</button>
         </h3>
 
         <div class="field-grid">
@@ -263,7 +263,7 @@
           <div class="field">
             <label>
               Culture-to-site organism relationship met?
-              <button class="definition" type="button" data-tooltip="Confirm either an eligible matching organism between site and blood or that the blood organism is a permitted criterion element for that site." aria-label="Organism relationship definition">i</button>
+              <button class="definition" type="button" data-tooltip="Confirm either an eligible matching organism between site and culture or that the culture organism is a permitted criterion element for that site." aria-label="Organism relationship definition">i</button>
             </label>
             <div class="compact-choice" data-name="organismRelationship">
               <button type="button" data-value="yes">Yes</button>
@@ -274,7 +274,7 @@
           <div class="field">
             <label>
               Culture collected in the required attribution period?
-              <button class="definition" type="button" data-tooltip="For Scenario 1, the blood specimen must fall within the site's secondary BSI attribution period. For Scenario 2, it is collected during the site-specific infection window as a criterion element." aria-label="Attribution period definition">i</button>
+              <button class="definition" type="button" data-tooltip="For Scenario 1, the culture specimen must fall within the site's secondary BSI attribution period. For Scenario 2, it is collected during the site-specific infection window as a criterion element." aria-label="Attribution period definition">i</button>
             </label>
             <div class="compact-choice" data-name="attributionTiming">
               <button type="button" data-value="yes">Yes</button>
@@ -298,7 +298,7 @@
         </div>
       </div>
 
-      <div id="lcbiResult" class="mini-result neutral">Complete blood and organism questions.</div>
+      <div id="lcbiResult" class="mini-result neutral">Complete culture and organism questions.</div>
     </section>
 
     <section class="review-card" id="line">
@@ -314,7 +314,7 @@
         <div class="field">
           <label>
             Device meets the NHSN central-line definition?
-            <button class="definition" type="button" data-tooltip="The catheter terminates at, in, or close to the heart or in a great vessel and is used for infusion, blood withdrawal, or hemodynamic monitoring." aria-label="Central line definition">i</button>
+            <button class="definition" type="button" data-tooltip="The catheter terminates at, in, or close to the heart or in a great vessel and is used for infusion, culture withdrawal, or hemodynamic monitoring." aria-label="Central line definition">i</button>
           </label>
           <div class="compact-choice" data-name="centralDefinition">
             <button type="button" data-value="yes">Yes</button>
@@ -325,7 +325,7 @@
         <div class="field">
           <label>
             Line placed or accessed during this inpatient admission?
-            <button class="definition" type="button" data-tooltip="Access includes placement, infusion, blood withdrawal, or hemodynamic monitoring during the current inpatient admission." aria-label="Central line access definition">i</button>
+            <button class="definition" type="button" data-tooltip="Access includes placement, infusion, culture withdrawal, or hemodynamic monitoring during the current inpatient admission." aria-label="Central line access definition">i</button>
           </label>
           <div class="compact-choice" data-name="centralAccessed">
             <button type="button" data-value="yes">Yes</button>
@@ -433,10 +433,10 @@
         <div id="nextStepsPanel" class="tab-panel" role="tabpanel" aria-labelledby="nextStepsTab">
           <h3>Next Steps</h3>
           <ul>
-            <li>Confirm that the blood specimen and all required elements fall within the applicable BSI infection window period.</li>
-            <li>First exclude a secondary bloodstream infection by applying the complete NHSN definition for every plausible source.</li>
-            <li>For LCBI 1, verify a recognized pathogen is identified from one or more blood specimens and is not related to an infection at another site.</li>
-            <li>For LCBI 2 or 3, verify the same common commensal is identified from at least two blood specimens collected on separate occasions, then apply the correct age-specific symptom pathway.</li>
+            <li>Confirm that the culture specimen and all required elements fall within the applicable BSI infection window period.</li>
+            <li>First exclude a secondary culturestream infection by applying the complete NHSN definition for every plausible source.</li>
+            <li>For LCBI 1, verify a recognized pathogen is identified from one or more culture specimens and is not related to an infection at another site.</li>
+            <li>For LCBI 2 or 3, verify the same common commensal is identified from at least two culture specimens collected on separate occasions, then apply the correct age-specific symptom pathway.</li>
             <li>After an LCBI is established, evaluate central-line association, MBI-LCBI criteria, and applicable exclusion fields.</li>
           </ul>
         </div>
@@ -451,14 +451,14 @@
               <div class="criterion-content">
                 <p>Patient of any age has a recognized bacterial or fungal pathogen, not included on the NHSN common commensal list:</p>
                 <ol>
-                  <li>Identified from one or more blood specimens obtained by a culture<br><span class="criterion-or">OR</span></li>
+                  <li>Identified from one or more culture specimens obtained by a culture<br><span class="criterion-or">OR</span></li>
                   <li>Identified to the genus or species level by non-culture based microbiologic testing (NCT)<sup>*</sup> methods (for example, T2 Magnetic Resonance [T2MR] or next-generation sequencing [NGS]).</li>
                 </ol>
-                <p class="criterion-note"><strong>Note:</strong> If blood is collected for culture within 2 days before, or 1 day after the NCT, disregard the result of the NCT and use only the result of the culture to make an LCBI surveillance determination. If no blood is collected for culture within this time period, use the result of the NCT for LCBI surveillance determination.</p>
+                <p class="criterion-note"><strong>Note:</strong> If culture is collected for culture within 2 days before, or 1 day after the NCT, disregard the result of the NCT and use only the result of the culture to make an LCBI surveillance determination. If no culture is collected for culture within this time period, use the result of the NCT for LCBI surveillance determination.</p>
                 <p class="criterion-and">AND</p>
-                <p>Organism(s) identified in blood is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
-                <p class="criterion-footnote"><sup>*</sup> For the purposes of meeting LCBI 1, NCT is defined as a methodology that identifies an organism directly from a blood specimen without inoculation of the blood specimen to any culture media.</p>
-                <div class="criterion-notes"><strong>Notes:</strong><ol><li>If a patient meets both LCBI 1 and LCBI 2 or LCBI 3 criteria, report LCBI 1 with the recognized pathogen entered as pathogen #1 and the common commensal as pathogen #2.</li><li>An eligible organism in the blood specimen is the only element needed to meet LCBI 1 criterion; therefore, the LCBI 1 DOE will always be the collection date of the first positive blood specimen used to set the BSI IWP.</li></ol></div>
+                <p>Organism(s) identified in culture is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
+                <p class="criterion-footnote"><sup>*</sup> For the purposes of meeting LCBI 1, NCT is defined as a methodology that identifies an organism directly from a culture specimen without inoculation of the culture specimen to any culture media.</p>
+                <div class="criterion-notes"><strong>Notes:</strong><ol><li>If a patient meets both LCBI 1 and LCBI 2 or LCBI 3 criteria, report LCBI 1 with the recognized pathogen entered as pathogen #1 and the common commensal as pathogen #2.</li><li>An eligible organism in the culture specimen is the only element needed to meet LCBI 1 criterion; therefore, the LCBI 1 DOE will always be the collection date of the first positive culture specimen used to set the BSI IWP.</li></ol></div>
               </div>
             </article>
 
@@ -467,11 +467,11 @@
               <div class="criterion-content">
                 <p>Patient of any age has at least one of the following signs or symptoms: fever (&gt;38.0°C), chills, or hypotension</p>
                 <p class="criterion-and">AND</p>
-                <p>Organism(s) identified in blood is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
+                <p>Organism(s) identified in culture is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
                 <p class="criterion-and">AND</p>
-                <p>The same NHSN common commensal is identified by culture from two or more blood specimens collected on separate occasions (see Blood Specimen Collection).</p>
+                <p>The same NHSN common commensal is identified by culture from two or more culture specimens collected on separate occasions (see culture Specimen Collection).</p>
                 <p>For common commensal organisms, refer to the NHSN Terminology Browser.</p>
-                <div class="criterion-notes"><strong>Notes:</strong><ol><li>Criterion elements must occur within the 7-day IWP (as defined in Chapter 2), which includes the collection date of the positive blood specimen, the 3 calendar days before, and the 3 calendar days after.</li><li>The two matching common commensal specimens represent a single element for use in meeting LCBI 2 criterion, and the collection date of the first specimen is used to determine the BSI IWP.</li><li>At least one element (specifically, a sign or symptom of fever, chills, or hypotension) is required to meet LCBI 2 criterion; the LCBI 2 DOE will always be the date the first element occurs for the first time during the BSI IWP, whether that be a sign or symptom or the positive blood specimen.</li></ol></div>
+                <div class="criterion-notes"><strong>Notes:</strong><ol><li>Criterion elements must occur within the 7-day IWP (as defined in Chapter 2), which includes the collection date of the positive culture specimen, the 3 calendar days before, and the 3 calendar days after.</li><li>The two matching common commensal specimens represent a single element for use in meeting LCBI 2 criterion, and the collection date of the first specimen is used to determine the BSI IWP.</li><li>At least one element (specifically, a sign or symptom of fever, chills, or hypotension) is required to meet LCBI 2 criterion; the LCBI 2 DOE will always be the date the first element occurs for the first time during the BSI IWP, whether that be a sign or symptom or the positive culture specimen.</li></ol></div>
                 <div class="criterion-example"><strong>Example: LCBI 2 DOE</strong><table><tbody><tr><th>6/1</th><td>Fever &gt; 38.0°C</td><td rowspan="7">Single element</td><td rowspan="7">Date of 1st diagnostic test = 6/4</td><td rowspan="7">LCBI 2 DOE = 6/1</td></tr><tr><th>6/2</th><td>No LCBI element</td></tr><tr><th>6/3</th><td>No LCBI element</td></tr><tr><th>6/4</th><td><em>S. epidermidis</em> (1 of 2)</td></tr><tr><th>6/5</th><td><em>S. epidermidis</em> (2 of 2)</td></tr><tr><th>6/6</th><td>No LCBI element</td></tr><tr><th>6/7</th><td>No LCBI element</td></tr></tbody></table></div>
               </div>
             </article>
@@ -481,11 +481,11 @@
               <div class="criterion-content">
                 <p>Patient ≤ 1 year of age has at least one of the following signs or symptoms: fever (&gt;38.0°C), hypothermia (&lt;36.0°C), apnea, or bradycardia</p>
                 <p class="criterion-and">AND</p>
-                <p>Organism(s) identified in blood is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
+                <p>Organism(s) identified in culture is not related to an infection at another site (see Appendix: Secondary BSI Guide).</p>
                 <p class="criterion-and">AND</p>
-                <p>The same NHSN common commensal is identified by a culture from two or more blood specimens collected on separate occasions (see Blood Specimen Collection).</p>
+                <p>The same NHSN common commensal is identified by a culture from two or more culture specimens collected on separate occasions (see culture Specimen Collection).</p>
                 <p>For common commensal organisms, refer to the NHSN Terminology Browser.</p>
-                <div class="criterion-notes"><strong>Notes:</strong><ol><li>Criterion elements must occur within the 7-day IWP (as defined in Chapter 2), which includes the collection date of the positive blood specimen, the 3 calendar days before, and the 3 calendar days after.</li><li>The two matching common commensal specimens represent a single element for use in meeting LCBI 3 criterion, and the date of the first is used to determine the BSI IWP.</li><li>At least one element (specifically, a sign or symptom of fever, hypothermia, apnea, or bradycardia) is required to meet LCBI 3 criterion; the LCBI 3 DOE will always be the date the first element occurs for the first time during the BSI IWP whether that be a sign or symptom or the positive blood specimen.</li></ol></div>
+                <div class="criterion-notes"><strong>Notes:</strong><ol><li>Criterion elements must occur within the 7-day IWP (as defined in Chapter 2), which includes the collection date of the positive culture specimen, the 3 calendar days before, and the 3 calendar days after.</li><li>The two matching common commensal specimens represent a single element for use in meeting LCBI 3 criterion, and the date of the first is used to determine the BSI IWP.</li><li>At least one element (specifically, a sign or symptom of fever, hypothermia, apnea, or bradycardia) is required to meet LCBI 3 criterion; the LCBI 3 DOE will always be the date the first element occurs for the first time during the BSI IWP whether that be a sign or symptom or the positive culture specimen.</li></ol></div>
                 <div class="criterion-example"><strong>Example: LCBI 3 DOE</strong><table><tbody><tr><th>5/31</th><td>No LCBI element</td><td rowspan="7">Single element</td><td rowspan="7">Date of 1st diagnostic test = 6/3</td><td rowspan="7">LCBI 3 DOE = 6/3</td></tr><tr><th>6/1</th><td>No LCBI element</td></tr><tr><th>6/2</th><td>No LCBI element</td></tr><tr><th>6/3</th><td><em>S. epidermidis</em> (1 of 2)</td></tr><tr><th>6/4</th><td><em>S. epidermidis</em> (2 of 2)</td></tr><tr><th>6/5</th><td>Apnea documented</td></tr><tr><th>6/6</th><td>No LCBI element</td></tr></tbody></table></div>
               </div>
             </article>
@@ -495,7 +495,7 @@
         <div id="referencesPanel" class="tab-panel" role="tabpanel" aria-labelledby="referencesTab" hidden>
           <h3>References</h3>
           <ol class="reference-list">
-            <li><a href="./clabsi%20nhsn.pdf" target="_blank" rel="noopener">Centers for Disease Control and Prevention. National Healthcare Safety Network (NHSN) Patient Safety Component Manual: Chapter 4, Bloodstream Infection Event (Central Line-Associated Bloodstream Infection and non-central line-associated bloodstream infection).</a> Review the LCBI 1, LCBI 2, and LCBI 3 criteria in the supplied manual.</li>
+            <li><a href="./clabsi%20nhsn.pdf" target="_blank" rel="noopener">Centers for Disease Control and Prevention. National Healthcare Safety Network (NHSN) Patient Safety Component Manual: Chapter 4, culturestream Infection Event (Central Line-Associated culturestream Infection and non-central line-associated culturestream infection).</a> Review the LCBI 1, LCBI 2, and LCBI 3 criteria in the supplied manual.</li>
             <li><a href="https://www.cdc.gov/nhsn/psc/index.html" target="_blank" rel="noopener">CDC NHSN Patient Safety Component Manual</a>. Use the currently effective protocol and associated definitions when completing surveillance.</li>
           </ol>
         </div>
