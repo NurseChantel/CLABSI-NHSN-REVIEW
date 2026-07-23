@@ -12,11 +12,19 @@
 </head>
 <body>
   <header class="app-header">
-    <div>
+    <div class="header-title-group">
       <p class="eyebrow">NHSN BSI Surveillance</p>
       <h1>CLABSI Review Tool</h1>
       <p class="header-copy">Review secondary sources first, then evaluate LCBI, central-line association, MBI-LCBI, and exclusions.</p>
     </div>
+
+    <button id="openManual" class="manual-book" type="button" aria-haspopup="dialog" aria-controls="manualDialog">
+      <span class="manual-book-cover" aria-hidden="true">
+        <span class="manual-book-mark"></span>
+        <span class="manual-book-title">CLABSI<br>Manual</span>
+      </span>
+      <span class="manual-book-label">Open NHSN manual</span>
+    </button>
 
     <nav class="section-nav" aria-label="Review sections">
       <a href="#blood">Blood</a>
@@ -465,6 +473,17 @@
       </div>
     </section>
   </main>
+
+  <dialog id="manualDialog" class="manual-dialog" aria-labelledby="manualDialogTitle">
+    <div class="manual-dialog-header">
+      <div>
+        <p class="eyebrow">Reference guide</p>
+        <h2 id="manualDialogTitle">CLABSI NHSN Manual</h2>
+      </div>
+      <button id="closeManual" class="manual-close" type="button" aria-label="Close CLABSI NHSN manual">×</button>
+    </div>
+    <iframe class="manual-frame" src="./clabsi%20nhsn.pdf" title="CLABSI NHSN Manual"></iframe>
+  </dialog>
 
   <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
   <script src="./app.js"></script>
