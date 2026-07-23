@@ -495,27 +495,57 @@ function init() {
   bindChoiceGroups();
   bindInputs();
   bindCheckboxes();
-  bindManual();
+  bindReferenceTabs();
   setupTooltips();
   updateAll();
 }
 
-function bindManual() {
-  const openButton = document.getElementById("openManual");
-  const closeButton = document.getElementById("closeManual");
-  const dialog = document.getElementById("manualDialog");
+function bindReferenceTabs() {
+  const tabs = Array.from(document.querySelectorAll(".tab-button"));
 
-  if (!openButton || !closeButton || !dialog) {
+  if (!tabs.length) {
     return;
   }
 
-  openButton.addEventListener("click", () => dialog.showModal());
-  closeButton.addEventListener("click", () => dialog.close());
+  const selectTab = (selectedTab) => {
+    tabs.forEach((tab) => {
+      const isSelected = tab === selectedTab;
+      const panel = document.getElementById(tab.getAttribute("aria-controls"));
 
-  dialog.addEventListener("click", (event) => {
-    if (event.target === dialog) {
-      dialog.close();
-    }
+      tab.classList.toggle("is-active", isSelected);
+      tab.setAttribute("aria-selected", String(isSelected));
+      tab.tabIndex = isSelected ? 0 : -1;
+
+      if (panel) {
+        panel.hidden = !isSelected;
+      }
+    });
+  };
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => selectTab(tab));
+
+    tab.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+        return;
+      }
+
+      event.preventDefault();
+      let nextIndex = index;
+
+      if (event.key === "ArrowRight") {
+        nextIndex = (index + 1) % tabs.length;
+      } else if (event.key === "ArrowLeft") {
+        nextIndex = (index - 1 + tabs.length) % tabs.length;
+      } else if (event.key === "Home") {
+        nextIndex = 0;
+      } else {
+        nextIndex = tabs.length - 1;
+      }
+
+      tabs[nextIndex].focus();
+      selectTab(tabs[nextIndex]);
+    });
   });
 }
 
