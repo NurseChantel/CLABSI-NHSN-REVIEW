@@ -508,6 +508,7 @@ function init() {
   renderSymptoms();
   bindChoiceGroups();
   bindInputs();
+  bindOrganismSearch();
   bindCheckboxes();
   bindManualDialogs();
   bindReferenceTabs();
@@ -645,6 +646,48 @@ function bindInputs() {
       applyOrganismCategory();
       updateAll();
     });
+}
+
+function bindOrganismSearch() {
+  const search = document.getElementById("organismSearch");
+  const select = document.getElementById("organismName");
+  const status = document.getElementById("organismSearchStatus");
+
+  if (!search || !select || !status) {
+    return;
+  }
+
+  const filterOptions = () => {
+    const query = search.value.trim().toLowerCase();
+    let visibleCount = 0;
+
+    Array.from(select.options).forEach((option) => {
+      const matches = !query || option.text.toLowerCase().includes(query);
+
+      option.hidden = !matches;
+      if (matches) {
+        visibleCount += 1;
+      }
+    });
+
+    Array.from(select.querySelectorAll("optgroup")).forEach((group) => {
+      group.hidden = !Array.from(group.options).some(
+        (option) => !option.hidden
+      );
+    });
+
+    status.textContent = query
+      ? `${visibleCount} organism${visibleCount === 1 ? "" : "s"} found.`
+      : "";
+  };
+
+  search.addEventListener("input", filterOptions);
+  search.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      select.focus();
+    }
+  });
 }
 
 function applyOrganismCategory() {
@@ -820,6 +863,16 @@ function renderOrganismSuggestions() {
 
     return;
   }
+
+  const suggestedSiteKeys = new Set();
+
+  organisms.forEach((organism) => {
+    organismHints.forEach((entry) => {
+      if (entry.terms.some((term) => organism.toLowerCase().includes(term))) {
+        entry.sites.forEach((site) => suggestedSiteKeys.add(site));
+      }
+    });
+  });
 
   if (!suggestedSiteKeys.size) {
     box.innerHTML = `
