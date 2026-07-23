@@ -399,6 +399,71 @@
         <button id="clearReview" class="small-action secondary" type="button">Clear form</button>
       </div>
     </section>
+
+    <section class="reference-tabs" aria-labelledby="referenceTabsTitle">
+      <div class="reference-tabs__header">
+        <p class="eyebrow">NHSN protocol companion</p>
+        <h2 id="referenceTabsTitle">LCBI review guide</h2>
+        <p>Use this quick reference alongside the current NHSN Bloodstream Infection (BSI) protocol.</p>
+      </div>
+
+      <div class="tab-list" role="tablist" aria-label="LCBI review guide sections">
+        <button id="nextStepsTab" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="nextStepsPanel">Next Steps</button>
+        <button id="evidenceTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="evidencePanel" tabindex="-1">NHSN Evidence</button>
+        <button id="referencesTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="referencesPanel" tabindex="-1">References</button>
+      </div>
+
+      <div class="tab-panels">
+        <div id="nextStepsPanel" class="tab-panel" role="tabpanel" aria-labelledby="nextStepsTab">
+          <h3>Next Steps</h3>
+          <ul>
+            <li>Confirm that the blood specimen and all required elements fall within the applicable BSI infection window period.</li>
+            <li>First exclude a secondary bloodstream infection by applying the complete NHSN definition for every plausible source.</li>
+            <li>For LCBI 1, verify a recognized pathogen is identified from one or more blood specimens and is not related to an infection at another site.</li>
+            <li>For LCBI 2 or 3, verify the same common commensal is identified from at least two blood specimens collected on separate occasions, then apply the correct age-specific symptom pathway.</li>
+            <li>After an LCBI is established, evaluate central-line association, MBI-LCBI criteria, and applicable exclusion fields.</li>
+          </ul>
+        </div>
+
+        <div id="evidencePanel" class="tab-panel" role="tabpanel" aria-labelledby="evidenceTab" hidden>
+          <h3>NHSN evidence for primary LCBI</h3>
+          <div class="lcbi-evidence-grid">
+            <article class="lcbi-evidence-card">
+              <h4>LCBI 1 <span>Any age</span></h4>
+              <ul>
+                <li>Recognized bacterial or fungal pathogen identified from one or more blood specimens.</li>
+                <li>Organism is not related to an infection at another site.</li>
+              </ul>
+            </article>
+            <article class="lcbi-evidence-card">
+              <h4>LCBI 2 <span>Age 1 year or older</span></h4>
+              <ul>
+                <li>Fever above 38°C, chills, or hypotension.</li>
+                <li>Symptoms and organism are not related to an infection at another site.</li>
+                <li>Same common commensal identified from at least two blood specimens collected on separate occasions.</li>
+              </ul>
+            </article>
+            <article class="lcbi-evidence-card">
+              <h4>LCBI 3 <span>Younger than 1 year</span></h4>
+              <ul>
+                <li>Fever above 38°C (core), hypothermia below 36°C (core), apnea, or bradycardia.</li>
+                <li>Symptoms and organism are not related to an infection at another site.</li>
+                <li>Same common commensal identified from at least two blood specimens collected on separate occasions.</li>
+              </ul>
+            </article>
+          </div>
+          <p class="reference-note"><strong>Important:</strong> This is a review aid, not the full case definition. Confirm exact organism eligibility, collection timing, date of event, and attribution rules in the current protocol.</p>
+        </div>
+
+        <div id="referencesPanel" class="tab-panel" role="tabpanel" aria-labelledby="referencesTab" hidden>
+          <h3>References</h3>
+          <ol class="reference-list">
+            <li><a href="./clabsi%20nhsn.pdf" target="_blank" rel="noopener">Centers for Disease Control and Prevention. National Healthcare Safety Network (NHSN) Patient Safety Component Manual: Chapter 4, Bloodstream Infection Event (Central Line-Associated Bloodstream Infection and non-central line-associated bloodstream infection).</a> Review the LCBI 1, LCBI 2, and LCBI 3 criteria in the supplied manual.</li>
+            <li><a href="https://www.cdc.gov/nhsn/psc/index.html" target="_blank" rel="noopener">CDC NHSN Patient Safety Component Manual</a>. Use the currently effective protocol and associated definitions when completing surveillance.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
