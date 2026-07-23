@@ -54,6 +54,10 @@
         Site-specific prompts help direct chart review but do not replace the current UTI, PNEU, SSI, Chapter 17, or BSI definitions.
       </div>
 
+      <div class="intro-actions">
+        <button class="section-reset" type="button" data-reset-section="intro" aria-label="Reset surveillance window">Reset</button>
+      </div>
+
       <div class="surveillance-window">
         <div class="field">
           <label for="bloodOrganismDate">Date of blood organism</label>
@@ -86,6 +90,7 @@
           <h2>Blood specimen</h2>
           <p>Document the positive blood finding that triggered review.</p>
         </div>
+        <button class="section-reset" type="button" data-reset-section="blood" aria-label="Reset blood specimen section">Reset</button>
       </div>
 
       <div class="field-grid">
@@ -173,6 +178,7 @@
           <h2>Organism category</h2>
           <p>Choose the category used for the preliminary LCBI screen.</p>
         </div>
+        <button class="section-reset" type="button" data-reset-section="organism" aria-label="Reset organism category section">Reset</button>
       </div>
 
       <div class="compact-choice wide-choice" data-name="organismCategory">
@@ -228,6 +234,7 @@
           <h2>Secondary BSI investigation</h2>
           <p>Do not classify the event as a primary BSI until another NHSN-defined infection site has been reasonably evaluated.</p>
         </div>
+        <button class="section-reset" type="button" data-reset-section="secondary" aria-label="Reset secondary BSI investigation section">Reset</button>
       </div>
 
       <div class="stop-banner">
@@ -304,6 +311,7 @@
           <h2>Preliminary LCBI screen</h2>
           <p>The result remains preliminary until secondary attribution has been resolved.</p>
         </div>
+        <button class="section-reset" type="button" data-reset-section="lcbi" aria-label="Reset preliminary LCBI inputs">Reset</button>
       </div>
 
       <div id="lcbiResult" class="mini-result neutral">Complete blood and organism questions.</div>
@@ -316,6 +324,7 @@
           <h2>Central-line association</h2>
           <p>Evaluate device definition, access, duration, and timing.</p>
         </div>
+        <button class="section-reset" type="button" data-reset-section="line" aria-label="Reset central-line association section">Reset</button>
       </div>
 
       <div class="field-grid">
@@ -372,6 +381,7 @@
           <h2>MBI-LCBI and exclusions</h2>
           <p>Screen only after an LCBI criterion is met.</p>
         </div>
+        <button class="section-reset" type="button" data-reset-section="mbi" aria-label="Reset MBI-LCBI and exclusions section">Reset</button>
       </div>
 
       <h3>
@@ -411,6 +421,7 @@
           <h2>Preliminary determination</h2>
           <p>The result updates automatically as the review is completed.</p>
         </div>
+        <button class="section-reset" type="button" data-reset-section="result" aria-label="Reset entire review">Reset</button>
       </div>
 
       <div id="finalResult" class="final-result neutral">

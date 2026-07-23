@@ -510,6 +510,7 @@ function init() {
   bindInputs();
   bindOrganismSearch();
   bindCheckboxes();
+  bindSectionResets();
   bindManualDialogs();
   bindReferenceTabs();
   setupTooltips();
@@ -747,6 +748,118 @@ function bindCheckboxes() {
     .addEventListener("click", () => {
       window.location.reload();
     });
+}
+
+function bindSectionResets() {
+  document.querySelectorAll("[data-reset-section]").forEach((button) => {
+    button.addEventListener("click", () => {
+      resetSection(button.dataset.resetSection);
+    });
+  });
+}
+
+function resetSection(section) {
+  const resets = {
+    intro: resetIntroSection,
+    blood: resetBloodSection,
+    organism: resetOrganismSection,
+    secondary: resetSecondarySection,
+    lcbi: resetLcbiInputs,
+    line: resetLineSection,
+    mbi: resetMbiSection,
+    result: resetEntireReview
+  };
+
+  const reset = resets[section];
+  if (reset) {
+    reset();
+  }
+}
+
+function resetIntroSection() {
+  state.bloodOrganismDate = "";
+  document.getElementById("bloodOrganismDate").value = "";
+  renderSurveillanceWindow();
+}
+
+function resetBloodSection() {
+  state.patientAge = "adult";
+  state.bloodPositive = "";
+  state.organismNames = [];
+  state.symptoms.clear();
+  document.getElementById("organismName").selectedIndex = -1;
+  document.getElementById("organismSearch").value = "";
+  document.getElementById("organismSearchStatus").textContent = "";
+  document.querySelectorAll("#organismName option, #organismName optgroup").forEach((item) => {
+    item.hidden = false;
+  });
+  setChoiceValue("patientAge", "adult");
+  setChoiceValue("bloodPositive", "");
+  renderSymptoms();
+  applyOrganismCategory();
+  updateAll();
+}
+
+function resetOrganismSection() {
+  state.organismCategory = "";
+  state.commensalMatch = "";
+  state.separateOccasions = "";
+  state.symptoms.clear();
+  setChoiceValue("organismCategory", "");
+  setChoiceValue("commensalMatch", "");
+  setChoiceValue("separateOccasions", "");
+  document.getElementById("commensalQuestions").classList.add("hidden");
+  renderSymptoms();
+  updateAll();
+}
+
+function resetSecondarySection() {
+  state.selectedSite = "";
+  state.siteEvidence = {};
+  state.siteDefinitionMet = "";
+  state.organismRelationship = "";
+  state.attributionTiming = "";
+  setChoiceValue("siteDefinitionMet", "");
+  setChoiceValue("organismRelationship", "");
+  setChoiceValue("attributionTiming", "");
+  renderSiteGuide();
+  updateAll();
+}
+
+function resetLcbiInputs() {
+  resetBloodSection();
+  resetOrganismSection();
+}
+
+function resetLineSection() {
+  ["centralDefinition", "centralAccessed", "centralDay3", "lineOnDoe"].forEach((name) => {
+    state[name] = "";
+    setChoiceValue(name, "");
+  });
+  updateAll();
+}
+
+function resetMbiSection() {
+  Object.keys(state.mbi).forEach((key) => {
+    state.mbi[key] = false;
+  });
+  state.exclusions.clear();
+  document.querySelectorAll("[data-state], [data-exclusion]").forEach((input) => {
+    input.checked = false;
+  });
+  updateAll();
+}
+
+function resetEntireReview() {
+  window.location.reload();
+}
+
+function setChoiceValue(name, value) {
+  document.querySelectorAll(`[data-name="${name}"] button[data-value]`).forEach((button) => {
+    const isSelected = button.dataset.value === value;
+    button.classList.toggle("selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
 }
 
 function renderSymptoms() {
@@ -1976,7 +2089,5 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
-
 
 
