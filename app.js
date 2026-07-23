@@ -2,7 +2,7 @@
 
 const state = {
   bloodOrganismDate: "",
-  patientAge: "",
+  patientAge: "adult",
   bloodPositive: "",
   organismName: "",
   organismCategory: "",
@@ -563,6 +563,9 @@ function bindChoiceGroups() {
         .forEach((item) => item.classList.remove("selected"));
 
       button.classList.add("selected");
+      group.querySelectorAll("button[data-value]").forEach((item) => {
+        item.setAttribute("aria-pressed", String(item === button));
+      });
 
       const name = group.dataset.name;
       state[name] = button.dataset.value;
@@ -576,6 +579,11 @@ function bindChoiceGroups() {
           );
       }
 
+      if (name === "patientAge") {
+        state.symptoms.clear();
+        renderSymptoms();
+      }
+
       updateAll();
     });
   });
@@ -587,15 +595,6 @@ function bindInputs() {
     .addEventListener("change", (event) => {
       state.bloodOrganismDate = event.target.value;
       renderSurveillanceWindow();
-    });
-
-  document
-    .getElementById("patientAge")
-    .addEventListener("change", (event) => {
-      state.patientAge = event.target.value;
-      state.symptoms.clear();
-      renderSymptoms();
-      updateAll();
     });
 
   document

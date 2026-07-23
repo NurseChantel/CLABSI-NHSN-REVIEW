@@ -80,15 +80,14 @@
 
       <div class="field-grid">
         <div class="field">
-          <label for="patientAge">
+          <div class="field-label" id="patientAgeLabel">
             Patient age
             <button class="definition" type="button" data-tooltip="Age determines whether LCBI 2 or the infant LCBI 3 signs and symptoms are evaluated." aria-label="Patient age definition">i</button>
-          </label>
-          <select id="patientAge">
-            <option value="">Choose age group</option>
-            <option value="adult">1 year or older</option>
-            <option value="infant">Younger than 1 year</option>
-          </select>
+          </div>
+          <div class="compact-choice age-choice" data-name="patientAge" role="group" aria-labelledby="patientAgeLabel">
+            <button type="button" data-value="adult" class="selected" aria-pressed="true">1 year or older</button>
+            <button type="button" data-value="infant" aria-pressed="false">Younger than 1 year</button>
+          </div>
         </div>
 
         <div class="field">
