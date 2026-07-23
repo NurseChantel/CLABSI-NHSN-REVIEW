@@ -148,7 +148,7 @@ p{color:var(--muted)}
 
 .field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
 .span-2{grid-column:span 2}
-.field label{
+.field label,.field-label{
   display:flex;
   align-items:center;
   gap:6px;
@@ -170,6 +170,7 @@ input[type="text"],input[type="date"],select{
 input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(20,129,109,.1)}
 
 .compact-choice{display:flex;flex-wrap:wrap;gap:6px}
+.age-choice button{flex:1 1 150px}
 .compact-choice button,.site-button-grid button{
   min-height:34px;
   padding:6px 10px;
