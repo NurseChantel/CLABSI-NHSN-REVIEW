@@ -801,14 +801,14 @@ function resetSection(section) {
 }
 
 function resetIntroSection() {
-  state.bloodOrganismDate = "";
-  document.getElementById("bloodOrganismDate").value = "";
+  state.cultureOrganismDate = "";
+  document.getElementById("cultureOrganismDate").value = "";
   renderSurveillanceWindow();
 }
 
 function resetBloodSection() {
   state.patientAge = "adult";
-  state.bloodPositive = "";
+  state.culturePositive = "";
   state.organismNames = [];
   state.symptoms.clear();
   document.getElementById("organismName").selectedIndex = -1;
@@ -818,7 +818,7 @@ function resetBloodSection() {
     item.hidden = false;
   });
   setChoiceValue("patientAge", "adult");
-  setChoiceValue("bloodPositive", "");
+  setChoiceValue("culturePositive", "");
   renderSymptoms();
   applyOrganismCategory();
   updateAll();
@@ -2102,5 +2102,3 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
-
