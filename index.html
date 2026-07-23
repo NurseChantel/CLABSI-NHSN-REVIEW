@@ -18,13 +18,23 @@
       <p class="header-copy">Review secondary sources first, then evaluate LCBI, central-line association, MBI-LCBI, and exclusions.</p>
     </div>
 
-    <button id="openManual" class="manual-book" type="button" aria-haspopup="dialog" aria-controls="manualDialog">
-      <span class="manual-book-cover" aria-hidden="true">
-        <span class="manual-book-mark"></span>
-        <span class="manual-book-title">CLABSI<br>Manual</span>
-      </span>
-      <span class="manual-book-label">Open NHSN manual</span>
-    </button>
+    <div class="header-resource-actions">
+      <button id="openSecondaryGuide" class="manual-book" type="button" aria-haspopup="dialog" aria-controls="secondaryGuideDialog">
+        <span class="manual-book-cover" aria-hidden="true">
+          <span class="manual-book-mark"></span>
+          <span class="manual-book-title">Secondary<br>BSI Guide</span>
+        </span>
+        <span class="manual-book-label">Open Secondary BSI guide</span>
+      </button>
+
+      <button id="openManual" class="manual-book" type="button" aria-haspopup="dialog" aria-controls="manualDialog">
+        <span class="manual-book-cover" aria-hidden="true">
+          <span class="manual-book-mark"></span>
+          <span class="manual-book-title">CLABSI<br>Manual</span>
+        </span>
+        <span class="manual-book-label">Open NHSN manual</span>
+      </button>
+    </div>
 
     <nav class="section-nav" aria-label="Review sections">
       <a href="#blood">Blood</a>
@@ -213,13 +223,6 @@
           <h2>Secondary BSI investigation</h2>
           <p>Do not classify the event as a primary BSI until another NHSN-defined infection site has been reasonably evaluated.</p>
         </div>
-        <button id="openSecondaryGuide" class="manual-book secondary-guide-book" type="button" aria-haspopup="dialog" aria-controls="secondaryGuideDialog">
-          <span class="manual-book-cover" aria-hidden="true">
-            <span class="manual-book-mark"></span>
-            <span class="manual-book-title">Secondary<br>BSI Guide</span>
-          </span>
-          <span class="manual-book-label">Open Secondary BSI guide</span>
-        </button>
       </div>
 
       <div class="stop-banner">
@@ -517,7 +520,7 @@
       </div>
       <button id="closeSecondaryGuide" class="manual-close" type="button" aria-label="Close Secondary BSI guide">×</button>
     </div>
-    <iframe class="manual-frame" src="https://www.cdc.gov/nhsn/pdfs/pscmanual/17pscsurveillanceguidance.pdf" title="NHSN Secondary Bloodstream Infection Guide"></iframe>
+    <iframe class="manual-frame" src="./clabsi%20nhsn.pdf" title="CLABSI NHSN Manual — Secondary BSI reference"></iframe>
   </dialog>
 
   <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
