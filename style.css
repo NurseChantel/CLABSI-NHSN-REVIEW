@@ -50,16 +50,83 @@ button{cursor:pointer}
 .header-title-group{min-width:0}
 .header-resource-actions{
   position:absolute;
-  top:11px;
+  top:8px;
   right:24px;
-  display:flex;
-  align-items:flex-start;
-  gap:18px;
+  width:184px;
+  padding-top:17px;
 }
+.library-sign{
+  position:absolute;
+  z-index:2;
+  top:0;
+  left:50%;
+  padding:2px 10px 3px;
+  border:1px solid #8a5a2f;
+  border-radius:5px;
+  background:linear-gradient(#f7df9c,#d7aa58);
+  color:#68401f;
+  box-shadow:0 2px 4px rgba(68,42,20,.2);
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:.58rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  transform:translateX(-50%);
+}
+.library-sign::before,.library-sign::after{
+  content:"";
+  position:absolute;
+  top:-6px;
+  width:1px;
+  height:6px;
+  background:#8a5a2f;
+}
+.library-sign::before{left:15px}
+.library-sign::after{right:15px}
+.library-shelf{
+  position:relative;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:9px;
+  height:76px;
+  padding:5px 17px 8px;
+  border-radius:6px 6px 2px 2px;
+  background:linear-gradient(90deg,#7b4a28,#b87a43 18%,#9a5c31 52%,#c08349 82%,#754225);
+  box-shadow:inset 0 2px rgba(255,255,255,.18),0 5px 8px rgba(49,31,17,.2);
+}
+.library-shelf::after{
+  content:"";
+  position:absolute;
+  right:-7px;
+  bottom:-5px;
+  left:-7px;
+  height:10px;
+  border:1px solid #70401f;
+  border-radius:2px 2px 5px 5px;
+  background:linear-gradient(#c98a4d,#8b512b);
+  box-shadow:0 3px 4px rgba(49,31,17,.24);
+}
+.bookend{
+  position:absolute;
+  z-index:1;
+  bottom:8px;
+  width:10px;
+  height:37px;
+  border:1px solid #91621f;
+  border-bottom:0;
+  background:linear-gradient(90deg,#ddb95c,#9d7226);
+}
+.bookend::after{content:"";position:absolute;bottom:0;width:16px;height:7px;background:#b28432}
+.bookend-left{left:8px;border-radius:8px 1px 0 0}
+.bookend-left::after{left:0}
+.bookend-right{right:8px;border-radius:1px 8px 0 0}
+.bookend-right::after{right:0}
 .manual-book{
+  position:relative;
+  z-index:2;
   display:flex;
   align-items:center;
-  gap:10px;
   padding:0;
   border:0;
   background:transparent;
@@ -82,6 +149,11 @@ button{cursor:pointer}
   transform-origin:left center;
   transition:transform .18s ease,box-shadow .18s ease;
 }
+.clabsi-manual-book .manual-book-cover{
+  border-color:#713849;
+  background:linear-gradient(135deg,#a75168 0%,#77384f 65%,#51283d 100%);
+  transform:perspective(180px) rotateY(-6deg) rotateZ(1.5deg);
+}
 .manual-book-cover::before{
   content:"";
   position:absolute;
@@ -94,7 +166,7 @@ button{cursor:pointer}
 }
 .manual-book-mark{position:absolute;top:0;right:7px;width:8px;height:15px;background:#e5b54d;clip-path:polygon(0 0,100% 0,100% 100%,50% 77%,0 100%)}
 .manual-book-title{margin-left:5px;color:#fff;font-size:.6rem;line-height:1.18;letter-spacing:.04em;text-transform:uppercase}
-.manual-book:hover .manual-book-cover,.manual-book:focus-visible .manual-book-cover{box-shadow:4px 4px 0 #b5dacf,8px 8px 14px rgba(17,48,70,.3),inset 3px 0 rgba(255,255,255,.17);transform:perspective(180px) rotateY(-15deg) rotateZ(-2deg) translateY(-2px)}
+.manual-book:hover .manual-book-cover,.manual-book:focus-visible .manual-book-cover{box-shadow:4px 4px 0 #e6dcc5,8px 8px 14px rgba(17,48,70,.3),inset 3px 0 rgba(255,255,255,.17);transform:perspective(180px) rotateY(-15deg) rotateZ(-2deg) translateY(-4px)}
 .manual-book:focus-visible{outline:3px solid rgba(20,129,109,.3);outline-offset:4px;border-radius:6px}
 .app-header h1{
   margin:0;
@@ -411,8 +483,14 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 @media(max-width:760px){
   html{scroll-padding-top:145px}
   .app-header{padding:11px 13px 8px}
-  .header-resource-actions{top:9px;right:13px;gap:9px}
-  .manual-book{gap:6px}
+  .header-resource-actions{top:7px;right:13px;width:132px;padding-top:14px}
+  .library-sign{padding:1px 7px 2px;font-size:.47rem}
+  .library-shelf{height:58px;gap:5px;padding:4px 13px 7px}
+  .library-shelf::after{right:-4px;bottom:-4px;left:-4px;height:8px}
+  .bookend{bottom:7px;width:8px;height:28px}
+  .bookend::after{width:12px;height:6px}
+  .bookend-left{left:5px}
+  .bookend-right{right:5px}
   .manual-book-cover{width:40px;height:51px}
   .manual-book-title{font-size:.48rem}
   .header-copy{display:none}

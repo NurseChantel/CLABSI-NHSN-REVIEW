@@ -18,20 +18,25 @@
       <p class="header-copy">Review secondary sources first, then evaluate LCBI, central-line association, MBI-LCBI, and exclusions.</p>
     </div>
 
-    <div class="header-resource-actions">
-      <button id="openSecondaryGuide" class="manual-book" type="button" aria-label="Open Secondary BSI guide" aria-haspopup="dialog" aria-controls="secondaryGuideDialog">
-        <span class="manual-book-cover" aria-hidden="true">
-          <span class="manual-book-mark"></span>
-          <span class="manual-book-title">Secondary<br>BSI Guide</span>
-        </span>
-      </button>
+    <div class="header-resource-actions" role="group" aria-label="Reference library">
+      <span class="library-sign" aria-hidden="true">Reference Library</span>
+      <div class="library-shelf">
+        <span class="bookend bookend-left" aria-hidden="true"></span>
+        <button id="openSecondaryGuide" class="manual-book secondary-guide-book" type="button" aria-label="Open Secondary BSI guide" aria-haspopup="dialog" aria-controls="secondaryGuideDialog">
+          <span class="manual-book-cover" aria-hidden="true">
+            <span class="manual-book-mark"></span>
+            <span class="manual-book-title">Secondary<br>BSI Guide</span>
+          </span>
+        </button>
 
-      <button id="openManual" class="manual-book" type="button" aria-label="Open NHSN manual" aria-haspopup="dialog" aria-controls="manualDialog">
-        <span class="manual-book-cover" aria-hidden="true">
-          <span class="manual-book-mark"></span>
-          <span class="manual-book-title">CLABSI<br>Manual</span>
-        </span>
-      </button>
+        <button id="openManual" class="manual-book clabsi-manual-book" type="button" aria-label="Open NHSN manual" aria-haspopup="dialog" aria-controls="manualDialog">
+          <span class="manual-book-cover" aria-hidden="true">
+            <span class="manual-book-mark"></span>
+            <span class="manual-book-title">CLABSI<br>Manual</span>
+          </span>
+        </button>
+        <span class="bookend bookend-right" aria-hidden="true"></span>
+      </div>
     </div>
 
     <nav class="section-nav" aria-label="Review sections">
