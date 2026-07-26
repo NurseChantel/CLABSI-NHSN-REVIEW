@@ -1777,7 +1777,7 @@ function renderSurveillanceWindow() {
     }).format(date);
 
   cultureDateLabel.textContent = formatDate(cultureDate);
-  dateRangeLabel.textContent = `${formatDate(windowStart)} through ${formatDate(windowEnd)}`;
+  dateRangeLabel.textContent = `${formatDate(windowStart)} - ${formatDate(windowEnd)}`;
 }
 
 function setResult(element, status, text) {
