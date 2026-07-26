@@ -1212,6 +1212,7 @@ function renderSiteGuide() {
         } else {
           saved.delete(input.dataset.evidence);
         }
+        updateAll();
       });
     });
 
@@ -1795,12 +1796,100 @@ function renderFinalResult() {
   `;
 }
 
+function buildCalculatorModel() {
+  const lcbi = determineLcbi();
+  const secondary = determineSecondaryStatus();
+  const central = determineCentralLineStatus();
+  const hasSource = Boolean(state.selectedSite);
+  const secondaryComplete = [
+    state.siteDefinitionMet,
+    state.organismRelationship,
+    state.attributionTiming
+  ].every(Boolean);
+
+  const steps = [
+    [state.culturePositive === "yes", "Eligible positive culture confirmed"],
+    [state.organismNames.length > 0, "Culture organism selected"],
+    [hasSource, "Plausible secondary source reviewed"],
+    [secondaryComplete, "Secondary attribution checks completed"],
+    [lcbi.met, "LCBI criterion met"],
+    [central.status !== "incomplete", "Central-line review completed"]
+  ];
+
+  let status = "neutral";
+  let title = "Continue the review";
+  let summary = "Complete the items below to calculate a preliminary classification.";
+  const missing = [];
+
+  if (!hasSource) missing.push("Select the most plausible site-specific infection pathway.");
+  if (!state.siteDefinitionMet) missing.push("Answer whether the complete NHSN site-specific definition is met.");
+  if (!state.organismRelationship) missing.push("Confirm the culture-to-site organism relationship.");
+  if (!state.attributionTiming) missing.push("Confirm the required secondary attribution timing.");
+
+  if (secondary.met) {
+    status = "secondary";
+    title = "Secondary BSI criteria met";
+    summary = "All three required attribution elements are Yes. Do not classify this event as a primary LCBI or CLABSI.";
+  } else if (secondaryComplete && secondary.status === "notMet") {
+    if (!lcbi.met) {
+      status = "warning";
+      title = "Secondary BSI not met — LCBI incomplete";
+      summary = "A secondary source is not established, but the selected culture information does not yet meet an LCBI criterion.";
+      missing.push(lcbi.reason);
+    } else if (central.eligible && state.exclusions.size === 0) {
+      status = "clabsi";
+      title = `Preliminary ${lcbi.criterion} CLABSI`;
+      summary = "LCBI and central-line association are met, secondary BSI is not established, and no CLABSI exclusion is selected.";
+    } else if (central.status === "incomplete") {
+      status = "warning";
+      title = `${lcbi.criterion} met — CLABSI pending`;
+      summary = "Secondary BSI is not established. Complete the central-line questions to determine CLABSI association.";
+      [
+        [state.centralDefinition, "Confirm the device meets the NHSN central-line definition."],
+        [state.centralAccessed, "Confirm placement or access during this admission."],
+        [state.centralDay3, "Confirm the event is on or after central-line day 3."],
+        [state.lineOnDoe, "Confirm an eligible line was present on the DOE or day before."]
+      ].forEach(([answer, text]) => { if (!answer) missing.push(text); });
+    } else {
+      status = "warning";
+      title = `${lcbi.criterion} met — not a reportable CLABSI`;
+      summary = state.exclusions.size
+        ? "Central-line association is present, but a CLABSI exclusion field is selected."
+        : "One or more required central-line association elements is No.";
+    }
+  }
+
+  return { steps, status, title, summary, missing: [...new Set(missing)] };
+}
+
+function renderCalculator() {
+  const progress = document.getElementById("calculatorProgress");
+  const outcome = document.getElementById("calculatorOutcome");
+  const nextSteps = document.getElementById("calculatorNextSteps");
+  if (!progress || !outcome || !nextSteps) return;
+
+  const model = buildCalculatorModel();
+  const completed = model.steps.filter(([done]) => done).length;
+  progress.innerHTML = `
+    <strong>${completed} of ${model.steps.length} review items completed</strong>
+    <ul>${model.steps.map(([done, label]) => `
+      <li class="${done ? "done" : "pending"}"><span aria-hidden="true"></span>${escapeHtml(label)}</li>
+    `).join("")}</ul>`;
+
+  outcome.className = `calculator-outcome ${model.status}`;
+  outcome.innerHTML = `<strong>${escapeHtml(model.title)}</strong><p>${escapeHtml(model.summary)}</p>`;
+  nextSteps.innerHTML = model.missing.length
+    ? `<h3>What is still needed</h3><ul>${model.missing.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : `<p class="calculator-complete">All required calculator inputs for this determination are complete.</p>`;
+}
+
 function updateAll() {
   renderSurveillanceWindow();
   renderOrganismSuggestions();
   renderSecondaryConclusion();
   renderLcbiResult();
   renderFinalResult();
+  renderCalculator();
 }
 
 function renderSurveillanceWindow() {
