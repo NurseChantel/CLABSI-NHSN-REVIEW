@@ -123,7 +123,15 @@
             <input id="organismSearch" type="search" placeholder="Start typing to find an organism" autocomplete="off" aria-controls="organismName" aria-describedby="organismSearchStatus">
             <span id="organismSearchStatus" class="organism-search-status" role="status" aria-live="polite"></span>
           </div>
-          <select id="organismName" class="organism-select" multiple size="12">
+          <div class="organism-selection-heading">
+            <span>Select all that apply</span>
+            <strong id="organismSelectionCount">0 selected</strong>
+          </div>
+          <div id="organismChecklist" class="organism-checklist" role="group" aria-label="Organisms; select all that apply"></div>
+          <div id="selectedOrganisms" class="selected-organisms" aria-live="polite">
+            <span class="selected-organisms-empty">No organisms selected</span>
+          </div>
+          <select id="organismName" class="visually-hidden" multiple tabindex="-1" aria-hidden="true">
             <optgroup label="Common Commensals">
               <option value="Aerococcus species">Aerococcus species</option>
               <option value="Bacillus species (not B. anthracis)">Bacillus species (not B. anthracis)</option>
