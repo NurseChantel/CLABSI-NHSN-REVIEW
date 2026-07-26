@@ -385,31 +385,31 @@
 
       <h3>
         MBI host and organism factors
-        <button class="definition" type="button" data-tooltip="MBI-LCBI requires the corresponding LCBI criterion, an eligible organism pattern, and a qualifying host factor." aria-label="MBI-LCBI definition">i</button>
+        <button class="definition" type="button" data-tooltip="MBI-LCBI requires an LCBI criterion, an eligible MBI organism pattern, and either the NHSN neutropenia pathway or the qualifying allogeneic-HSCT pathway." aria-label="MBI-LCBI definition">i</button>
       </h3>
 
       <div class="check-grid">
-        <label><input type="checkbox" data-state="neutropenia"> Neutropenia criterion documented <span class="inline-info" data-tooltip="Verify the required ANC and/or WBC values on the required separate days in the qualifying period.">i</span></label>
-        <label><input type="checkbox" data-state="transplant"> Allogeneic HSCT within the past year <span class="inline-info" data-tooltip="This host pathway also requires the applicable GI GVHD or qualifying diarrhea condition.">i</span></label>
-        <label><input type="checkbox" data-state="gvhd"> Grade III or IV GI GVHD <span class="inline-info" data-tooltip="Confirm the grade and timing in the medical record.">i</span></label>
-        <label><input type="checkbox" data-state="diarrhea"> Qualifying diarrhea documented <span class="inline-info" data-tooltip="Verify the required volume and timing in the current NHSN protocol.">i</span></label>
-        <label><input type="checkbox" data-state="mbiOrganisms"> Only eligible MBI organisms present <span class="inline-info" data-tooltip="Confirm every organism against the current NHSN MBI organism list.">i</span></label>
-        <label><input type="checkbox" data-state="vgsRothia"> VGS and/or Rothia-only commensal event <span class="inline-info" data-tooltip="This applies to the corresponding common-commensal MBI-LCBI pathway.">i</span></label>
+        <label><input type="checkbox" data-state="neutropenia"> Neutropenia criterion documented <span class="inline-info" data-tooltip="NHSN neutropenia: at least 2 separate days with ANC and/or total WBC below 500 cells/mm³ during the 7-day period that includes the blood-specimen date, the 3 calendar days before, and the 3 calendar days after.">i</span></label>
+        <label><input type="checkbox" data-state="transplant"> Allogeneic HSCT within the past year <span class="inline-info" data-tooltip="The allogeneic hematopoietic stem-cell transplant must have occurred within the past year. This pathway also requires grade III or IV gastrointestinal GVHD or qualifying diarrhea.">i</span></label>
+        <label><input type="checkbox" data-state="gvhd"> Grade III or IV GI GVHD <span class="inline-info" data-tooltip="Document grade III or IV gastrointestinal graft-versus-host disease during the same hospitalization as the positive blood specimen.">i</span></label>
+        <label><input type="checkbox" data-state="diarrhea"> Qualifying diarrhea documented <span class="inline-info" data-tooltip="NHSN qualifying diarrhea: at least 1 liter in a 24-hour period (or at least 20 mL/kg in 24 hours for patients under 18) with onset on or within the 7 calendar days before the positive blood specimen.">i</span></label>
+        <label><input type="checkbox" data-state="mbiOrganisms"> Only eligible MBI organisms present <span class="inline-info" data-tooltip="MBI-LCBI 1 organisms: Bacteroides spp., Candida spp., Clostridium spp., Enterococcus spp., Fusobacterium spp., Peptostreptococcus spp., Prevotella spp., Veillonella spp., and organisms of the order Enterobacterales. No other organisms may be identified in the blood specimen.">i</span></label>
+        <label><input type="checkbox" data-state="vgsRothia"> VGS and/or Rothia-only commensal event <span class="inline-info" data-tooltip="For MBI-LCBI 2 or 3, the same viridans-group Streptococcus and/or Rothia species must be identified in at least 2 blood specimens collected on separate occasions. No other organisms may be identified.">i</span></label>
       </div>
 
       <h3>
         CLABSI exclusion fields
-        <button class="definition" type="button" data-tooltip="Some qualifying LCBIs are reported with an exclusion field and are not counted as central-line associated for SIR purposes." aria-label="CLABSI exclusions definition">i</button>
+        <button class="definition" type="button" data-tooltip="These are NHSN CLABSI exclusion fields, not alternatives to the LCBI criteria. Apply an exclusion only when its complete definition is met; the event remains an LCBI but is not reported as central-line associated." aria-label="CLABSI exclusions definition">i</button>
       </h3>
 
       <div class="check-grid">
-        <label><input type="checkbox" data-exclusion="ECMO/ECLS"> ECMO/ECLS exclusion <span class="inline-info" data-tooltip="Confirm device presence and the required duration.">i</span></label>
-        <label><input type="checkbox" data-exclusion="VAD"> Ventricular assist device exclusion <span class="inline-info" data-tooltip="Confirm device presence and the required duration.">i</span></label>
-        <label><input type="checkbox" data-exclusion="Total artificial heart"> Total artificial heart exclusion <span class="inline-info" data-tooltip="Confirm device presence and the required duration.">i</span></label>
-        <label><input type="checkbox" data-exclusion="Patient injection"> Observed or suspected patient injection <span class="inline-info" data-tooltip="Confirm the event occurred during the applicable BSI infection window period.">i</span></label>
-        <label><input type="checkbox" data-exclusion="Epidermolysis bullosa"> Eligible epidermolysis bullosa exclusion <span class="inline-info" data-tooltip="Confirm all protocol requirements before selecting.">i</span></label>
-        <label><input type="checkbox" data-exclusion="Factitious disorder imposed on another"> Factitious disorder imposed on another <span class="inline-info" data-tooltip="Confirm known or suspected documentation under the current protocol.">i</span></label>
-        <label><input type="checkbox" data-exclusion="Other vascular access site"> Pus at another eligible vascular-access site <span class="inline-info" data-tooltip="Confirm a matching organism and all current protocol requirements.">i</span></label>
+        <label><input type="checkbox" data-exclusion="ECMO/ECLS"> ECMO/ECLS exclusion <span class="inline-info" data-tooltip="Select when extracorporeal life support (ECMO/ECLS) has been in place for more than 2 consecutive calendar days on the LCBI date of event and is still in place that day or the day before.">i</span></label>
+        <label><input type="checkbox" data-exclusion="VAD"> Ventricular assist device exclusion <span class="inline-info" data-tooltip="Select when a ventricular assist device has been in place for more than 2 consecutive calendar days on the LCBI date of event and is still in place that day or the day before.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Total artificial heart"> Total artificial heart exclusion <span class="inline-info" data-tooltip="Select when a total artificial heart has been in place for more than 2 consecutive calendar days on the LCBI date of event and is still in place that day or the day before.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Patient injection"> Observed or suspected patient injection <span class="inline-info" data-tooltip="Select when the patient is observed or suspected to have injected into the vascular-access line during the BSI infection window period. Base suspicion on documented clinical evidence.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Epidermolysis bullosa"> Eligible epidermolysis bullosa exclusion <span class="inline-info" data-tooltip="Select only when the patient has epidermolysis bullosa and the NHSN organism and documentation requirements for this CLABSI exclusion are met.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Factitious disorder imposed on another"> Factitious disorder imposed on another <span class="inline-info" data-tooltip="Select when factitious disorder imposed on another is documented or suspected as the cause of line manipulation during the BSI infection window period, following the NHSN protocol requirements.">i</span></label>
+        <label><input type="checkbox" data-exclusion="Other vascular access site"> Pus at another eligible vascular-access site <span class="inline-info" data-tooltip="Select when pus is documented at another vascular-access site and an organism from that site matches an organism identified in blood; apply the NHSN eligible-site and timing requirements.">i</span></label>
       </div>
     </section>
 
