@@ -662,15 +662,76 @@ function bindInputs() {
       renderSurveillanceWindow();
     });
 
-  document
-    .getElementById("organismName")
-    .addEventListener("change", (event) => {
-      state.organismNames = Array.from(event.target.selectedOptions).map(
-        (option) => option.value
-      );
-      applyOrganismCategory();
-      updateAll();
+  buildOrganismChecklist();
+}
+
+function buildOrganismChecklist() {
+  const select = document.getElementById("organismName");
+  const checklist = document.getElementById("organismChecklist");
+
+  Array.from(select.children).forEach((group) => {
+    const section = document.createElement("div");
+    section.className = "organism-checklist-group";
+    section.dataset.group = group.label;
+
+    const heading = document.createElement("div");
+    heading.className = "organism-checklist-group-title";
+    heading.textContent = group.label;
+    section.appendChild(heading);
+
+    Array.from(group.children).forEach((option) => {
+      const label = document.createElement("label");
+      label.className = "organism-checklist-option";
+      label.dataset.searchText = option.text.toLowerCase();
+      label.innerHTML = `
+        <input type="checkbox" value="${escapeHtml(option.value)}" aria-label="${escapeHtml(option.text)}">
+        <span class="organism-checkmark" aria-hidden="true">✓</span>
+        <span>${escapeHtml(option.text)}</span>
+      `;
+
+      label.querySelector("input").addEventListener("change", (event) => {
+        option.selected = event.target.checked;
+        syncOrganismSelection();
+      });
+      section.appendChild(label);
     });
+
+    checklist.appendChild(section);
+  });
+}
+
+function syncOrganismSelection() {
+  const select = document.getElementById("organismName");
+  const selected = document.getElementById("selectedOrganisms");
+  const count = document.getElementById("organismSelectionCount");
+
+  state.organismNames = Array.from(select.selectedOptions).map((option) => option.value);
+  count.textContent = `${state.organismNames.length} selected`;
+
+  if (!state.organismNames.length) {
+    selected.innerHTML = '<span class="selected-organisms-empty">No organisms selected</span>';
+  } else {
+    selected.innerHTML = state.organismNames.map((organism) => `
+      <span class="selected-organism-chip">
+        ${escapeHtml(organism)}
+        <button type="button" data-remove-organism="${escapeHtml(organism)}" aria-label="Remove ${escapeHtml(organism)}">×</button>
+      </span>
+    `).join("");
+
+    selected.querySelectorAll("[data-remove-organism]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const value = button.dataset.removeOrganism;
+        const option = Array.from(select.options).find((item) => item.value === value);
+        const checkbox = Array.from(document.querySelectorAll("#organismChecklist input")).find((input) => input.value === value);
+        option.selected = false;
+        checkbox.checked = false;
+        syncOrganismSelection();
+      });
+    });
+  }
+
+  applyOrganismCategory();
+  updateAll();
 }
 
 function bindOrganismSearch() {
@@ -686,19 +747,16 @@ function bindOrganismSearch() {
     const query = search.value.trim().toLowerCase();
     let visibleCount = 0;
 
-    Array.from(select.options).forEach((option) => {
-      const matches = !query || option.text.toLowerCase().includes(query);
-
+    document.querySelectorAll(".organism-checklist-option").forEach((option) => {
+      const matches = !query || option.dataset.searchText.includes(query);
       option.hidden = !matches;
       if (matches) {
         visibleCount += 1;
       }
     });
 
-    Array.from(select.querySelectorAll("optgroup")).forEach((group) => {
-      group.hidden = !Array.from(group.options).some(
-        (option) => !option.hidden
-      );
+    document.querySelectorAll(".organism-checklist-group").forEach((group) => {
+      group.hidden = !Array.from(group.querySelectorAll(".organism-checklist-option")).some((option) => !option.hidden);
     });
 
     status.textContent = query
@@ -710,7 +768,7 @@ function bindOrganismSearch() {
   search.addEventListener("keydown", (event) => {
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      select.focus();
+      document.querySelector(".organism-checklist-option:not([hidden]) input")?.focus();
     }
   });
 }
@@ -812,11 +870,15 @@ function resetBloodSection() {
   state.organismNames = [];
   state.symptoms.clear();
   document.getElementById("organismName").selectedIndex = -1;
+  document.querySelectorAll("#organismChecklist input").forEach((input) => {
+    input.checked = false;
+  });
   document.getElementById("organismSearch").value = "";
   document.getElementById("organismSearchStatus").textContent = "";
-  document.querySelectorAll("#organismName option, #organismName optgroup").forEach((item) => {
+  document.querySelectorAll(".organism-checklist-option, .organism-checklist-group").forEach((item) => {
     item.hidden = false;
   });
+  syncOrganismSelection();
   setChoiceValue("patientAge", "adult");
   setChoiceValue("culturePositive", "");
   renderSymptoms();
