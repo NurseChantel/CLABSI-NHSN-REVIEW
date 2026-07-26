@@ -392,6 +392,8 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 .site-button-grid button{text-align:left}
 .site-button-grid button.suggested{position:relative;border-color:var(--green);background:var(--green-soft);color:var(--green-dark)}
 .site-button-grid button.suggested::after{content:"Suggested";display:block;margin-top:2px;color:var(--green-dark);font-size:.6rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.site-button-grid button.suggested.selected{border-color:var(--green-dark);background:var(--green-dark);color:#fff}
+.site-button-grid button.suggested.selected::after{color:#fff}
 .site-button-grid button.not-suggested{opacity:.58}
 .site-button-grid button.selected{opacity:1}
 
