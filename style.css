@@ -301,6 +301,7 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 .organism-checklist{max-height:270px;overflow-y:auto;border:1px solid var(--border-dark);border-radius:8px;background:#fff}
 .organism-checklist-group-title{position:sticky;top:0;z-index:1;padding:6px 10px;border-bottom:1px solid var(--border);background:#eef3f7;color:var(--navy);font-size:.68rem;font-weight:900;letter-spacing:.045em;text-transform:uppercase}
 .organism-checklist-option{display:flex;align-items:center;gap:8px;min-height:33px;padding:4px 10px;border-bottom:1px solid #edf1f4;color:var(--text);cursor:pointer}
+.organism-checklist-option[hidden]{display:none}
 .organism-checklist-option:last-child{border-bottom:0}
 .organism-checklist-option:hover{background:var(--green-soft)}
 .organism-checklist-option input{position:absolute;opacity:0;pointer-events:none}
