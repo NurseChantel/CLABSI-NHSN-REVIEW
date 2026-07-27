@@ -463,46 +463,8 @@ const organismHints = [
   }
 ];
 
-const commensalOrganisms = new Set([
-  "Aerococcus species",
-  "Bacillus species (not B. anthracis)",
-  "Corynebacterium species",
-  "Cutibacterium species",
-  "Micrococcus species",
-  "Rhodococcus species",
-  "Staphylococcus, coagulase negative",
-  "Viridans group streptococci"
-]);
-
 const coagulaseNegativeStaphylococciDefinition =
   "Coagulase-negative Staphylococcus species include: S. arlettae, S. auricularis, S. capitis, S. caprae, S. carnosus, S. chromogenes, S. cohnii, S. condimenti, S. epidermidis, S. equorum, S. felis, S. haemolyticus, S. hominis, S. kloosii, S. lentus, S. lugdunensis, S. pasteuri, S. pettenkoferi, S. piscifermentans, S. saccharolyticus, S. saprophyticus, S. schleiferi, S. sciuri, S. simulans, S. succinus, S. vitulinus, S. warneri, and S. xylosus. Confirm the laboratory identification and current NHSN Terminology Browser classification when reporting.";
-
-const recognizedPathogens = new Set([
-  "Acinetobacter species",
-  "Bacteroides species",
-  "Candida albicans",
-  "Candida species",
-  "Candida auris",
-  "Candida glabrata",
-  "Candida parapsilosis",
-  "Candida tropicalis",
-  "Enterobacter species",
-  "Enterococcus faecalis",
-  "Enterococcus faecium",
-  "Enterococcus species",
-  "Escherichia coli",
-  "Klebsiella pneumoniae",
-  "Klebsiella species",
-  "Proteus mirabilis",
-  "Pseudomonas aeruginosa",
-  "Serratia marcescens",
-  "Staphylococcus aureus",
-  "Stenotrophomonas maltophilia",
-  "Streptococcus agalactiae",
-  "Streptococcus pneumoniae",
-  "Other bacterial recognized pathogen",
-  "Other fungal recognized pathogen"
-]);
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -743,7 +705,6 @@ function syncOrganismSelection() {
     });
   }
 
-  applyOrganismCategory();
   updateAll();
 }
 
@@ -784,34 +745,6 @@ function bindOrganismSearch() {
       document.querySelector(".organism-checklist-option:not([hidden]) input")?.focus();
     }
   });
-}
-
-function applyOrganismCategory() {
-  let category = "";
-
-  if (state.organismNames.some((organism) => recognizedPathogens.has(organism))) {
-    category = "recognized";
-  } else if (
-    state.organismNames.length > 0 &&
-    state.organismNames.every((organism) => commensalOrganisms.has(organism))
-  ) {
-    category = "commensal";
-  }
-
-  state.organismCategory = category;
-
-  document
-    .querySelectorAll('[data-name="organismCategory"] button')
-    .forEach((button) => {
-      button.classList.toggle(
-        "selected",
-        button.dataset.value === category
-      );
-    });
-
-  document
-    .getElementById("commensalQuestions")
-    .classList.toggle("hidden", category !== "commensal");
 }
 
 function bindCheckboxes() {
@@ -895,7 +828,6 @@ function resetBloodSection() {
   setChoiceValue("patientAge", "adult");
   setChoiceValue("culturePositive", "");
   renderSymptoms();
-  applyOrganismCategory();
   updateAll();
 }
 
