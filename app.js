@@ -474,6 +474,9 @@ const commensalOrganisms = new Set([
   "Viridans group streptococci"
 ]);
 
+const coagulaseNegativeStaphylococciDefinition =
+  "Coagulase-negative Staphylococcus species include: S. arlettae, S. auricularis, S. capitis, S. caprae, S. carnosus, S. chromogenes, S. cohnii, S. condimenti, S. epidermidis, S. equorum, S. felis, S. haemolyticus, S. hominis, S. kloosii, S. lentus, S. lugdunensis, S. pasteuri, S. pettenkoferi, S. piscifermentans, S. saccharolyticus, S. saprophyticus, S. schleiferi, S. sciuri, S. simulans, S. succinus, S. vitulinus, S. warneri, and S. xylosus. Confirm the laboratory identification and current NHSN Terminology Browser classification when reporting.";
+
 const recognizedPathogens = new Set([
   "Acinetobacter species",
   "Bacteroides species",
@@ -683,10 +686,20 @@ function buildOrganismChecklist() {
       const label = document.createElement("label");
       label.className = "organism-checklist-option";
       label.dataset.searchText = option.text.toLowerCase();
+      const isCoagulaseNegativeStaphylococcus =
+        option.value === "Staphylococcus, coagulase negative";
       label.innerHTML = `
         <input type="checkbox" value="${escapeHtml(option.value)}" aria-label="${escapeHtml(option.text)}">
         <span class="organism-checkmark" aria-hidden="true">✓</span>
-        <span>${escapeHtml(option.text)}</span>
+        <span class="organism-option-name">${escapeHtml(option.text)}</span>
+        ${isCoagulaseNegativeStaphylococcus ? `
+          <button
+            class="definition organism-definition"
+            type="button"
+            data-tooltip="${escapeHtml(coagulaseNegativeStaphylococciDefinition)}"
+            aria-label="Coagulase-negative Staphylococcus species definition"
+          >i</button>
+        ` : ""}
       `;
 
       label.querySelector("input").addEventListener("change", (event) => {
