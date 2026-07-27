@@ -248,6 +248,10 @@ button{cursor:pointer}
 }
 .section-heading h2{margin:0;color:var(--navy);font-size:1.22rem;letter-spacing:-.02em}
 .section-heading p{margin:2px 0 0;color:var(--muted);font-size:.82rem}
+.organism-lcbi-screen{margin-top:20px;padding-top:18px;border-top:2px solid #e4ecea}
+.subsection-heading{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.subsection-heading h3{margin:0;color:var(--navy);font-size:1rem}
+.subsection-heading p{margin:3px 0 0;color:var(--muted);font-size:.78rem}
 .section-reset{
   flex:0 0 auto;
   min-height:27px;
