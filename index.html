@@ -42,8 +42,8 @@
     <nav class="section-nav" aria-label="Review sections">
       <a href="#culture">Culture</a>
       <a href="#organism">Organism</a>
-      <a href="#secondary">Secondary BSI</a>
       <a href="#lcbi">LCBI</a>
+      <a href="#secondary">Secondary BSI</a>
       <a href="#line">Central Line</a>
       <a href="#mbi">MBI</a>
       <a href="#result">Result</a>
@@ -232,6 +232,18 @@
         </h3>
         <div id="symptomChoices" class="check-grid"></div>
       </div>
+
+      <div class="organism-lcbi-screen" id="lcbi">
+        <div class="subsection-heading">
+          <div>
+            <h3>Preliminary LCBI screen</h3>
+            <p>The result remains preliminary until secondary attribution has been resolved.</p>
+          </div>
+          <button class="section-reset" type="button" data-reset-section="lcbi" aria-label="Reset preliminary LCBI inputs">Reset</button>
+        </div>
+
+        <div id="lcbiResult" class="mini-result neutral">Complete culture and organism questions.</div>
+      </div>
     </section>
 
     <section class="review-card secondary-card" id="secondary">
@@ -310,22 +322,9 @@
       </div>
     </section>
 
-    <section class="review-card" id="lcbi">
-      <div class="section-heading">
-        <span class="section-number">04</span>
-        <div>
-          <h2>Preliminary LCBI screen</h2>
-          <p>The result remains preliminary until secondary attribution has been resolved.</p>
-        </div>
-        <button class="section-reset" type="button" data-reset-section="lcbi" aria-label="Reset preliminary LCBI inputs">Reset</button>
-      </div>
-
-      <div id="lcbiResult" class="mini-result neutral">Complete culture and organism questions.</div>
-    </section>
-
     <section class="review-card" id="line">
       <div class="section-heading">
-        <span class="section-number">05</span>
+        <span class="section-number">04</span>
         <div>
           <h2>Central-line association</h2>
           <p>Evaluate device definition, access, duration, and timing.</p>
@@ -382,7 +381,7 @@
 
     <section class="review-card" id="mbi">
       <div class="section-heading">
-        <span class="section-number">06</span>
+        <span class="section-number">05</span>
         <div>
           <h2>MBI-LCBI and exclusions</h2>
           <p>Screen only after an LCBI criterion is met.</p>
@@ -422,7 +421,7 @@
 
     <section class="review-card result-card" id="result">
       <div class="section-heading">
-        <span class="section-number">07</span>
+        <span class="section-number">06</span>
         <div>
           <h2>Preliminary determination</h2>
           <p>The result updates automatically as the review is completed.</p>
