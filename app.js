@@ -95,7 +95,7 @@ const siteLibrary = {
           ],
           [
             "cultureAllowed",
-            "culture organism is permitted for the selected PNEU pathway."
+            "Blood culture organism is eligible for secondary BSI attribution."
           ],
           [
             "viralEvidence",
@@ -195,7 +195,7 @@ const siteLibrary = {
           ],
           [
             "diagnosis",
-            "Eligible physician or designee diagnosis when permitted by the criterion."
+            "Physician diagnosis permitted by selected SSI criterion."
           ],
           [
             "cultureMatch",
@@ -237,11 +237,11 @@ const siteLibrary = {
         items: [
           [
             "cultureMatch",
-            "culture organism matches the eligible site organism."
+            "Blood culture organism matches the qualifying site organism."
           ],
           [
             "cultureElement",
-            "culture organism can be used as an element of the selected site-specific criterion."
+            "Blood culture organism is eligible for secondary BSI attribution."
           ],
           [
             "necException",
@@ -309,7 +309,7 @@ const siteLibrary = {
           ],
           [
             "cultureMatch",
-            "culture organism relationship is permitted for the selected criterion."
+            "Blood culture organism is eligible for secondary BSI attribution."
           ]
         ]
       }
@@ -334,11 +334,11 @@ const siteLibrary = {
           ],
           [
             "culturePattern",
-            "Required culture-culture pattern and eligible organisms."
+            "Required blood culture pattern and eligible organism(s)"
           ],
           [
             "device",
-            "Eligible cardiovascular device, graft, or operative site reviewed."
+            "Eligible cardiovascular device, graft, or operative site evaluated."
           ],
           [
             "siteSpecimen",
@@ -363,7 +363,7 @@ const siteLibrary = {
           ],
           [
             "csf",
-            "Eligible CSF findings and microbiology."
+            "Eligible CSF findings, culture, or other microbiology."
           ],
           ["imaging", "Qualifying neuroimaging."],
           [
@@ -372,7 +372,7 @@ const siteLibrary = {
           ],
           [
             "cultureRelationship",
-            "culture organism is permitted by the selected CNS definition."
+            "Blood culture organism is eligible for secondary BSI attribution."
           ]
         ]
       }
