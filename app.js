@@ -1715,10 +1715,20 @@ function buildFinalDetermination() {
 
   const details = [];
 
-  details.push({
-    label: "LCBI review",
-    text: `${lcbi.label}. ${lcbi.reason}`
-  });
+  const hasLcbiSelection = Boolean(
+    state.culturePositive ||
+    state.organismNames.length ||
+    state.commensalMatch ||
+    state.separateOccasions ||
+    state.symptoms.size
+  );
+
+  if (hasLcbiSelection) {
+    details.push({
+      label: "LCBI review",
+      text: `${lcbi.label}. ${lcbi.reason}`
+    });
+  }
 
   if (siteEvidence.selected) {
     details.push({
@@ -1728,43 +1738,37 @@ function buildFinalDetermination() {
         `${siteEvidence.checkedCount} of ` +
         `${siteEvidence.totalCount} directional evidence prompts checked.`
     });
-  } else {
+  }
+
+  if (siteEvidence.selected || state.organismRelationship || state.attributionTiming) {
     details.push({
-      label: "Selected suspected source",
+      label: "Secondary BSI review",
       text:
-        "No site-specific review card has been selected."
+        `${secondary.label}. ${secondary.reason}`
     });
   }
 
-  details.push({
-    label: "Secondary BSI review",
-    text:
-      `${secondary.label}. ${secondary.reason}`
-  });
+  if (state.centralDefinition || state.centralAccessed || state.centralDay3 || state.lineOnDoe) {
+    details.push({
+      label: "Central-line review",
+      text:
+        `${centralLine.label}. ${centralLine.reason}`
+    });
+  }
 
-  details.push({
-    label: "Central-line review",
-    text:
-      `${centralLine.label}. ${centralLine.reason}`
-  });
-
-  details.push({
-    label: "MBI-LCBI review",
-    text:
-      `${mbi.label}. ${mbi.reason}`
-  });
+  if (Object.values(state.mbi).some(Boolean)) {
+    details.push({
+      label: "MBI-LCBI review",
+      text:
+        `${mbi.label}. ${mbi.reason}`
+    });
+  }
 
   if (state.exclusions.size > 0) {
     details.push({
       label: "Selected exclusion fields",
       text:
         `${exclusion.label}. ${exclusion.reason}`
-    });
-  } else {
-    details.push({
-      label: "Selected exclusion fields",
-      text:
-        "None selected."
     });
   }
 
@@ -1865,7 +1869,7 @@ function renderFinalResult() {
     result.title
   );
 
-  detailsBox.innerHTML = `
+  detailsBox.innerHTML = result.details.length ? `
     <ul>
       ${result.details
         .map(
@@ -1877,16 +1881,8 @@ function renderFinalResult() {
           `
         )
         .join("")}
-
-      <li>
-        <strong>Required confirmation:</strong>
-        Confirm exact organism eligibility, required criterion combinations,
-        infection window period, date of event, repeat infection timeframe,
-        secondary BSI attribution period, device timing, and exclusions
-        against the current NHSN protocol.
-      </li>
     </ul>
-  `;
+  ` : "";
 }
 
 function buildCalculatorModel() {
@@ -2085,11 +2081,6 @@ function copySummary() {
   result.details.forEach((item) => {
     lines.push(`${item.label}: ${item.text}`);
   });
-
-  lines.push("");
-  lines.push(
-    "Required confirmation: Confirm exact organism eligibility, required criterion combinations, infection window period, date of event, repeat infection timeframe, secondary BSI attribution period, device timing, and exclusions against the current NHSN protocol."
-  );
 
   const summary = lines.join("\n");
 
