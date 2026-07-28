@@ -1,103 +1,77 @@
-const NOISE_WORDS = [
-  "abnormal", "positive", "detected", "isolated", "critical",
-  "final", "preliminary", "culture", "result", "report",
-  "organism", "growth", "heavy", "moderate", "light", "rare"
-];
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+/** Search helpers for the NHSN/SNOMED organism data files. */
 
 export function normalizeOrganismText(value = "") {
-  let text = String(value)
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-  for (const word of NOISE_WORDS) {
-    text = text.replace(new RegExp(`\\b${escapeRegExp(word)}\\b`, "g"), " ");
-  }
-
-  return text
-    .replace(/&/g, " and ")
-    .replace(/\bsp\.\b/g, " species ")
-    .replace(/\bspp\.\b/g, " species ")
+  return String(value)
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/\s*\(organism\)\s*$/u, "")
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-export function tokenize(value = "") {
-  return [...new Set(normalizeOrganismText(value).split(" ").filter(Boolean))];
-}
-
-function getSearchableText(organism) {
-  return normalizeOrganismText([
-    organism.canonicalName,
-    organism.displayName,
-    ...(organism.aliases || []),
-    ...(organism.searchTerms || []),
-    organism.taxonomy?.currentGenus || "",
-    ...(organism.taxonomy?.formerGenus || []),
-    organism.taxonomy?.species || ""
-  ].join(" "));
-}
-
-function scoreOrganism(query, organism) {
-  const normalizedQuery = normalizeOrganismText(query);
-  if (!normalizedQuery) return 0;
-
-  const queryTokens = tokenize(query);
-  const canonical = normalizeOrganismText(organism.canonicalName);
-  const display = normalizeOrganismText(organism.displayName);
-  const aliases = (organism.aliases || []).map(normalizeOrganismText);
-  const searchable = getSearchableText(organism);
-
-  let score = 0;
-
-  if (canonical === normalizedQuery) score += 120;
-  if (display === normalizedQuery) score += 115;
-  if (aliases.includes(normalizedQuery)) score += 110;
-
-  if (canonical.includes(normalizedQuery)) score += 75;
-  if (display.includes(normalizedQuery)) score += 70;
-  if (aliases.some(alias => alias.includes(normalizedQuery))) score += 65;
-
-  const matchedTokens = queryTokens.filter(token => searchable.includes(token));
-  score += matchedTokens.length * 12;
-
-  if (queryTokens.length && matchedTokens.length === queryTokens.length) {
-    score += 35;
+function validateLookup(data) {
+  if (!data || !Array.isArray(data.organisms)) {
+    throw new Error("Invalid synonym lookup: missing organisms array.");
   }
 
-  return score;
+  return data.organisms.map((item) => ({
+    snomedCode: String(item.snomed_code),
+    preferredTerm: item.preferred_term,
+    normalizedPreferredTerm: normalizeOrganismText(item.preferred_term),
+    normalizedTerms: [...new Set([
+      item.preferred_term,
+      ...(item.synonyms || []),
+      ...(item.normalized_synonyms || [])
+    ].map(normalizeOrganismText).filter(Boolean))]
+  }));
 }
 
-export function searchOrganisms(query, organisms, options = {}) {
-  const { limit = 10, minimumScore = 20 } = options;
-
-  return organisms
-    .map(organism => ({ organism, score: scoreOrganism(query, organism) }))
-    .filter(result => result.score >= minimumScore)
-    .sort((a, b) =>
-      b.score - a.score ||
-      a.organism.displayName.localeCompare(b.organism.displayName)
-    )
-    .slice(0, limit);
-}
-
-export async function loadOrganismDatabase(url = "./organisms.json") {
+export async function loadSynonymLookup(url = "./synonym_lookup.json") {
   const response = await fetch(url, { cache: "no-store" });
-
   if (!response.ok) {
-    throw new Error(`Unable to load organism database (${response.status}).`);
+    throw new Error(`Unable to load organism synonym lookup (${response.status}).`);
   }
+  return validateLookup(await response.json());
+}
 
-  const database = await response.json();
+/**
+ * Exact synonym matches are returned first, followed by prefix and substring
+ * matches. Results are distinct by SNOMED code, so an ambiguous synonym keeps
+ * every possible organism available for an explicit user selection.
+ */
+export function searchOrganisms(query, organisms, { limit = 15 } = {}) {
+  const normalizedQuery = normalizeOrganismText(query);
+  if (!normalizedQuery) return [];
 
-  if (!Array.isArray(database.organisms)) {
-    throw new Error("Invalid organism database: missing organisms array.");
+  const sorted = organisms
+    .map((organism) => {
+      const terms = organism.normalizedTerms || [];
+      let rank = 0;
+      if (terms.includes(normalizedQuery)) rank = 3;
+      else if (terms.some((term) => term.startsWith(normalizedQuery))) rank = 2;
+      else if (terms.some((term) => term.includes(normalizedQuery))) rank = 1;
+      return { organism, rank };
+    })
+    .filter(({ rank }) => rank > 0)
+    .sort((a, b) =>
+      b.rank - a.rank ||
+      a.organism.preferredTerm.localeCompare(b.organism.preferredTerm) ||
+      a.organism.snomedCode.localeCompare(b.organism.snomedCode)
+    );
+  const exactCount = sorted.filter(({ rank }) => rank === 3).length;
+  return sorted.slice(0, Math.max(limit, exactCount));
+}
+
+/** Lazily fetch the optional detail dataset; search does not depend on it. */
+export async function loadOrganismDetails(url = "./organisms.json") {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Unable to load organism details (${response.status}).`);
   }
-
-  return database;
+  const data = await response.json();
+  if (!data || !Array.isArray(data.organisms)) {
+    throw new Error("Invalid organism detail database: missing organisms array.");
+  }
+  return data.organisms;
 }
