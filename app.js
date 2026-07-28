@@ -1,4 +1,9 @@
+import { loadOrganismDatabase, searchOrganisms } from "./organism-search.js";
+
 "use strict";
+
+let organismDatabase = [];
+let organismDatabaseAvailable = false;
 
 const state = {
   cultureOrganismDate: "",
@@ -460,12 +465,12 @@ const organismRecordDefinitions = {
   "Viridans group streptococci": record("viridans-group-streptococci", "common-commensal", ["cardiovascular", "other"], { mbiEligible: true, vgsRothia: true, specialRule: "VGS may qualify for the special MBI-LCBI 2/3 organism pathway when all NHSN requirements are met." })
 };
 
-const organismRecords = Object.freeze(Object.fromEntries(
+let organismRecords = Object.fromEntries(
   Object.entries(organismRecordDefinitions).map(([displayName, item]) => [
     displayName,
-    Object.freeze({ ...item, displayName })
+    { ...item, displayName }
   ])
-));
+);
 
 function record(id, classification, suggestedPathways, flags = {}) {
   return { id, classification, suggestedPathways, priorityPathways: suggestedPathways, guidance: suggestedPathways.length ? "Review the highlighted organism-associated starting pathways and every other clinically plausible site." : NO_PATHWAY_GUIDANCE, mbiEligible: false, vgsRothia: false, specialRule: "", ...flags };
@@ -490,6 +495,66 @@ function init() {
   bindReferenceGuideMinimize();
   setupTooltips();
   updateAll();
+  initializeOrganismDatabase();
+}
+
+async function initializeOrganismDatabase() {
+  const status = document.getElementById("organismSearchStatus");
+
+  try {
+    const database = await loadOrganismDatabase("./organisms.json");
+    organismDatabase = database.organisms;
+    organismDatabaseAvailable = true;
+    addDatabaseOrganismsToPicker();
+    status.textContent = `${organismDatabase.length} database organism records available.`;
+  } catch (error) {
+    organismDatabaseAvailable = false;
+    status.textContent = "Organism search is unavailable; the calculator can still be completed manually.";
+    status.classList.add("warning");
+    console.error("Organism database failed to load:", error);
+  }
+}
+
+function addDatabaseOrganismsToPicker() {
+  const select = document.getElementById("organismName");
+  let group = select.querySelector('optgroup[label="Organism database"]');
+
+  if (!group) {
+    group = document.createElement("optgroup");
+    group.label = "Organism database";
+    select.appendChild(group);
+  }
+
+  organismDatabase.forEach((organism) => {
+    const name = organism.displayName || organism.canonicalName;
+    const existing = Array.from(select.options).find((option) => option.value === name);
+    const classification = organism.nhsn?.classification === "common_commensal"
+      ? "common-commensal"
+      : organism.nhsn?.classification === "recognized_pathogen" || organism.nhsn?.recognizedPathogen === true
+        ? "recognized-pathogen"
+        : "unresolved";
+
+    organismRecords[name] = record(organism.id, classification, [], {
+      mbiEligible: organism.nhsn?.mbiEligible === true,
+      vgsRothia: organism.nhsn?.mbiEligible === true && /(?:viridans|streptococcus mitis|rothia)/i.test([
+        organism.canonicalName,
+        organism.displayName,
+        ...(organism.aliases || []),
+        ...(organism.searchTerms || [])
+      ].join(" ")),
+      databaseOrganism: organism
+    });
+    organismRecords[name].displayName = name;
+
+    if (!existing) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      group.appendChild(option);
+    }
+  });
+
+  buildOrganismChecklist();
 }
 
 function bindManualDialogs() {
@@ -642,6 +707,7 @@ function bindInputs() {
 function buildOrganismChecklist() {
   const select = document.getElementById("organismName");
   const checklist = document.getElementById("organismChecklist");
+  checklist.replaceChildren();
 
   Array.from(select.children).forEach((group) => {
     const section = document.createElement("div");
@@ -659,6 +725,7 @@ function buildOrganismChecklist() {
       const label = document.createElement("label");
       label.className = "organism-checklist-option";
       label.dataset.searchText = option.text.toLowerCase();
+      label.dataset.organismId = organism?.databaseOrganism?.id || "";
       const isCoagulaseNegativeStaphylococcus =
         option.value === "Staphylococcus, coagulase negative";
       label.innerHTML = `
@@ -693,6 +760,7 @@ function syncOrganismSelection() {
 
   state.organismNames = Array.from(select.selectedOptions).map((option) => option.value);
   state.organismCategory = deriveOrganismCategory(state.organismNames);
+  applyKnownMbiEligibility();
   renderDerivedOrganismCategory();
   count.textContent = `${state.organismNames.length} selected`;
 
@@ -721,10 +789,22 @@ function syncOrganismSelection() {
   updateAll();
 }
 
+function applyKnownMbiEligibility() {
+  const records = state.organismNames.map((name) => organismRecords[name]).filter(Boolean);
+  const allKnownEligible = records.length > 0 && records.every((item) => item.mbiEligible);
+  state.mbi.vgsRothia = allKnownEligible && records.every((item) => item.vgsRothia);
+  state.mbi.mbiOrganisms = allKnownEligible && records.every((item) => !item.vgsRothia);
+
+  const mbiInput = document.querySelector('[data-state="mbiOrganisms"]');
+  const vgsInput = document.querySelector('[data-state="vgsRothia"]');
+  if (mbiInput) mbiInput.checked = state.mbi.mbiOrganisms;
+  if (vgsInput) vgsInput.checked = state.mbi.vgsRothia;
+}
+
 function deriveOrganismCategory(names) {
   if (!names.length) return "unresolved";
   const records = names.map((name) => organismRecords[name]);
-  if (records.some((item) => !item)) return "unresolved";
+  if (records.some((item) => !item || item.classification === "unresolved")) return "unresolved";
   const categories = new Set(records.map((item) => item.classification));
   if (categories.size > 1) return "mixed";
   if (records.some((item) => item.specialRule)) return "special-rule";
@@ -753,7 +833,9 @@ function renderDerivedOrganismCategory() {
     "common-commensal": "Derived category: Common commensal.",
     mixed: "Mixed organism categories selected. Resolve the recognized-pathogen and common-commensal results under the applicable NHSN criteria; the tool will not silently choose one.",
     "special-rule": `Derived category: Common commensal. Special NHSN handling: ${[...new Set(specialRules)].join(" ")}`,
-    unresolved: "Select an organism to derive its category."
+    unresolved: state.organismNames.length
+      ? "Organism classification is not established by the database. Manual NHSN review required."
+      : "Select an organism to derive its category."
   };
   status.textContent = messages[state.organismCategory];
   status.className = `organism-category-status ${state.organismCategory}`;
@@ -776,11 +858,16 @@ function bindOrganismSearch() {
   }
 
   const filterOptions = () => {
-    const query = search.value.trim().toLowerCase();
+    const query = search.value.trim();
+    const matchingIds = organismDatabaseAvailable && query
+      ? new Set(searchOrganisms(query, organismDatabase, { limit: 25, minimumScore: 20 }).map(({ organism }) => organism.id))
+      : null;
     let visibleCount = 0;
 
     document.querySelectorAll(".organism-checklist-option").forEach((option) => {
-      const matches = !query || option.dataset.searchText.includes(query);
+      const matches = !query || (matchingIds
+        ? Boolean(option.dataset.organismId && matchingIds.has(option.dataset.organismId))
+        : option.dataset.searchText.includes(query.toLowerCase()));
       option.hidden = !matches;
       if (matches) {
         visibleCount += 1;
@@ -792,8 +879,11 @@ function bindOrganismSearch() {
     });
 
     status.textContent = query
-      ? `${visibleCount} organism${visibleCount === 1 ? "" : "s"} found.`
+      ? visibleCount
+        ? `${visibleCount} organism${visibleCount === 1 ? "" : "s"} found.`
+        : 'Organism not found in database. Press Enter to keep it for manual NHSN review.'
       : "";
+    status.classList.toggle("warning", Boolean(query && !visibleCount));
   };
 
   search.addEventListener("input", filterOptions);
@@ -801,8 +891,47 @@ function bindOrganismSearch() {
     if (event.key === "ArrowDown") {
       event.preventDefault();
       document.querySelector(".organism-checklist-option:not([hidden]) input")?.focus();
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      const firstMatch = document.querySelector(".organism-checklist-option:not([hidden]) input");
+      if (firstMatch) {
+        firstMatch.checked = true;
+        const option = Array.from(select.options).find((item) => item.value === firstMatch.value);
+        option.selected = true;
+      } else if (search.value.trim()) {
+        addUnknownOrganism(search.value.trim());
+      }
+      syncOrganismSelection();
     }
   });
+}
+
+function addUnknownOrganism(name) {
+  const select = document.getElementById("organismName");
+  let option = Array.from(select.options).find((item) => item.value === name);
+
+  if (!option) {
+    let group = select.querySelector('optgroup[label="Manual NHSN review"]');
+    if (!group) {
+      group = document.createElement("optgroup");
+      group.label = "Manual NHSN review";
+      select.appendChild(group);
+    }
+    option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    group.appendChild(option);
+    organismRecords[name] = record(`manual-${Date.now()}`, "unresolved", []);
+    organismRecords[name].displayName = name;
+    buildOrganismChecklist();
+  }
+
+  option.selected = true;
+  const checkbox = Array.from(document.querySelectorAll("#organismChecklist input")).find((input) => input.value === name);
+  if (checkbox) checkbox.checked = true;
+  const status = document.getElementById("organismSearchStatus");
+  status.textContent = "Organism not found in database. Manual NHSN review required.";
+  status.classList.add("warning");
 }
 
 function bindCheckboxes() {

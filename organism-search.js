@@ -20,9 +20,9 @@ export function normalizeOrganismText(value = "") {
 
   return text
     .replace(/&/g, " and ")
-    .replace(/[()[\]{}!,;:|_\/\\-]/g, " ")
     .replace(/\bsp\.\b/g, " species ")
     .replace(/\bspp\.\b/g, " species ")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -86,7 +86,7 @@ export function searchOrganisms(query, organisms, options = {}) {
     .slice(0, limit);
 }
 
-export async function loadOrganismDatabase(url = "./data/organisms.json") {
+export async function loadOrganismDatabase(url = "./organisms.json") {
   const response = await fetch(url, { cache: "no-store" });
 
   if (!response.ok) {
