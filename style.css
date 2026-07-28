@@ -666,6 +666,7 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 .reference-list li+li{margin-top:12px}
 .reference-list a{color:var(--blue);font-weight:800}
 .reference-list a:hover{color:var(--green-dark)}
+.organism-search-status.warning{color:#8a5a00;font-weight:700}
 
 @media(max-width:760px){
   .reference-tabs__header,.tab-panels{padding:16px 14px}
