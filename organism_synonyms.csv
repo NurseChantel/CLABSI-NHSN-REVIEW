@@ -1,0 +1,21 @@
+# Source and provenance
+
+- Original file: `Synonyms-of-Pathogens.xlsx`
+- Worksheet used: `all terms 2024`
+- Original columns:
+  - `SNOMED Code (U.S. Edition 2022-09)`
+  - `Preferred Term`
+  - `Synonyms`
+
+This package is a mechanical transformation of the uploaded workbook. No organism names, codes, or synonyms were added from outside sources.
+
+Before publicly redistributing the original workbook, verify the source page's current reuse and attribution terms. For an application, record the download date and periodically compare against the latest CDC/NHSN terminology release.
+
+## Transformation rules
+
+1. Leading/trailing whitespace was removed.
+2. Repeated whitespace was collapsed.
+3. Unique organisms were grouped by the exact pair `(SNOMED code, preferred term)`.
+4. Duplicate synonyms within an organism were removed while preserving source order.
+5. Lookup keys were Unicode-normalized, case-folded, stripped of a trailing `(organism)`, and reduced to alphanumeric tokens separated by single spaces.
+6. SNOMED codes remain strings to avoid numeric coercion.
