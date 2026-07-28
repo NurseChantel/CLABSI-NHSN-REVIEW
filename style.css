@@ -409,6 +409,8 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 }
 .check-grid label:has(input:checked){border-color:var(--green);background:var(--green-soft)}
 .check-grid input{margin-top:2px;accent-color:var(--green)}
+.exclusion-followup{display:flex;gap:10px;margin:8px 0;padding:12px 14px;border-left:3px solid var(--amber);background:var(--amber-soft);font-size:.9rem;line-height:1.45}
+.evidence-review-complete{display:flex;gap:10px;margin-top:12px;padding:12px 14px;border:1px solid var(--border);border-radius:9px;background:var(--surface);font-weight:600}
 
 .alert,.stop-banner,.suggestion-box{
   padding:11px 13px;
