@@ -1,0 +1,125 @@
+{
+  "metadata": {
+    "name": "CLABSI Organism Database",
+    "version": "0.1.0",
+    "status": "starter-database",
+    "lastReviewed": null,
+    "nhsnSourceVersion": null,
+    "description": "Taxonomy-aware organism records for an NHSN CLABSI/BSI decision-support application.",
+    "warning": "This starter database is not a complete NHSN organism list. Validate every NHSN classification before production use."
+  },
+  "organisms": [
+    {
+      "id": "lacticaseibacillus-paracasei",
+      "canonicalName": "Lacticaseibacillus paracasei",
+      "displayName": "Lacticaseibacillus (Lactobacillus) paracasei",
+      "aliases": [
+        "Lactobacillus paracasei",
+        "Lacticaseibacillus(Lactobacillus) paracasei",
+        "L. paracasei"
+      ],
+      "searchTerms": [
+        "Lacticaseibacillus species",
+        "Lactobacillus species",
+        "Lactobacillus spp",
+        "Lacticaseibacillus spp"
+      ],
+      "taxonomy": {
+        "currentGenus": "Lacticaseibacillus",
+        "formerGenus": [
+          "Lactobacillus"
+        ],
+        "species": "paracasei"
+      },
+      "nhsn": {
+        "classification": "common_commensal",
+        "mbiEligible": false,
+        "recognizedPathogen": false,
+        "reviewRequired": true,
+        "notes": "Verify against the current NHSN organism resources before production use."
+      }
+    },
+    {
+      "id": "streptococcus-mitis-group",
+      "canonicalName": "Streptococcus mitis group",
+      "displayName": "Streptococcus mitis group",
+      "aliases": [
+        "S. mitis group",
+        "Strep mitis group",
+        "Viridans group Streptococcus, mitis group"
+      ],
+      "searchTerms": [
+        "viridans group streptococcus",
+        "viridans group streptococci",
+        "VGS"
+      ],
+      "taxonomy": {
+        "currentGenus": "Streptococcus",
+        "formerGenus": [],
+        "species": null
+      },
+      "nhsn": {
+        "classification": "review_current_nhsn_source",
+        "mbiEligible": true,
+        "recognizedPathogen": null,
+        "reviewRequired": true,
+        "notes": "Verify exact NHSN categorization and MBI eligibility against the current manual."
+      }
+    },
+    {
+      "id": "streptococcus-species-unspecified",
+      "canonicalName": "Streptococcus species",
+      "displayName": "Streptococcus species (not further identified)",
+      "aliases": [
+        "Streptococcus sp.",
+        "Streptococcus spp.",
+        "Strep species",
+        "Strep sp."
+      ],
+      "searchTerms": [
+        "streptococcus not further identified",
+        "unidentified streptococcus"
+      ],
+      "taxonomy": {
+        "currentGenus": "Streptococcus",
+        "formerGenus": [],
+        "species": null
+      },
+      "nhsn": {
+        "classification": "indeterminate",
+        "mbiEligible": null,
+        "recognizedPathogen": null,
+        "reviewRequired": true,
+        "notes": "Do not automatically classify without species-level or group-level identification."
+      }
+    },
+    {
+      "id": "cutibacterium-acnes",
+      "canonicalName": "Cutibacterium acnes",
+      "displayName": "Cutibacterium (Propionibacterium) acnes",
+      "aliases": [
+        "Propionibacterium acnes",
+        "C. acnes",
+        "P. acnes"
+      ],
+      "searchTerms": [
+        "Cutibacterium species",
+        "Propionibacterium species"
+      ],
+      "taxonomy": {
+        "currentGenus": "Cutibacterium",
+        "formerGenus": [
+          "Propionibacterium"
+        ],
+        "species": "acnes"
+      },
+      "nhsn": {
+        "classification": "review_current_nhsn_source",
+        "mbiEligible": false,
+        "recognizedPathogen": null,
+        "reviewRequired": true,
+        "notes": "Verify against the current NHSN common commensal list."
+      }
+    }
+  ]
+}
