@@ -102,7 +102,7 @@
       </div>
 
       <div class="field-grid">
-        <div class="field">
+        <div class="field span-2">
           <div class="field-label" id="patientAgeLabel">
             Patient age
             <button class="definition" type="button" data-tooltip="Age determines whether LCBI 2 or the infant LCBI 3 signs and symptoms are evaluated." aria-label="Patient age definition">i</button>
@@ -113,25 +113,15 @@
           </div>
         </div>
 
-        <div class="field">
-          <label for="culturePositive">
-            Eligible positive culture specimen?
-            <button class="definition" type="button" data-tooltip="An eligible bacterial or fungal organism must be identified from culture to evaluate an LCBI." aria-label="Positive culture specimen definition">i</button>
-          </label>
-          <div class="compact-choice" data-name="culturePositive">
-            <button type="button" data-value="yes">Yes</button>
-            <button type="button" data-value="no">No</button>
-          </div>
-        </div>
-
         <div class="field span-2">
           <label for="organismName">
             Organism(s)
             <button class="definition" type="button" data-tooltip="Select every bacterial or fungal organism reported from the eligible culture specimen(s). The common-commensal group is the complete NHSN common commensal list. For LCBI 1, any bacterial or fungal pathogen not on that list is a recognized pathogen." aria-label="culture organism definition">i</button>
           </label>
+          <p id="eligiblePositiveCultureStatus" class="culture-status incomplete" role="status" aria-live="polite">No blood culture organism selected.</p>
           <div class="organism-search">
             <label class="visually-hidden" for="organismSearch">Find an organism</label>
-            <input id="organismSearch" type="search" placeholder="Start typing to find an organism" autocomplete="off" aria-controls="organismName" aria-describedby="organismSearchStatus">
+            <input id="organismSearch" type="search" placeholder="Start typing to find an organism" autocomplete="off" aria-controls="organismName" aria-describedby="eligiblePositiveCultureStatus organismSearchStatus">
             <span id="organismSearchStatus" class="organism-search-status" role="status" aria-live="polite"></span>
           </div>
           <div class="organism-selection-heading">
@@ -187,21 +177,22 @@
         <span class="section-number">02</span>
         <div>
           <h2>Organism category</h2>
-          <p>Choose the category used for the preliminary LCBI screen after selecting the organism(s).</p>
+          <p>The category is derived automatically from the selected organism(s).</p>
         </div>
         <button class="section-reset" type="button" data-reset-section="organism" aria-label="Reset organism category section">Reset</button>
       </div>
 
       <div class="compact-choice wide-choice" data-name="organismCategory">
-        <button type="button" data-value="recognized">
+        <button type="button" data-value="recognized-pathogen" aria-disabled="true">
           Recognized pathogen
           <span class="button-help" data-tooltip="A bacterial or fungal pathogen eligible for LCBI 1 when identified from an eligible culture specimen and not related to another site.">i</span>
         </button>
-        <button type="button" data-value="commensal">
+        <button type="button" data-value="common-commensal" aria-disabled="true">
           Common commensal
           <span class="button-help" data-tooltip="LCBI 2 or 3 requires the same NHSN common commensal from at least two culture specimens collected on separate occasions, plus qualifying signs or symptoms.">i</span>
         </button>
       </div>
+      <p id="organismCategoryStatus" class="organism-category-status unresolved" role="status" aria-live="polite">Select an organism to derive its category.</p>
 
       <div id="commensalQuestions" class="conditional-panel hidden">
         <div class="field-grid">

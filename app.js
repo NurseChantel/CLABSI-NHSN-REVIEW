@@ -3,9 +3,8 @@
 const state = {
   cultureOrganismDate: "",
   patientAge: "adult",
-  culturePositive: "",
   organismNames: [],
-  organismCategory: "",
+  organismCategory: "unresolved",
   commensalMatch: "",
   separateOccasions: "",
   symptoms: new Set(),
@@ -419,59 +418,57 @@ const siteLibrary = {
   }
 };
 
-const organismHints = [
-  {
-    terms: ["enterococcus"],
-    sites: ["uti", "gi", "skin", "cardiovascular"],
-    note: "Urinary, intra-abdominal, skin/soft-tissue, and endovascular sources are reasonable starting points."
-  },
-  {
-    terms: ["escherichia coli", "e. coli", "ecoli"],
-    sites: ["uti", "gi"],
-    note: "Start with urinary and gastrointestinal / intra-abdominal source definitions."
-  },
-  {
-    terms: ["klebsiella"],
-    sites: ["uti", "pneu", "gi"],
-    note: "Start with urinary, respiratory, and gastrointestinal / intra-abdominal definitions."
-  },
-  {
-    terms: ["staphylococcus aureus", "s. aureus"],
-    sites: [
-      "skin",
-      "ssi",
-      "boneJoint",
-      "cardiovascular",
-      "pneu"
-    ],
-    note: "Start with skin/soft tissue, surgical-site, bone/joint, endovascular, and respiratory definitions."
-  },
-  {
-    terms: ["candida"],
-    sites: ["gi", "uti"],
-    note: "Start with gastrointestinal / intra-abdominal and urinary definitions; verify the exact site-specific organism rule."
-  },
-  {
-    terms: ["pseudomonas"],
-    sites: ["pneu", "uti", "skin", "gi"],
-    note: "Start with respiratory, urinary, skin/soft-tissue, and gastrointestinal / intra-abdominal definitions."
-  },
-  {
-    terms: ["streptococcus pneumoniae", "s. pneumoniae"],
-    sites: ["pneu", "cns"],
-    note: "Start with respiratory and central-nervous-system definitions."
-  },
-  {
-    terms: ["bacteroides"],
-    sites: ["gi", "skin"],
-    note: "Start with gastrointestinal / intra-abdominal and skin/soft-tissue definitions."
-  },
-  {
-    terms: ["viridans", "rothia"],
-    sites: ["cardiovascular", "other"],
-    note: "Start with endovascular and other site-specific definitions when the chart supports a source."
-  }
-];
+const NO_PATHWAY_GUIDANCE =
+  "No organism-specific starting pathway is assigned. Review all clinically plausible NHSN infection sites.";
+
+/*
+ * This is the single organism data source used by category derivation, MBI
+ * flags, validation, and secondary-BSI suggestions. Every option in the
+ * organism picker is validated against this table during initialization.
+ */
+const organismRecordDefinitions = {
+  "Acinetobacter species": record("acinetobacter-species", "recognized-pathogen", ["pneu", "uti", "skin"]),
+  "Bacteroides species": record("bacteroides-species", "recognized-pathogen", ["gi", "skin"], { mbiEligible: true }),
+  "Candida species": record("candida-species", "recognized-pathogen", ["gi", "uti"], { mbiEligible: true }),
+  "Candida albicans": record("candida-albicans", "recognized-pathogen", ["gi", "uti"], { mbiEligible: true }),
+  "Candida auris": record("candida-auris", "recognized-pathogen", ["gi", "uti"], { mbiEligible: true }),
+  "Candida glabrata": record("candida-glabrata", "recognized-pathogen", ["gi", "uti"], { mbiEligible: true }),
+  "Candida parapsilosis": record("candida-parapsilosis", "recognized-pathogen", ["gi", "uti"], { mbiEligible: true }),
+  "Candida tropicalis": record("candida-tropicalis", "recognized-pathogen", ["gi", "uti"], { mbiEligible: true }),
+  "Enterobacter species": record("enterobacter-species", "recognized-pathogen", ["uti", "gi", "pneu"], { mbiEligible: true }),
+  "Enterococcus species": record("enterococcus-species", "recognized-pathogen", ["uti", "gi", "skin", "cardiovascular"], { mbiEligible: true }),
+  "Enterococcus faecalis": record("enterococcus-faecalis", "recognized-pathogen", ["uti", "gi", "skin", "cardiovascular"], { mbiEligible: true }),
+  "Enterococcus faecium": record("enterococcus-faecium", "recognized-pathogen", ["uti", "gi", "skin", "cardiovascular"], { mbiEligible: true }),
+  "Escherichia coli": record("escherichia-coli", "recognized-pathogen", ["uti", "gi"], { mbiEligible: true }),
+  "Klebsiella species": record("klebsiella-species", "recognized-pathogen", ["uti", "pneu", "gi"], { mbiEligible: true }),
+  "Klebsiella pneumoniae": record("klebsiella-pneumoniae", "recognized-pathogen", ["uti", "pneu", "gi"], { mbiEligible: true }),
+  "Proteus mirabilis": record("proteus-mirabilis", "recognized-pathogen", ["uti", "gi"], { mbiEligible: true }),
+  "Pseudomonas aeruginosa": record("pseudomonas-aeruginosa", "recognized-pathogen", ["pneu", "uti", "skin", "gi"]),
+  "Serratia marcescens": record("serratia-marcescens", "recognized-pathogen", ["uti", "pneu", "gi"], { mbiEligible: true }),
+  "Staphylococcus aureus": record("staphylococcus-aureus", "recognized-pathogen", ["skin", "ssi", "boneJoint", "cardiovascular", "pneu"]),
+  "Stenotrophomonas maltophilia": record("stenotrophomonas-maltophilia", "recognized-pathogen", ["pneu", "uti"]),
+  "Streptococcus agalactiae": record("streptococcus-agalactiae", "recognized-pathogen", ["skin", "cns"]),
+  "Streptococcus pneumoniae": record("streptococcus-pneumoniae", "recognized-pathogen", ["pneu", "cns"]),
+  "Aerococcus species": record("aerococcus-species", "common-commensal", ["uti"]),
+  "Bacillus species (not B. anthracis)": record("bacillus-species-non-anthracis", "common-commensal", []),
+  "Corynebacterium species": record("corynebacterium-species", "common-commensal", ["skin", "cardiovascular"]),
+  "Cutibacterium species": record("cutibacterium-species", "common-commensal", ["skin", "boneJoint"]),
+  "Micrococcus species": record("micrococcus-species", "common-commensal", []),
+  "Rhodococcus species": record("rhodococcus-species", "common-commensal", ["pneu"]),
+  "Staphylococcus, coagulase negative": record("coagulase-negative-staphylococcus", "common-commensal", ["skin", "cardiovascular"]),
+  "Viridans group streptococci": record("viridans-group-streptococci", "common-commensal", ["cardiovascular", "other"], { mbiEligible: true, vgsRothia: true, specialRule: "VGS may qualify for the special MBI-LCBI 2/3 organism pathway when all NHSN requirements are met." })
+};
+
+const organismRecords = Object.freeze(Object.fromEntries(
+  Object.entries(organismRecordDefinitions).map(([displayName, item]) => [
+    displayName,
+    Object.freeze({ ...item, displayName })
+  ])
+));
+
+function record(id, classification, suggestedPathways, flags = {}) {
+  return { id, classification, suggestedPathways, priorityPathways: suggestedPathways, guidance: suggestedPathways.length ? "Review the highlighted organism-associated starting pathways and every other clinically plausible site." : NO_PATHWAY_GUIDANCE, mbiEligible: false, vgsRothia: false, specialRule: "", ...flags };
+}
 
 const coagulaseNegativeStaphylococciDefinition =
   "Coagulase-negative Staphylococcus species include: S. arlettae, S. auricularis, S. capitis, S. caprae, S. carnosus, S. chromogenes, S. cohnii, S. condimenti, S. epidermidis, S. equorum, S. felis, S. haemolyticus, S. hominis, S. kloosii, S. lentus, S. lugdunensis, S. pasteuri, S. pettenkoferi, S. piscifermentans, S. saccharolyticus, S. saprophyticus, S. schleiferi, S. sciuri, S. simulans, S. succinus, S. vitulinus, S. warneri, and S. xylosus. Confirm the laboratory identification and current NHSN Terminology Browser classification when reporting.";
@@ -479,6 +476,7 @@ const coagulaseNegativeStaphylococciDefinition =
 document.addEventListener("DOMContentLoaded", init);
 
 function init() {
+  validateOrganismRecords();
   buildSiteButtons();
   renderSymptoms();
   bindChoiceGroups();
@@ -594,7 +592,7 @@ function bindChoiceGroups() {
     group.addEventListener("click", (event) => {
       const button = event.target.closest("button[data-value]");
 
-      if (!button) {
+      if (!button || group.dataset.name === "organismCategory") {
         return;
       }
 
@@ -655,6 +653,8 @@ function buildOrganismChecklist() {
     section.appendChild(heading);
 
     Array.from(group.children).forEach((option) => {
+      const organism = organismRecords[option.value];
+      option.dataset.organismId = organism?.id || "missing-record";
       const label = document.createElement("label");
       label.className = "organism-checklist-option";
       label.dataset.searchText = option.text.toLowerCase();
@@ -691,6 +691,8 @@ function syncOrganismSelection() {
   const count = document.getElementById("organismSelectionCount");
 
   state.organismNames = Array.from(select.selectedOptions).map((option) => option.value);
+  state.organismCategory = deriveOrganismCategory(state.organismNames);
+  renderDerivedOrganismCategory();
   count.textContent = `${state.organismNames.length} selected`;
 
   if (!state.organismNames.length) {
@@ -716,6 +718,64 @@ function syncOrganismSelection() {
   }
 
   updateAll();
+}
+
+function getEligiblePositiveCultureStatus() {
+  return state.organismNames.length > 0 ? "confirmed" : "incomplete";
+}
+
+function renderEligiblePositiveCultureStatus() {
+  const element = document.getElementById("eligiblePositiveCultureStatus");
+  const confirmed = getEligiblePositiveCultureStatus() === "confirmed";
+  element.textContent = confirmed
+    ? "Positive blood culture confirmed by organism selection."
+    : "No blood culture organism selected.";
+  element.className = `culture-status ${confirmed ? "confirmed" : "incomplete"}`;
+}
+
+function deriveOrganismCategory(names) {
+  if (!names.length) return "unresolved";
+  const records = names.map((name) => organismRecords[name]);
+  if (records.some((item) => !item)) return "unresolved";
+  const categories = new Set(records.map((item) => item.classification));
+  if (categories.size > 1) return "mixed";
+  if (records.some((item) => item.specialRule)) return "special-rule";
+  return categories.values().next().value;
+}
+
+function renderDerivedOrganismCategory() {
+  const group = document.querySelector('[data-name="organismCategory"]');
+  const status = document.getElementById("organismCategoryStatus");
+  const activeValue = state.organismCategory === "recognized-pathogen"
+    ? "recognized-pathogen"
+    : ["common-commensal", "special-rule"].includes(state.organismCategory)
+      ? "common-commensal"
+      : "";
+  group.querySelectorAll("button[data-value]").forEach((button) => {
+    const selected = button.dataset.value === activeValue;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  document.getElementById("commensalQuestions").classList.toggle("hidden", !["common-commensal", "special-rule"].includes(state.organismCategory));
+  const specialRules = state.organismNames
+    .map((name) => organismRecords[name]?.specialRule)
+    .filter(Boolean);
+  const messages = {
+    "recognized-pathogen": "Derived category: Recognized pathogen.",
+    "common-commensal": "Derived category: Common commensal.",
+    mixed: "Mixed organism categories selected. Resolve the recognized-pathogen and common-commensal results under the applicable NHSN criteria; the tool will not silently choose one.",
+    "special-rule": `Derived category: Common commensal. Special NHSN handling: ${[...new Set(specialRules)].join(" ")}`,
+    unresolved: "Select an organism to derive its category."
+  };
+  status.textContent = messages[state.organismCategory];
+  status.className = `organism-category-status ${state.organismCategory}`;
+}
+
+function validateOrganismRecords() {
+  const optionNames = Array.from(document.querySelectorAll("#organismName option"), (option) => option.value);
+  const missing = optionNames.filter((name) => !organismRecords[name]);
+  const invalid = Object.entries(organismRecords).filter(([, item]) => !item.id || !item.classification || !Array.isArray(item.suggestedPathways) || !item.guidance);
+  if (missing.length || invalid.length) console.error("Organism data validation failed", { missing, invalid });
 }
 
 function bindOrganismSearch() {
@@ -823,7 +883,6 @@ function resetIntroSection() {
 
 function resetBloodSection() {
   state.patientAge = "adult";
-  state.culturePositive = "";
   state.organismNames = [];
   state.symptoms.clear();
   document.getElementById("organismName").selectedIndex = -1;
@@ -837,20 +896,18 @@ function resetBloodSection() {
   });
   syncOrganismSelection();
   setChoiceValue("patientAge", "adult");
-  setChoiceValue("culturePositive", "");
   renderSymptoms();
   updateAll();
 }
 
 function resetOrganismSection() {
-  state.organismCategory = "";
+  state.organismCategory = deriveOrganismCategory(state.organismNames);
   state.commensalMatch = "";
   state.separateOccasions = "";
   state.symptoms.clear();
-  setChoiceValue("organismCategory", "");
+  renderDerivedOrganismCategory();
   setChoiceValue("commensalMatch", "");
   setChoiceValue("separateOccasions", "");
-  document.getElementById("commensalQuestions").classList.add("hidden");
   renderSymptoms();
   updateAll();
 }
@@ -1005,10 +1062,8 @@ function buildSiteButtons() {
 function renderOrganismSuggestions() {
   const box = document.getElementById("organismSuggestions");
   const organisms = state.organismNames;
-  const matchingHints = getOrganismHints(organisms);
-  const suggestedSiteKeys = new Set(
-    matchingHints.flatMap((entry) => entry.sites)
-  );
+  const records = organisms.map((name) => organismRecords[name]).filter(Boolean);
+  const suggestedSiteKeys = new Set(records.flatMap((entry) => entry.priorityPathways));
 
   renderSuggestedSiteButtons(suggestedSiteKeys);
 
@@ -1033,7 +1088,7 @@ function renderOrganismSuggestions() {
     (key) => siteLibrary[key].label
   );
 
-  const notes = [...new Set(matchingHints.map((entry) => entry.note))];
+  const notes = [...new Set(records.map((entry) => entry.guidance))];
 
   box.innerHTML = `
     <strong>
@@ -1051,14 +1106,6 @@ function renderOrganismSuggestions() {
     </p>
 
   `;
-}
-
-function getOrganismHints(organisms) {
-  return organismHints.filter((entry) =>
-    organisms.some((organism) =>
-      entry.terms.some((term) => organism.toLowerCase().includes(term))
-    )
-  );
 }
 
 function renderSuggestedSiteButtons(suggestedSiteKeys) {
@@ -1181,17 +1228,17 @@ function renderSiteGuide() {
 }
 
 function determineLcbi() {
-  if (state.culturePositive !== "yes") {
+  if (getEligiblePositiveCultureStatus() !== "confirmed") {
     return {
       met: false,
       criterion: "",
-      label: "No LCBI",
+      label: "LCBI review incomplete",
       reason:
-        "An eligible positive culture specimen has not been confirmed."
+        "Select at least one blood culture organism."
     };
   }
 
-  if (state.organismCategory === "recognized") {
+  if (state.organismCategory === "recognized-pathogen") {
     return {
       met: true,
       criterion: "LCBI 1",
@@ -1201,7 +1248,7 @@ function determineLcbi() {
     };
   }
 
-  if (state.organismCategory === "commensal") {
+  if (["common-commensal", "special-rule"].includes(state.organismCategory)) {
     if (state.commensalMatch !== "yes") {
       return {
         met: false,
@@ -1266,7 +1313,11 @@ function determineLcbi() {
     criterion: "",
     label: "Incomplete LCBI review",
     reason:
-      "Select whether the culture organism is a recognized pathogen or a common commensal."
+      state.organismCategory === "mixed"
+        ? "Mixed recognized-pathogen and common-commensal selections require separate NHSN criterion resolution."
+        : state.organismCategory === "special-rule"
+          ? "A selected organism has special NHSN handling that must be resolved before the preliminary LCBI screen can be completed."
+          : "Select an organism to derive its NHSN organism category."
   };
 }
 
@@ -1863,8 +1914,7 @@ function buildCalculatorModel() {
   ].every(Boolean);
 
   const steps = [
-    [state.culturePositive === "yes", "Eligible positive culture confirmed"],
-    [state.organismNames.length > 0, "Culture organism selected"],
+    [getEligiblePositiveCultureStatus() === "confirmed", "Positive blood culture confirmed by organism selection"],
     [hasSource, "Plausible secondary source reviewed"],
     [secondaryComplete, "Secondary attribution checks completed"],
     [lcbi.met, "LCBI criterion met"],
@@ -1878,6 +1928,7 @@ function buildCalculatorModel() {
   let summary = "Complete the items below to calculate a preliminary classification.";
   const missing = [];
 
+  if (getEligiblePositiveCultureStatus() !== "confirmed") missing.push("Select at least one blood culture organism.");
   if (!hasSource) missing.push("Select the most plausible site-specific infection pathway.");
   if (siteDefinition.status === "incomplete") missing.push(siteDefinition.reason);
   if (!state.organismRelationship) missing.push("Confirm the culture-to-site organism relationship.");
@@ -1954,6 +2005,7 @@ function renderCalculator() {
 }
 
 function updateAll() {
+  renderEligiblePositiveCultureStatus();
   renderSurveillanceWindow();
   renderOrganismSuggestions();
   renderSecondaryConclusion();
