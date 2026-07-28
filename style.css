@@ -324,6 +324,12 @@ input[type="text"]:focus,input[type="date"]:focus,input[type="search"]:focus,sel
 .organism-search-results button span{flex:0 0 auto;color:var(--muted);font-size:.68rem}
 .organism-search-status.loading{color:var(--green-dark);font-weight:700}
 input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(20,129,109,.1)}
+.organism-browse-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px}
+.organism-browse-actions strong{color:var(--green-dark);font-size:.7rem}
+.organism-browse-button{min-height:36px;padding:7px 12px;border:1px solid var(--border-dark);border-radius:7px;background:#fff;color:var(--navy);font-size:.74rem;font-weight:800}
+.organism-browse-button:hover,.organism-browse-button:focus-visible{border-color:var(--green);background:var(--green-soft);color:var(--green-dark);outline:3px solid rgba(20,129,109,.14)}
+.organism-browse-panel{margin-top:8px}
+.organism-browse-panel[hidden]{display:none}
 .organism-selection-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 7px;color:var(--navy);font-size:.72rem;font-weight:800}
 .organism-selection-heading strong{color:var(--green-dark);font-size:.7rem}
 .organism-checklist{height:270px;overflow-y:auto;border:1px solid var(--border-dark);border-radius:8px;background:#fff}
@@ -337,6 +343,7 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 .organism-definition{flex:0 0 auto;margin-left:auto}
 .organism-checkmark{display:grid;flex:0 0 auto;place-items:center;width:18px;height:18px;border:2px solid #91a2b2;border-radius:5px;background:#fff;color:transparent;font-size:.75rem;font-weight:900}
 .organism-checklist-option:has(input:checked){background:var(--green-soft);color:var(--green-dark);font-weight:700}
+.organism-checklist-option.organism-search-selection-highlight{box-shadow:inset 4px 0 0 var(--green);background:#d9f3ec}
 .organism-checklist-option input:checked + .organism-checkmark{border-color:var(--green);background:var(--green);color:#fff}
 .organism-checklist-option input:focus-visible + .organism-checkmark{outline:3px solid rgba(20,129,109,.22);outline-offset:2px}
 .selected-organisms{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:25px}
