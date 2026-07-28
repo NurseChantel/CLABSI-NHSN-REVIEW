@@ -286,14 +286,10 @@
         </h3>
 
         <div class="field-grid">
-          <div class="field">
-            <label>
-              Complete NHSN site-specific definition met?
-              <button class="definition" type="button" data-tooltip="Do not answer Yes based only on a diagnosis. Verify every required criterion element in the applicable NHSN chapter." aria-label="Site-specific definition">i</button>
-            </label>
-            <div class="compact-choice" data-name="siteDefinitionMet">
-              <button type="button" data-value="yes">Yes</button>
-              <button type="button" data-value="no">No</button>
+          <div class="field span-2">
+            <div class="field-label">Calculated site-specific definition</div>
+            <div id="siteDefinitionStatus" class="mini-result neutral" role="status" aria-live="polite">
+              Site-specific definition incomplete: select a pathway and complete its evidence review.
             </div>
           </div>
 
@@ -407,6 +403,8 @@
         <label><input type="checkbox" data-state="vgsRothia"> Only Viridans Group Streptococci (VGS) and/or Rothia spp. identified <span class="inline-info" data-tooltip="For MBI-LCBI 2 or 3, the same viridans-group Streptococcus and/or Rothia species must be identified in at least 2 blood specimens collected on separate occasions. No other organisms may be identified.">i</span></label>
       </div>
 
+      <div id="mbiStatus" class="mini-result neutral" role="status" aria-live="polite">MBI-LCBI review incomplete.</div>
+
       <h3>
         CLABSI exclusion fields
         <button class="definition" type="button" data-tooltip="These are NHSN CLABSI exclusion fields, not alternatives to the LCBI criteria. Apply an exclusion only when its complete definition is met; the event remains an LCBI but is not reported as central-line associated." aria-label="CLABSI exclusions definition">i</button>
@@ -421,6 +419,8 @@
         <label><input type="checkbox" data-exclusion="Factitious disorder imposed on another"> Factitious disorder imposed on another (MSBP) <span class="inline-info" data-tooltip="Select when factitious disorder imposed on another is documented or suspected as the cause of line manipulation during the BSI infection window period, following the NHSN protocol requirements.">i</span></label>
         <label><input type="checkbox" data-exclusion="Other vascular access site"> Pus at another eligible vascular-access site <span class="inline-info" data-tooltip="Select when pus is documented at another vascular-access site and an organism from that site matches an organism identified in blood; apply the NHSN eligible-site and timing requirements.">i</span></label>
       </div>
+      <div id="exclusionFollowups"></div>
+      <div id="exclusionStatus" class="mini-result neutral" role="status" aria-live="polite">No CLABSI exclusion selected.</div>
     </section>
 
     <section class="review-card result-card" id="result">

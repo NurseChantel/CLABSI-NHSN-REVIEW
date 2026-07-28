@@ -11,7 +11,6 @@ const state = {
   symptoms: new Set(),
   selectedSite: "",
   siteEvidence: {},
-  siteDefinitionMet: "",
   organismRelationship: "",
   attributionTiming: "",
   centralDefinition: "",
@@ -26,7 +25,18 @@ const state = {
     mbiOrganisms: false,
     vgsRothia: false
   },
-  exclusions: new Set()
+  exclusions: new Set(),
+  exclusionSupport: new Set()
+};
+
+const exclusionRequirements = {
+  "ECMO/ECLS": "Confirm the device was present for more than 2 consecutive calendar days and was present on the LCBI date of event or the day before.",
+  VAD: "Confirm the ventricular assist device was present for more than 2 consecutive calendar days and was present on the LCBI date of event or the day before.",
+  "Total artificial heart": "Confirm the artificial heart was present for more than 2 consecutive calendar days and was present on the LCBI date of event or the day before.",
+  "Patient injection": "Confirm documented observation or clinical suspicion of injection into the line during the BSI infection window period.",
+  "Epidermolysis bullosa": "Confirm the epidermolysis bullosa diagnosis and all NHSN organism and documentation requirements.",
+  "Factitious disorder imposed on another": "Confirm documented or clinically supported line manipulation during the BSI infection window period.",
+  "Other vascular access site": "Confirm pus at an eligible alternate access site, matching blood/site organisms, and required timing."
 };
 
 const siteLibrary = {
@@ -761,6 +771,7 @@ function bindCheckboxes() {
         state.exclusions.add(input.dataset.exclusion);
       } else {
         state.exclusions.delete(input.dataset.exclusion);
+        state.exclusionSupport.delete(input.dataset.exclusion);
       }
 
       updateAll();
@@ -847,10 +858,8 @@ function resetOrganismSection() {
 function resetSecondarySection() {
   state.selectedSite = "";
   state.siteEvidence = {};
-  state.siteDefinitionMet = "";
   state.organismRelationship = "";
   state.attributionTiming = "";
-  setChoiceValue("siteDefinitionMet", "");
   setChoiceValue("organismRelationship", "");
   setChoiceValue("attributionTiming", "");
   renderSiteGuide();
@@ -875,6 +884,7 @@ function resetMbiSection() {
     state.mbi[key] = false;
   });
   state.exclusions.clear();
+  state.exclusionSupport.clear();
   document.querySelectorAll("[data-state], [data-exclusion]").forEach((input) => {
     input.checked = false;
   });
@@ -985,6 +995,7 @@ function buildSiteButtons() {
       button.setAttribute("aria-pressed", "true");
 
       renderSiteGuide();
+      updateAll();
     });
 
     container.appendChild(button);
@@ -1098,7 +1109,7 @@ function renderSiteGuide() {
         <button
           class="definition"
           type="button"
-          data-tooltip="These are directional chart-review prompts. Verify the complete current NHSN definition before selecting that the site-specific definition is met."
+          data-tooltip="These evidence items drive the calculated site-specific status. The configured AND/OR criterion groups, not the number of checked boxes, determine the result."
           aria-label="${escapeHtml(site.label)} review definition"
         >
           i
@@ -1109,7 +1120,7 @@ function renderSiteGuide() {
         ${escapeHtml(site.intro)}
       </p>
 
-      ${site.groups
+              ${site.groups
         .map(
           (group) => `
             <div class="evidence-group">
@@ -1143,7 +1154,12 @@ function renderSiteGuide() {
             </div>
           `
         )
-        .join("")}
+                .join("")}
+
+      <label class="evidence-review-complete">
+        <input type="checkbox" data-evidence="reviewComplete" ${saved.has("reviewComplete") ? "checked" : ""}>
+        Evidence review complete; unchecked criteria were reviewed and are absent or do not qualify.
+      </label>
 
     </div>
   `;
@@ -1254,9 +1270,78 @@ function determineLcbi() {
   };
 }
 
+function getSiteSpecificDefinitionStatus() {
+  const site = siteLibrary[state.selectedSite];
+  if (!site) return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: "Select the suspected infection pathway." };
+
+  const e = state.siteEvidence[state.selectedSite] || new Set();
+  const has = (key) => e.has(key);
+  const any = (...keys) => keys.some(has);
+  const all = (...keys) => keys.every(has);
+  let met = false;
+  let missing = [];
+
+  switch (state.selectedSite) {
+    case "uti":
+      met = has("urineCulture") && has("catheterTiming") && any("fever", "suprapubic", "cva", "urgency", "frequency", "dysuria") && any("cultureMatch", "cultureAsElement");
+      if (!has("urineCulture")) missing.push("an eligible urine culture");
+      if (!has("catheterTiming")) missing.push("catheter and timing eligibility");
+      if (!any("fever", "suprapubic", "cva", "urgency", "frequency", "dysuria")) missing.push("an additional qualifying sign or symptom");
+      if (!any("cultureMatch", "cultureAsElement")) missing.push("an eligible organism relationship");
+      break;
+    case "pneu":
+      met = any("newInfiltrate", "consolidation", "cavitation", "pneumatoceles") && any("fever", "wbc", "mentalStatus") && any("sputum", "cough", "dyspnea", "breathSounds", "gasExchange") && any("respSpecimen", "pleuralFluid", "lungTissue", "cultureAllowed", "viralEvidence");
+      if (!any("newInfiltrate", "consolidation", "cavitation", "pneumatoceles")) missing.push("qualifying imaging evidence");
+      if (!any("fever", "wbc", "mentalStatus")) missing.push("a systemic finding");
+      if (!any("sputum", "cough", "dyspnea", "breathSounds", "gasExchange")) missing.push("a respiratory finding");
+      if (!any("respSpecimen", "pleuralFluid", "lungTissue", "cultureAllowed", "viralEvidence")) missing.push("qualifying laboratory or microbiology evidence");
+      break;
+    case "ssi":
+      met = all("procedure", "surveillance", "level") && any("purulence", "siteOrganism", "opened", "imaging", "diagnosis") && (!has("siteOrganism") || has("cultureMatch"));
+      if (!all("procedure", "surveillance", "level")) missing.push("eligible procedure, surveillance timing, and tissue level");
+      if (!any("purulence", "siteOrganism", "opened", "imaging", "diagnosis")) missing.push("a qualifying SSI criterion pathway");
+      if (has("siteOrganism") && !has("cultureMatch")) missing.push("the organism relationship");
+      break;
+    case "gi":
+      met = any("operative", "siteSpecimen", "imaging") && (has("operative") || has("symptoms")) && any("cultureMatch", "cultureElement");
+      if (!any("operative", "siteSpecimen", "imaging")) missing.push("anatomic, imaging, operative, or site-specimen evidence");
+      if (!has("operative") && !has("symptoms")) missing.push("qualifying clinical findings");
+      if (!any("cultureMatch", "cultureElement")) missing.push("an eligible blood-to-site relationship");
+      break;
+    case "skin":
+      met = (has("purulence") || (has("localFindings") && any("siteCulture", "imaging"))) && (!has("siteCulture") || has("cultureMatch"));
+      if (!met) missing.push("purulence, or local findings plus qualifying site culture/imaging and any required organism match");
+      break;
+    case "boneJoint":
+      met = any("operative", "histology", "siteCulture", "imaging") && (any("operative", "histology", "siteCulture") || has("pain")) && has("cultureMatch");
+      if (!any("operative", "histology", "siteCulture", "imaging")) missing.push("qualifying site, imaging, operative, or histopathologic evidence");
+      if (has("imaging") && !has("pain")) missing.push("a qualifying clinical finding");
+      if (!has("cultureMatch")) missing.push("the blood-to-site organism relationship");
+      break;
+    case "cardiovascular":
+      met = has("culturePattern") && (has("siteSpecimen") || (has("echo") && has("clinical")));
+      if (!has("culturePattern")) missing.push("the required culture pattern and organism eligibility");
+      if (!has("siteSpecimen") && !(has("echo") && has("clinical"))) missing.push("a site specimen, or imaging plus clinical evidence");
+      break;
+    case "cns":
+      met = (has("operative") || has("csf") || (has("imaging") && has("symptoms"))) && has("cultureRelationship");
+      if (!has("operative") && !has("csf") && !(has("imaging") && has("symptoms"))) missing.push("operative/CSF evidence, or imaging plus symptoms");
+      if (!has("cultureRelationship")) missing.push("the eligible blood-culture relationship");
+      break;
+    default:
+      met = all("definition", "elements", "siteSpecimen", "timing");
+      if (!met) missing.push("the exact definition, all required elements, specimen relationship, and timing review");
+  }
+
+  if (met) return { status: "met", met: true, label: "Site-specific definition met", reason: `${site.label} evidence satisfies a complete configured criterion pathway.` };
+  if (has("reviewComplete")) return { status: "not-met", met: false, label: "Site-specific definition not met", reason: `${site.label} review is complete, but ${missing.join("; ")} was not established.` };
+  return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: `${site.label} definition incomplete: ${missing.join("; ")} still required.` };
+}
+
 function determineSecondaryStatus() {
+  const siteDefinition = getSiteSpecificDefinitionStatus();
   const answers = [
-    state.siteDefinitionMet,
+    siteDefinition.status === "met" ? "yes" : siteDefinition.status === "not-met" ? "no" : "",
     state.organismRelationship,
     state.attributionTiming
   ];
@@ -1271,7 +1356,7 @@ function determineSecondaryStatus() {
       status: "complete",
       label: "Secondary BSI attribution appears satisfied",
       reason:
-        "A complete site-specific definition, eligible organism relationship, and required timing relationship were all selected as Yes."
+        "The active pathway definition was calculated as met, and the organism relationship and required timing were answered Yes."
     };
   }
 
@@ -1281,7 +1366,7 @@ function determineSecondaryStatus() {
       status: "incomplete",
       label: "Secondary BSI review incomplete",
       reason:
-        "Complete all three secondary attribution questions."
+        `${siteDefinition.reason} Complete any unresolved organism-relationship and attribution-timing checks.`
     };
   }
 
@@ -1359,8 +1444,8 @@ function determineMbiStatus(lcbiResult) {
   if (!lcbiResult.met) {
     return {
       met: false,
-      status: "notEvaluated",
-      label: "MBI-LCBI not evaluated",
+      status: "incomplete",
+      label: "MBI-LCBI review incomplete",
       reason:
         "A qualifying LCBI screen has not been met."
     };
@@ -1380,12 +1465,13 @@ function determineMbiStatus(lcbiResult) {
     neutropeniaPathway || transplantPathway;
 
   if (!hostPathwayMet) {
+    const partialTransplant = state.mbi.transplant || state.mbi.gvhd || state.mbi.diarrhea;
     return {
       met: false,
-      status: "hostNotMet",
-      label: "MBI host pathway not established",
+      status: partialTransplant ? "incomplete" : "not-met",
+      label: partialTransplant ? "MBI-LCBI review incomplete" : "MBI-LCBI criteria not met",
       reason:
-        "Neither a qualifying neutropenia pathway nor an eligible allogeneic HSCT gastrointestinal pathway was selected."
+        partialTransplant ? "The HSCT pathway requires allogeneic HSCT within 365 days plus Grade III/IV GI GVHD or qualifying diarrhea." : "Neither qualifying neutropenia nor a complete allogeneic-HSCT gastrointestinal host pathway is documented."
     };
   }
 
@@ -1395,8 +1481,8 @@ function determineMbiStatus(lcbiResult) {
   ) {
     return {
       met: true,
-      status: "possible",
-      label: "Possible MBI-LCBI 1",
+      status: "met",
+      label: "MBI-LCBI criteria met",
       reason:
         "An LCBI 1 screen, qualifying host pathway, and eligible MBI organism pattern were selected."
     };
@@ -1408,8 +1494,8 @@ function determineMbiStatus(lcbiResult) {
   ) {
     return {
       met: true,
-      status: "possible",
-      label: "Possible MBI-LCBI 2",
+      status: "met",
+      label: "MBI-LCBI criteria met",
       reason:
         "An LCBI 2 screen, qualifying host pathway, and VGS and/or Rothia-only pathway were selected."
     };
@@ -1421,8 +1507,8 @@ function determineMbiStatus(lcbiResult) {
   ) {
     return {
       met: true,
-      status: "possible",
-      label: "Possible MBI-LCBI 3",
+      status: "met",
+      label: "MBI-LCBI criteria met",
       reason:
         "An LCBI 3 screen, qualifying host pathway, and VGS and/or Rothia-only pathway were selected."
     };
@@ -1430,11 +1516,39 @@ function determineMbiStatus(lcbiResult) {
 
   return {
     met: false,
-    status: "organismNotMet",
-    label: "MBI organism pathway not established",
+    status: "incomplete",
+    label: "MBI-LCBI review incomplete",
     reason:
-      "The selected LCBI pathway does not yet have a corresponding eligible MBI organism pattern."
+      `The ${lcbiResult.criterion} pathway still requires ${lcbiResult.criterion === "LCBI 1" ? "an MBI-eligible-only organism pattern" : "a VGS and/or Rothia-only organism pattern"}.`
   };
+}
+
+function determineExclusionStatus() {
+  if (!state.exclusions.size) return { status: "not-met", applicableExclusion: null, label: "No CLABSI exclusion applies", reason: "No exclusion pathway is selected." };
+  const complete = Array.from(state.exclusions).find((id) => state.exclusionSupport.has(id));
+  if (complete) return { status: "met", applicableExclusion: complete, label: "CLABSI exclusion criteria met", reason: `${complete} exclusion applies.` };
+  const selected = Array.from(state.exclusions)[0];
+  return { status: "incomplete", applicableExclusion: null, label: "CLABSI exclusion review incomplete", reason: `${selected}: ${exclusionRequirements[selected]}` };
+}
+
+function renderCalculatedStatuses() {
+  const site = getSiteSpecificDefinitionStatus();
+  const mbi = determineMbiStatus(determineLcbi());
+  const exclusion = determineExclusionStatus();
+  setResult(document.getElementById("siteDefinitionStatus"), site.met ? "success" : "neutral", `${site.label}. ${site.reason}`);
+  setResult(document.getElementById("mbiStatus"), mbi.met ? "success" : mbi.status === "incomplete" ? "neutral" : "warning", `${mbi.label}. ${mbi.reason}`);
+  setResult(document.getElementById("exclusionStatus"), exclusion.status === "met" ? "warning" : "neutral", `${exclusion.label}. ${exclusion.reason}`);
+}
+
+function renderExclusionFollowups() {
+  const container = document.getElementById("exclusionFollowups");
+  if (!container) return;
+  container.innerHTML = Array.from(state.exclusions).map((id) => `<label class="exclusion-followup"><input type="checkbox" data-exclusion-support="${escapeHtml(id)}" ${state.exclusionSupport.has(id) ? "checked" : ""}> ${escapeHtml(exclusionRequirements[id])}</label>`).join("");
+  container.querySelectorAll("[data-exclusion-support]").forEach((input) => input.addEventListener("change", () => {
+    if (input.checked) state.exclusionSupport.add(input.dataset.exclusionSupport);
+    else state.exclusionSupport.delete(input.dataset.exclusionSupport);
+    updateAll();
+  }));
 }
 
 function getSiteEvidenceSummary() {
@@ -1459,7 +1573,7 @@ function getSiteEvidenceSummary() {
   return {
     selected: true,
     label: site.label,
-    checkedCount: checked.size,
+    checkedCount: Array.from(checked).filter((key) => key !== "reviewComplete").length,
     totalCount: total
   };
 }
@@ -1555,6 +1669,7 @@ function buildFinalDetermination() {
   const secondary = determineSecondaryStatus();
   const centralLine = determineCentralLineStatus();
   const mbi = determineMbiStatus(lcbi);
+  const exclusion = determineExclusionStatus();
   const siteEvidence = getSiteEvidenceSummary();
 
   const details = [];
@@ -1602,7 +1717,7 @@ function buildFinalDetermination() {
     details.push({
       label: "Selected exclusion fields",
       text:
-        Array.from(state.exclusions).join(", ")
+        `${exclusion.label}. ${exclusion.reason}`
     });
   } else {
     details.push({
@@ -1663,23 +1778,15 @@ function buildFinalDetermination() {
     };
   }
 
-  if (state.exclusions.size > 0) {
-    if (mbi.met) {
-      return {
-        status: "warning",
-        title:
-          `${mbi.label} with central-line association and selected CLABSI exclusion field(s).`,
-        details
-      };
-    }
-
+  if (exclusion.status === "met") {
     return {
       status: "warning",
-      title:
-        `${lcbi.criterion} with central-line association and selected CLABSI exclusion field(s).`,
+      title: `Not reportable as CLABSI: ${exclusion.reason}`,
       details
     };
   }
+
+  if (exclusion.status === "incomplete") return { status: "warning", title: "Hold classification: selected CLABSI exclusion review is incomplete.", details };
 
   if (mbi.met) {
     return {
@@ -1745,9 +1852,12 @@ function buildCalculatorModel() {
   const lcbi = determineLcbi();
   const secondary = determineSecondaryStatus();
   const central = determineCentralLineStatus();
+  const siteDefinition = getSiteSpecificDefinitionStatus();
+  const mbi = determineMbiStatus(lcbi);
+  const exclusion = determineExclusionStatus();
   const hasSource = Boolean(state.selectedSite);
   const secondaryComplete = [
-    state.siteDefinitionMet,
+    siteDefinition.status !== "incomplete",
     state.organismRelationship,
     state.attributionTiming
   ].every(Boolean);
@@ -1758,7 +1868,9 @@ function buildCalculatorModel() {
     [hasSource, "Plausible secondary source reviewed"],
     [secondaryComplete, "Secondary attribution checks completed"],
     [lcbi.met, "LCBI criterion met"],
-    [central.status !== "incomplete", "Central-line review completed"]
+    [central.status !== "incomplete", "Central-line review completed"],
+    [mbi.status !== "incomplete", "MBI-LCBI review resolved"],
+    [exclusion.status !== "incomplete", "CLABSI exclusion review resolved"]
   ];
 
   let status = "neutral";
@@ -1767,7 +1879,7 @@ function buildCalculatorModel() {
   const missing = [];
 
   if (!hasSource) missing.push("Select the most plausible site-specific infection pathway.");
-  if (!state.siteDefinitionMet) missing.push("Answer whether the complete NHSN site-specific definition is met.");
+  if (siteDefinition.status === "incomplete") missing.push(siteDefinition.reason);
   if (!state.organismRelationship) missing.push("Confirm the culture-to-site organism relationship.");
   if (!state.attributionTiming) missing.push("Confirm the required secondary attribution timing.");
 
@@ -1781,10 +1893,10 @@ function buildCalculatorModel() {
       title = "Secondary BSI not met — LCBI incomplete";
       summary = "A secondary source is not established, but the selected culture information does not yet meet an LCBI criterion.";
       missing.push(lcbi.reason);
-    } else if (central.eligible && state.exclusions.size === 0) {
+    } else if (central.eligible && exclusion.status === "not-met") {
       status = "clabsi";
-      title = `Preliminary ${lcbi.criterion} CLABSI`;
-      summary = "LCBI and central-line association are met, secondary BSI is not established, and no CLABSI exclusion is selected.";
+      title = mbi.met ? `${mbi.label} — not a reportable CLABSI` : `Preliminary ${lcbi.criterion} CLABSI`;
+      summary = mbi.met ? mbi.reason : "LCBI and central-line association are met, secondary BSI is not established, and no CLABSI exclusion applies.";
     } else if (central.status === "incomplete") {
       status = "warning";
       title = `${lcbi.criterion} met — CLABSI pending`;
@@ -1798,11 +1910,24 @@ function buildCalculatorModel() {
     } else {
       status = "warning";
       title = `${lcbi.criterion} met — not a reportable CLABSI`;
-      summary = state.exclusions.size
-        ? "Central-line association is present, but a CLABSI exclusion field is selected."
+      summary = exclusion.status === "met"
+        ? `Not reportable as CLABSI: ${exclusion.reason}`
         : "One or more required central-line association elements is No.";
     }
   }
+
+  if (!secondary.met && lcbi.met && central.eligible && exclusion.status === "met") {
+    status = "warning";
+    title = `Not reportable as CLABSI: ${exclusion.reason}`;
+    summary = "An eligible LCBI is present, but the completed exclusion prevents CLABSI classification.";
+  } else if (!secondary.met && lcbi.met && central.eligible && exclusion.status === "incomplete") {
+    status = "warning";
+    title = "CLABSI classification on hold — exclusion review incomplete";
+    summary = exclusion.reason;
+    missing.push(exclusion.reason);
+  }
+
+  if (mbi.status === "incomplete") missing.push(mbi.reason);
 
   return { steps, status, title, summary, missing: [...new Set(missing)] };
 }
@@ -1832,6 +1957,8 @@ function updateAll() {
   renderSurveillanceWindow();
   renderOrganismSuggestions();
   renderSecondaryConclusion();
+  renderExclusionFollowups();
+  renderCalculatedStatuses();
   renderLcbiResult();
   renderFinalResult();
   renderCalculator();
