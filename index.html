@@ -187,21 +187,22 @@
         <span class="section-number">02</span>
         <div>
           <h2>Organism category</h2>
-          <p>Choose the category used for the preliminary LCBI screen after selecting the organism(s).</p>
+          <p>The category is derived automatically from the selected organism(s).</p>
         </div>
         <button class="section-reset" type="button" data-reset-section="organism" aria-label="Reset organism category section">Reset</button>
       </div>
 
       <div class="compact-choice wide-choice" data-name="organismCategory">
-        <button type="button" data-value="recognized">
+        <button type="button" data-value="recognized-pathogen" aria-disabled="true">
           Recognized pathogen
           <span class="button-help" data-tooltip="A bacterial or fungal pathogen eligible for LCBI 1 when identified from an eligible culture specimen and not related to another site.">i</span>
         </button>
-        <button type="button" data-value="commensal">
+        <button type="button" data-value="common-commensal" aria-disabled="true">
           Common commensal
           <span class="button-help" data-tooltip="LCBI 2 or 3 requires the same NHSN common commensal from at least two culture specimens collected on separate occasions, plus qualifying signs or symptoms.">i</span>
         </button>
       </div>
+      <p id="organismCategoryStatus" class="organism-category-status unresolved" role="status" aria-live="polite">Select an organism to derive its category.</p>
 
       <div id="commensalQuestions" class="conditional-panel hidden">
         <div class="field-grid">
