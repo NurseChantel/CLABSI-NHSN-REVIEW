@@ -137,13 +137,19 @@
             <span id="organismSearchStatus" class="organism-search-status" role="status" aria-live="polite"></span>
             <input id="selectedOrganismSnomedCodes" type="hidden" name="selectedOrganismSnomedCodes" value="">
           </div>
-          <div class="organism-selection-heading">
-            <span>Select all that apply</span>
-            <strong id="organismSelectionCount">0 selected</strong>
-          </div>
-          <div id="organismChecklist" class="organism-checklist" role="group" aria-label="Organisms; select all that apply"></div>
           <div id="selectedOrganisms" class="selected-organisms" aria-live="polite">
             <span class="selected-organisms-empty">No organisms selected</span>
+          </div>
+          <div class="organism-browse-actions">
+            <button id="toggleOrganismBrowse" class="organism-browse-button" type="button" aria-expanded="false" aria-controls="organismBrowsePanel">Browse all organisms</button>
+            <strong id="organismSelectionCount">0 selected</strong>
+          </div>
+          <div id="organismBrowsePanel" class="organism-browse-panel" hidden>
+            <div class="organism-selection-heading">
+              <span>Select all that apply</span>
+              <span>Selections are shared with search</span>
+            </div>
+            <div id="organismChecklist" class="organism-checklist" role="group" aria-label="All organisms; select all that apply"></div>
           </div>
           <select id="organismName" class="visually-hidden" multiple tabindex="-1" aria-hidden="true">
             <optgroup label="Recognized pathogens">

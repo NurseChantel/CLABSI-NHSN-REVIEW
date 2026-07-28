@@ -663,6 +663,40 @@ function bindInputs() {
     });
 
   buildOrganismChecklist();
+  bindOrganismBrowse();
+}
+
+function bindOrganismBrowse() {
+  const button = document.getElementById("toggleOrganismBrowse");
+  const panel = document.getElementById("organismBrowsePanel");
+  const checklist = document.getElementById("organismChecklist");
+
+  button.addEventListener("click", () => {
+    const opening = panel.hidden;
+    panel.hidden = !opening;
+    button.setAttribute("aria-expanded", String(opening));
+    button.textContent = opening ? "Hide organism browser" : "Browse all organisms";
+    if (!opening) return;
+
+    const options = Array.from(document.getElementById("organismName").options);
+    options.forEach((option) => {
+      const checkbox = Array.from(checklist.querySelectorAll("input")).find(
+        (input) => input.value === option.value
+      );
+      if (checkbox) checkbox.checked = option.selected;
+    });
+
+    const searchedSelections = Array.from(
+      checklist.querySelectorAll('.organism-checklist-option[data-selected-via-search="true"]')
+    );
+    searchedSelections.forEach((label) => label.classList.add("organism-search-selection-highlight"));
+    const firstSelection = searchedSelections[0] || checklist.querySelector("input:checked")?.closest("label");
+    if (firstSelection) {
+      requestAnimationFrame(() => firstSelection.scrollIntoView({ block: "center" }));
+    } else {
+      checklist.scrollTop = 0;
+    }
+  });
 }
 
 function buildOrganismChecklist() {
@@ -704,8 +738,14 @@ function buildOrganismChecklist() {
 
       const checkbox = label.querySelector("input");
       checkbox.checked = option.selected;
+      label.dataset.selectedViaSearch = option.dataset.selectedViaSearch || "false";
       checkbox.addEventListener("change", (event) => {
         option.selected = event.target.checked;
+        if (!event.target.checked) {
+          delete option.dataset.selectedViaSearch;
+          label.dataset.selectedViaSearch = "false";
+          label.classList.remove("organism-search-selection-highlight");
+        }
         syncOrganismSelection();
       });
       section.appendChild(label);
@@ -750,7 +790,12 @@ function syncOrganismSelection() {
         const option = Array.from(select.options).find((item) => item.value === value);
         const checkbox = Array.from(document.querySelectorAll("#organismChecklist input")).find((input) => input.value === value);
         option.selected = false;
-        checkbox.checked = false;
+        if (checkbox) {
+          checkbox.checked = false;
+          checkbox.closest("label").classList.remove("organism-search-selection-highlight");
+          checkbox.closest("label").dataset.selectedViaSearch = "false";
+        }
+        delete option.dataset.selectedViaSearch;
         syncOrganismSelection();
       });
     });
@@ -873,11 +918,15 @@ function bindOrganismSearch() {
       buildOrganismChecklist();
     }
     option.selected = true;
+    option.dataset.selectedViaSearch = "true";
     state.organismSnomedCodes[name] = String(organism.snomedCode);
     const checkbox = Array.from(document.querySelectorAll("#organismChecklist input"))
       .find((input) => input.value === name);
-    if (checkbox) checkbox.checked = true;
-    search.value = name;
+    if (checkbox) {
+      checkbox.checked = true;
+      checkbox.closest("label").dataset.selectedViaSearch = "true";
+    }
+    search.value = "";
     closeResults();
     syncOrganismSelection();
     status.textContent = `${name}, SNOMED ${organism.snomedCode}, selected.`;
@@ -1004,8 +1053,13 @@ function resetBloodSection() {
   document.getElementById("selectedOrganismSnomedCodes").value = "";
   state.symptoms.clear();
   document.getElementById("organismName").selectedIndex = -1;
+  Array.from(document.getElementById("organismName").options).forEach((option) => {
+    delete option.dataset.selectedViaSearch;
+  });
   document.querySelectorAll("#organismChecklist input").forEach((input) => {
     input.checked = false;
+    input.closest("label").dataset.selectedViaSearch = "false";
+    input.closest("label").classList.remove("organism-search-selection-highlight");
   });
   document.getElementById("organismSearch").value = "";
   document.getElementById("organismSearchStatus").textContent = "";
