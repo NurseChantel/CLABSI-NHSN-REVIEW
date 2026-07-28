@@ -1996,6 +1996,7 @@ function renderCalculator() {
 
 function updateAll() {
   renderSurveillanceWindow();
+  renderMbiOrganismPrompt();
   renderOrganismSuggestions();
   renderSecondaryConclusion();
   renderExclusionFollowups();
@@ -2003,6 +2004,19 @@ function updateAll() {
   renderLcbiResult();
   renderFinalResult();
   renderCalculator();
+}
+
+function renderMbiOrganismPrompt() {
+  const records = state.organismNames.map((name) => organismRecords[name]).filter(Boolean);
+  const prompts = [
+    [document.getElementById("mbiOrganismsPrompt"), records.some((record) => record.mbiEligible && !record.vgsRothia)],
+    [document.getElementById("vgsRothiaPrompt"), records.some((record) => record.vgsRothia)]
+  ];
+
+  prompts.forEach(([prompt, shouldHighlight]) => {
+    if (!prompt) return;
+    prompt.classList.toggle("mbi-review-needed", shouldHighlight);
+  });
 }
 
 function renderSurveillanceWindow() {
