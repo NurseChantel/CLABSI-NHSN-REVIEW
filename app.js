@@ -1,4 +1,4 @@
-import { loadOrganismDatabase, searchOrganisms } from "./organism-search.js";
+import { loadSynonymLookup, searchOrganisms } from "./organism-search.js";
 
 "use strict";
 
@@ -10,6 +10,7 @@ const state = {
   patientAge: "adult",
   culturePositive: "",
   organismNames: [],
+  organismSnomedCodes: {},
   organismCategory: "unresolved",
   commensalMatch: "",
   separateOccasions: "",
@@ -500,61 +501,21 @@ function init() {
 
 async function initializeOrganismDatabase() {
   const status = document.getElementById("organismSearchStatus");
+  status.textContent = "Loading NHSN organism names…";
+  status.classList.add("loading");
 
   try {
-    const database = await loadOrganismDatabase("./organisms.json");
-    organismDatabase = database.organisms;
+    organismDatabase = await loadSynonymLookup("./synonym_lookup.json");
     organismDatabaseAvailable = true;
-    addDatabaseOrganismsToPicker();
-    status.textContent = `${organismDatabase.length} database organism records available.`;
+    status.textContent = `${organismDatabase.length} NHSN organism records available.`;
+    status.classList.remove("loading", "warning");
   } catch (error) {
     organismDatabaseAvailable = false;
-    status.textContent = "Organism search is unavailable; the calculator can still be completed manually.";
+    status.textContent = "Organism search could not be loaded. You may still use the existing calculator list.";
+    status.classList.remove("loading");
     status.classList.add("warning");
-    console.error("Organism database failed to load:", error);
+    console.error("Organism synonym lookup failed to load:", error);
   }
-}
-
-function addDatabaseOrganismsToPicker() {
-  const select = document.getElementById("organismName");
-  let group = select.querySelector('optgroup[label="Organism database"]');
-
-  if (!group) {
-    group = document.createElement("optgroup");
-    group.label = "Organism database";
-    select.appendChild(group);
-  }
-
-  organismDatabase.forEach((organism) => {
-    const name = organism.displayName || organism.canonicalName;
-    const existing = Array.from(select.options).find((option) => option.value === name);
-    const classification = organism.nhsn?.classification === "common_commensal"
-      ? "common-commensal"
-      : organism.nhsn?.classification === "recognized_pathogen" || organism.nhsn?.recognizedPathogen === true
-        ? "recognized-pathogen"
-        : "unresolved";
-
-    organismRecords[name] = record(organism.id, classification, [], {
-      mbiEligible: organism.nhsn?.mbiEligible === true,
-      vgsRothia: organism.nhsn?.mbiEligible === true && /(?:viridans|streptococcus mitis|rothia)/i.test([
-        organism.canonicalName,
-        organism.displayName,
-        ...(organism.aliases || []),
-        ...(organism.searchTerms || [])
-      ].join(" ")),
-      databaseOrganism: organism
-    });
-    organismRecords[name].displayName = name;
-
-    if (!existing) {
-      const option = document.createElement("option");
-      option.value = name;
-      option.textContent = name;
-      group.appendChild(option);
-    }
-  });
-
-  buildOrganismChecklist();
 }
 
 function bindManualDialogs() {
@@ -725,7 +686,6 @@ function buildOrganismChecklist() {
       const label = document.createElement("label");
       label.className = "organism-checklist-option";
       label.dataset.searchText = option.text.toLowerCase();
-      label.dataset.organismId = organism?.databaseOrganism?.id || "";
       const isCoagulaseNegativeStaphylococcus =
         option.value === "Staphylococcus, coagulase negative";
       label.innerHTML = `
@@ -742,7 +702,9 @@ function buildOrganismChecklist() {
         ` : ""}
       `;
 
-      label.querySelector("input").addEventListener("change", (event) => {
+      const checkbox = label.querySelector("input");
+      checkbox.checked = option.selected;
+      checkbox.addEventListener("change", (event) => {
         option.selected = event.target.checked;
         syncOrganismSelection();
       });
@@ -759,6 +721,14 @@ function syncOrganismSelection() {
   const count = document.getElementById("organismSelectionCount");
 
   state.organismNames = Array.from(select.selectedOptions).map((option) => option.value);
+  Object.keys(state.organismSnomedCodes).forEach((name) => {
+    if (!state.organismNames.includes(name)) delete state.organismSnomedCodes[name];
+  });
+  document.getElementById("selectedOrganismSnomedCodes").value = JSON.stringify(
+    state.organismNames
+      .filter((name) => state.organismSnomedCodes[name])
+      .map((name) => ({ preferredTerm: name, snomedCode: state.organismSnomedCodes[name] }))
+  );
   state.organismCategory = deriveOrganismCategory(state.organismNames);
   applyKnownMbiEligibility();
   renderDerivedOrganismCategory();
@@ -852,86 +822,114 @@ function bindOrganismSearch() {
   const search = document.getElementById("organismSearch");
   const select = document.getElementById("organismName");
   const status = document.getElementById("organismSearchStatus");
+  const results = document.getElementById("organismSearchResults");
 
-  if (!search || !select || !status) {
+  if (!search || !select || !status || !results) {
     return;
   }
 
-  const filterOptions = () => {
-    const query = search.value.trim();
-    const matchingIds = organismDatabaseAvailable && query
-      ? new Set(searchOrganisms(query, organismDatabase, { limit: 25, minimumScore: 20 }).map(({ organism }) => organism.id))
-      : null;
-    let visibleCount = 0;
+  let matches = [];
+  let activeIndex = -1;
 
-    document.querySelectorAll(".organism-checklist-option").forEach((option) => {
-      const matches = !query || (matchingIds
-        ? Boolean(option.dataset.organismId && matchingIds.has(option.dataset.organismId))
-        : option.dataset.searchText.includes(query.toLowerCase()));
-      option.hidden = !matches;
-      if (matches) {
-        visibleCount += 1;
-      }
-    });
-
-    document.querySelectorAll(".organism-checklist-group").forEach((group) => {
-      group.hidden = !Array.from(group.querySelectorAll(".organism-checklist-option")).some((option) => !option.hidden);
-    });
-
-    status.textContent = query
-      ? visibleCount
-        ? `${visibleCount} organism${visibleCount === 1 ? "" : "s"} found.`
-        : 'Organism not found in database. Press Enter to keep it for manual NHSN review.'
-      : "";
-    status.classList.toggle("warning", Boolean(query && !visibleCount));
+  const closeResults = () => {
+    results.hidden = true;
+    results.replaceChildren();
+    search.setAttribute("aria-expanded", "false");
+    search.removeAttribute("aria-activedescendant");
+    activeIndex = -1;
   };
 
-  search.addEventListener("input", filterOptions);
-  search.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      document.querySelector(".organism-checklist-option:not([hidden]) input")?.focus();
-    } else if (event.key === "Enter") {
-      event.preventDefault();
-      const firstMatch = document.querySelector(".organism-checklist-option:not([hidden]) input");
-      if (firstMatch) {
-        firstMatch.checked = true;
-        const option = Array.from(select.options).find((item) => item.value === firstMatch.value);
-        option.selected = true;
-      } else if (search.value.trim()) {
-        addUnknownOrganism(search.value.trim());
+  const setActive = (index) => {
+    const options = Array.from(results.querySelectorAll('[role="option"]'));
+    if (!options.length) return;
+    activeIndex = (index + options.length) % options.length;
+    options.forEach((option, optionIndex) => {
+      const active = optionIndex === activeIndex;
+      option.classList.toggle("active", active);
+      option.setAttribute("aria-selected", String(active));
+    });
+    options[activeIndex].scrollIntoView({ block: "nearest" });
+    search.setAttribute("aria-activedescendant", options[activeIndex].id);
+  };
+
+  const selectMatch = (organism) => {
+    const name = organism.preferredTerm;
+    let option = Array.from(select.options).find((item) => item.value === name);
+    if (!option) {
+      let group = select.querySelector('optgroup[label="NHSN organism dataset"]');
+      if (!group) {
+        group = document.createElement("optgroup");
+        group.label = "NHSN organism dataset";
+        select.appendChild(group);
       }
-      syncOrganismSelection();
+      option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      group.appendChild(option);
+      organismRecords[name] = record(`snomed-${organism.snomedCode}`, "unresolved", [], {
+        snomedCode: organism.snomedCode
+      });
+      organismRecords[name].displayName = name;
+      buildOrganismChecklist();
+    }
+    option.selected = true;
+    state.organismSnomedCodes[name] = String(organism.snomedCode);
+    const checkbox = Array.from(document.querySelectorAll("#organismChecklist input"))
+      .find((input) => input.value === name);
+    if (checkbox) checkbox.checked = true;
+    search.value = name;
+    closeResults();
+    syncOrganismSelection();
+    status.textContent = `${name}, SNOMED ${organism.snomedCode}, selected.`;
+    status.classList.remove("warning");
+  };
+
+  const renderResults = () => {
+    const query = search.value.trim();
+    if (!query || !organismDatabaseAvailable) {
+      closeResults();
+      return;
+    }
+    matches = searchOrganisms(query, organismDatabase, { limit: 15 });
+    results.replaceChildren(...matches.map(({ organism }, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.id = `organism-result-${index}`;
+      button.setAttribute("role", "option");
+      button.setAttribute("aria-selected", "false");
+      button.innerHTML = `<strong>${escapeHtml(organism.preferredTerm)}</strong><span>SNOMED ${escapeHtml(organism.snomedCode)}</span>`;
+      button.addEventListener("mousedown", (event) => event.preventDefault());
+      button.addEventListener("click", () => selectMatch(organism));
+      return button;
+    }));
+    results.hidden = !matches.length;
+    search.setAttribute("aria-expanded", String(matches.length > 0));
+    activeIndex = -1;
+    search.removeAttribute("aria-activedescendant");
+    status.textContent = matches.length
+      ? `${matches.length} organism suggestion${matches.length === 1 ? "" : "s"} available.`
+      : "No organism found in the NHSN dataset. Check the spelling or use the existing list.";
+    status.classList.toggle("warning", !matches.length);
+  };
+
+  search.addEventListener("input", renderResults);
+  search.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" && matches.length) {
+      event.preventDefault();
+      setActive(activeIndex + 1);
+    } else if (event.key === "ArrowUp" && matches.length) {
+      event.preventDefault();
+      setActive(activeIndex < 0 ? matches.length - 1 : activeIndex - 1);
+    } else if (event.key === "Enter" && matches.length) {
+      event.preventDefault();
+      selectMatch(matches[activeIndex < 0 ? 0 : activeIndex].organism);
+    } else if (event.key === "Escape") {
+      closeResults();
     }
   });
-}
-
-function addUnknownOrganism(name) {
-  const select = document.getElementById("organismName");
-  let option = Array.from(select.options).find((item) => item.value === name);
-
-  if (!option) {
-    let group = select.querySelector('optgroup[label="Manual NHSN review"]');
-    if (!group) {
-      group = document.createElement("optgroup");
-      group.label = "Manual NHSN review";
-      select.appendChild(group);
-    }
-    option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    group.appendChild(option);
-    organismRecords[name] = record(`manual-${Date.now()}`, "unresolved", []);
-    organismRecords[name].displayName = name;
-    buildOrganismChecklist();
-  }
-
-  option.selected = true;
-  const checkbox = Array.from(document.querySelectorAll("#organismChecklist input")).find((input) => input.value === name);
-  if (checkbox) checkbox.checked = true;
-  const status = document.getElementById("organismSearchStatus");
-  status.textContent = "Organism not found in database. Manual NHSN review required.";
-  status.classList.add("warning");
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".organism-search")) closeResults();
+  });
 }
 
 function bindCheckboxes() {
@@ -1002,6 +1000,8 @@ function resetBloodSection() {
   state.patientAge = "adult";
   state.culturePositive = "";
   state.organismNames = [];
+  state.organismSnomedCodes = {};
+  document.getElementById("selectedOrganismSnomedCodes").value = "";
   state.symptoms.clear();
   document.getElementById("organismName").selectedIndex = -1;
   document.querySelectorAll("#organismChecklist input").forEach((input) => {

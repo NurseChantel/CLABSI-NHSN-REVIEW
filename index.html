@@ -132,8 +132,10 @@
           </label>
           <div class="organism-search">
             <label class="visually-hidden" for="organismSearch">Find an organism</label>
-            <input id="organismSearch" type="search" placeholder="Start typing to find an organism" autocomplete="off" aria-controls="organismName" aria-describedby="organismSearchStatus">
+            <input id="organismSearch" type="search" placeholder="Start typing to find an organism" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="organismSearchResults" aria-describedby="organismSearchStatus">
+            <div id="organismSearchResults" class="organism-search-results" role="listbox" aria-label="Organism search results" hidden></div>
             <span id="organismSearchStatus" class="organism-search-status" role="status" aria-live="polite"></span>
+            <input id="selectedOrganismSnomedCodes" type="hidden" name="selectedOrganismSnomedCodes" value="">
           </div>
           <div class="organism-selection-heading">
             <span>Select all that apply</span>
