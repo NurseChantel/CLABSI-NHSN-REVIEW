@@ -1,5 +1,5 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
-import { evaluateSecondaryPathway } from "./secondary-rules.js";
+import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
 
 "use strict";
 
@@ -16,6 +16,7 @@ const state = {
   commensalMatch: "",
   separateOccasions: "",
   symptoms: new Set(),
+  selectedMajorCategory: "",
   selectedSite: "",
   siteEvidence: {},
   organismRelationship: "",
@@ -46,385 +47,8 @@ const exclusionRequirements = {
   "Other vascular access site": "Confirm pus at an eligible alternate access site, matching blood/site organisms, and required timing."
 };
 
-const siteLibrary = {
-  pneu: {
-    label: "Pneumonia / respiratory",
-    intro:
-      "Use these prompts to direct review of the current NHSN PNEU chapter. A provider diagnosis alone is not enough.",
-    groups: [
-      {
-        title: "Chest imaging",
-        items: [
-          [
-            "serialImaging",
-            "If underlying pulmonary or cardiac disease is present, look for the required serial chest-imaging results."
-          ],
-          [
-            "newInfiltrate",
-            "New and persistent or progressive and persistent infiltrate."
-          ],
-          ["consolidation", "Consolidation."],
-          ["cavitation", "Cavitation."],
-          ["pneumatoceles", "Pneumatoceles in an eligible infant."]
-        ]
-      },
-      {
-        title: "Systemic findings",
-        items: [
-          ["fever", "Fever above the applicable threshold."],
-          ["wbc", "Leukopenia or leukocytosis meeting the criterion."],
-          [
-            "mentalStatus",
-            "Eligible new altered mental status in an older adult."
-          ]
-        ]
-      },
-      {
-        title: "Respiratory findings",
-        items: [
-          [
-            "sputum",
-            "New purulent sputum, change in sputum, increased secretions, or increased suctioning."
-          ],
-          ["cough", "New or worsening cough."],
-          ["dyspnea", "Dyspnea or tachypnea."],
-          ["breathSounds", "Rales or bronchial breath sounds."],
-          [
-            "gasExchange",
-            "Worsening gas exchange, oxygenation, or ventilatory demand."
-          ]
-        ]
-      },
-      {
-        title: "Microbiology or other criterion evidence",
-        items: [
-          [
-            "respSpecimen",
-            "Eligible lower-respiratory specimen result."
-          ],
-          [
-            "pleuralFluid",
-            "Eligible pleural-fluid organism."
-          ],
-          [
-            "lungTissue",
-            "Eligible lung-tissue or histopathologic evidence."
-          ],
-          [
-            "cultureAllowed",
-            "Blood culture organism is eligible for secondary BSI attribution."
-          ],
-          [
-            "viralEvidence",
-            "Eligible viral, fungal, or other required laboratory evidence."
-          ]
-        ]
-      }
-    ]
-  },
-
-  uti: {
-    label: "Urinary tract",
-    intro:
-      "Review the current UTI chapter and determine whether SUTI or another eligible UTI definition is fully met.",
-    groups: [
-      {
-        title: "Urinary signs and symptoms",
-        items: [
-          [
-            "fever",
-            "Fever meeting the applicable age and device pathway."
-          ],
-          ["suprapubic", "Suprapubic tenderness."],
-          [
-            "cva",
-            "Costovertebral-angle pain or tenderness."
-          ],
-          ["urgency", "Urinary urgency."],
-          ["frequency", "Urinary frequency."],
-          ["dysuria", "Dysuria."]
-        ]
-      },
-      {
-        title: "Urine culture and attribution",
-        items: [
-          [
-            "urineCulture",
-            "Eligible urine culture with required organism count and number of species."
-          ],
-          [
-            "catheterTiming",
-            "Urinary-catheter presence and timing reviewed."
-          ],
-          [
-            "cultureMatch",
-            "At least one culture organism matches an eligible urine organism when required."
-          ],
-          [
-            "cultureAsElement",
-            "culture organism may be used as an allowed criterion element for the selected UTI pathway."
-          ]
-        ]
-      }
-    ]
-  },
-
-  ssi: {
-    label: "Surgical site",
-    intro:
-      "Confirm an eligible NHSN procedure, surveillance period, tissue level, and complete SSI criterion.",
-    groups: [
-      {
-        title: "Procedure and timing",
-        items: [
-          [
-            "procedure",
-            "Eligible NHSN operative procedure identified."
-          ],
-          [
-            "surveillance",
-            "Date of event falls within the applicable surveillance period."
-          ],
-          [
-            "level",
-            "Superficial, deep, or organ/space tissue level identified."
-          ]
-        ]
-      },
-      {
-        title: "SSI evidence",
-        items: [
-          [
-            "purulence",
-            "Purulent drainage from the eligible tissue level."
-          ],
-          [
-            "siteOrganism",
-            "Organism identified from an eligible site specimen."
-          ],
-          [
-            "opened",
-            "Incision deliberately opened, re-accessed, aspirated, or spontaneously dehisced as allowed."
-          ],
-          [
-            "imaging",
-            "Abscess or other evidence on gross exam, imaging, histopathology, or operative assessment."
-          ],
-          [
-            "diagnosis",
-            "Physician diagnosis permitted by selected SSI criterion."
-          ],
-          [
-            "cultureMatch",
-            "culture organism matches the SSI site organism or is an allowed criterion element."
-          ]
-        ]
-      }
-    ]
-  },
-
-  gi: {
-    label: "Gastrointestinal / intra-abdominal",
-    intro:
-      "Review the specific Chapter 17 gastrointestinal or intra-abdominal definition suggested by the chart.",
-    groups: [
-      {
-        title: "Clinical and anatomic evidence",
-        items: [
-          [
-            "symptoms",
-            "Applicable fever, nausea, vomiting, abdominal pain, or tenderness."
-          ],
-          [
-            "imaging",
-            "Imaging evidence of infection at the specific GI or intra-abdominal site."
-          ],
-          [
-            "operative",
-            "Operative, gross anatomic, or histopathologic evidence."
-          ],
-          [
-            "siteSpecimen",
-            "Eligible organism from a site-specific specimen."
-          ]
-        ]
-      },
-      {
-        title: "culture relationship",
-        items: [
-          [
-            "cultureMatch",
-            "Blood culture organism matches the qualifying site organism."
-          ],
-          [
-            "cultureElement",
-            "Blood culture organism is eligible for secondary BSI attribution."
-          ],
-          [
-            "necException",
-            "NEC exception reviewed when applicable."
-          ]
-        ]
-      }
-    ]
-  },
-
-  skin: {
-    label: "Skin / soft tissue",
-    intro:
-      "Review the exact Chapter 17 skin, soft-tissue, wound, burn, or decubitus definition that fits the chart.",
-    groups: [
-      {
-        title: "Evidence to look for",
-        items: [
-          ["purulence", "Purulent drainage or material."],
-          [
-            "localFindings",
-            "Localized pain, tenderness, swelling, erythema, heat, or other required findings."
-          ],
-          [
-            "siteCulture",
-            "Eligible organism from tissue, drainage, aspirate, or other site specimen."
-          ],
-          [
-            "imaging",
-            "Imaging, operative, gross anatomic, or histopathologic evidence."
-          ],
-          [
-            "cultureMatch",
-            "culture organism matches the qualifying site organism or is allowed by the selected criterion."
-          ]
-        ]
-      }
-    ]
-  },
-
-  boneJoint: {
-    label: "Bone / joint",
-    intro:
-      "Review the exact bone, joint, disc-space, or related Chapter 17 definition.",
-    groups: [
-      {
-        title: "Evidence to look for",
-        items: [
-          [
-            "pain",
-            "Localized pain or tenderness and other required clinical findings."
-          ],
-          [
-            "imaging",
-            "MRI, CT, radiograph, nuclear study, or other qualifying imaging."
-          ],
-          [
-            "operative",
-            "Operative or gross anatomic evidence."
-          ],
-          ["histology", "Histopathologic evidence."],
-          [
-            "siteCulture",
-            "Eligible bone, joint, disc, or other site specimen."
-          ],
-          [
-            "cultureMatch",
-            "Blood culture organism is eligible for secondary BSI attribution."
-          ]
-        ]
-      }
-    ]
-  },
-
-  cardiovascular: {
-    label: "Cardiovascular / endovascular",
-    intro:
-      "Review the specific Chapter 17 cardiovascular definition, such as endocarditis, arterial or venous infection, or another endovascular site.",
-    groups: [
-      {
-        title: "Evidence to look for",
-        items: [
-          [
-            "echo",
-            "Echocardiogram or other imaging evidence, including vegetation when applicable."
-          ],
-          [
-            "clinical",
-            "Applicable fever, embolic, vascular, immunologic, or cardiac findings."
-          ],
-          [
-            "culturePattern",
-            "Required blood culture pattern and eligible organism(s)"
-          ],
-          [
-            "device",
-            "Eligible cardiovascular device, graft, or operative site evaluated."
-          ],
-          [
-            "siteSpecimen",
-            "Organism or histopathology from valve, vessel, graft, or other site specimen."
-          ]
-        ]
-      }
-    ]
-  },
-
-  cns: {
-    label: "Central nervous system",
-    intro:
-      "Review the exact meningitis, ventriculitis, spinal abscess, intracranial infection, or other CNS definition.",
-    groups: [
-      {
-        title: "Evidence to look for",
-        items: [
-          [
-            "symptoms",
-            "Applicable headache, meningeal signs, cranial-nerve findings, altered consciousness, or other required symptoms."
-          ],
-          [
-            "csf",
-            "Eligible CSF findings, culture, or other microbiology."
-          ],
-          ["imaging", "Qualifying neuroimaging."],
-          [
-            "operative",
-            "Operative, gross anatomic, or histopathologic evidence."
-          ],
-          [
-            "cultureRelationship",
-            "Blood culture organism is eligible for secondary BSI attribution."
-          ]
-        ]
-      }
-    ]
-  },
-
-  other: {
-    label: "Other NHSN site",
-    intro:
-      "Identify the exact NHSN Chapter 17 definition before deciding that the culturestream infection is primary.",
-    groups: [
-      {
-        title: "Required review",
-        items: [
-          [
-            "definition",
-            "Exact NHSN site-specific definition identified."
-          ],
-          [
-            "elements",
-            "Every required sign, symptom, imaging, laboratory, operative, or pathology element verified."
-          ],
-          [
-            "siteSpecimen",
-            "Eligible site-specific specimen and organism relationship reviewed."
-          ],
-          [
-            "timing",
-            "Infection window, date of event, RIT, and SBAP reviewed."
-          ]
-        ]
-      }
-    ]
-  }
-};
+const suggestionCategoryMap = Object.freeze({ pneu: "LRI", uti: "USI", gi: "GI", skin: "SST", boneJoint: "BJ", cardiovascular: "CVS", cns: "CNS", ssi: "", other: "" });
+const siteLibrary = Object.freeze(Object.fromEntries(secondarySiteCategories.map(category => [category.majorCategoryCode, { label: `${category.majorCategoryCode} / ${category.majorCategoryName}` }])));
 
 const NO_PATHWAY_GUIDANCE =
   "No organism-specific starting pathway is assigned. Review all clinically plausible NHSN infection sites.";
@@ -1146,6 +770,7 @@ function resetOrganismSection() {
 }
 
 function resetSecondarySection() {
+  state.selectedMajorCategory = "";
   state.selectedSite = "";
   state.siteEvidence = {};
   state.organismRelationship = "";
@@ -1261,42 +886,16 @@ function renderSymptoms() {
 }
 
 function buildSiteButtons() {
-  const container = document.getElementById("siteButtons");
-
-  Object.entries(siteLibrary).forEach(([key, site]) => {
-    const button = document.createElement("button");
-
-    button.type = "button";
-    button.dataset.site = key;
-    button.textContent = site.label;
-    button.setAttribute("aria-pressed", "false");
-
-    button.addEventListener("click", () => {
-      state.selectedSite = key;
-
-      container
-        .querySelectorAll("button")
-        .forEach((item) => {
-          item.classList.remove("selected");
-          item.setAttribute("aria-pressed", "false");
-        });
-
-      button.classList.add("selected");
-      button.setAttribute("aria-pressed", "true");
-
-      renderSiteGuide();
-      updateAll();
-    });
-
-    container.appendChild(button);
-  });
+ const container = document.getElementById("siteButtons");
+ container.innerHTML = secondarySiteCategories.map(category => `<button type="button" data-category="${category.majorCategoryCode}" aria-pressed="false">${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</button>`).join("");
+ container.querySelectorAll("[data-category]").forEach(button => button.addEventListener("click", () => { state.selectedMajorCategory = button.dataset.category; state.selectedSite = ""; state.siteEvidence = {}; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); container.querySelectorAll("button").forEach(item => { item.classList.toggle("selected", item === button); item.setAttribute("aria-pressed", String(item === button)); }); updateAll(); }));
 }
 
 function renderOrganismSuggestions() {
   const box = document.getElementById("organismSuggestions");
   const organisms = state.organismNames;
   const records = organisms.map((name) => organismRecords[name]).filter(Boolean);
-  const suggestedSiteKeys = new Set(records.flatMap((entry) => entry.priorityPathways));
+  const suggestedSiteKeys = new Set(records.flatMap((entry) => entry.priorityPathways).map(key => suggestionCategoryMap[key]).filter(Boolean));
 
   renderSuggestedSiteButtons(suggestedSiteKeys);
 
@@ -1349,7 +948,7 @@ function renderSuggestedSiteButtons(suggestedSiteKeys) {
   const hasSuggestions = suggestedSiteKeys.size > 0;
 
   buttons.forEach((button) => {
-    const isSuggested = hasSuggestions && suggestedSiteKeys.has(button.dataset.site);
+    const isSuggested = hasSuggestions && suggestedSiteKeys.has(button.dataset.category);
     button.classList.toggle("suggested", isSuggested);
     button.classList.toggle("not-suggested", hasSuggestions && !isSuggested);
     button.setAttribute("data-suggested", String(isSuggested));
@@ -1368,118 +967,11 @@ function renderSuggestedSiteButtons(suggestedSiteKeys) {
 }
 
 function renderSiteGuide() {
-  const container = document.getElementById("siteGuidance");
-  const site = siteLibrary[state.selectedSite];
-
-  if (!site) {
-    container.innerHTML = "";
-    return;
-  }
-
-  const saved =
-    state.siteEvidence[state.selectedSite] || new Set();
-
-  const evaluation = getSecondaryEvaluation();
-  const requirementItems = new Map();
-  evaluation.candidateRoutes.forEach((candidate, routeIndex) => candidate.requirements.forEach(requirement => requirement.anyOf.forEach(item => {
-    const existing = requirementItems.get(item) || [];
-    existing.push({ requirement, routeIndex });
-    requirementItems.set(item, existing);
-  })));
-
-  state.siteEvidence[state.selectedSite] = saved;
-
-  container.innerHTML = `
-    <div class="site-guide">
-      <h3>
-        ${escapeHtml(site.label)} evidence review
-
-        <button
-          class="definition"
-          type="button"
-          data-tooltip="These evidence items drive the calculated site-specific status. The configured AND/OR criterion groups, not the number of checked boxes, determine the result."
-          aria-label="${escapeHtml(site.label)} review definition"
-        >
-          i
-        </button>
-      </h3>
-
-      <p class="guide-intro">
-        ${escapeHtml(site.intro)}
-      </p>
-
-              ${site.groups
-        .map(
-          (group) => `
-            <div class="evidence-group">
-              <h4>${escapeHtml(group.title)}</h4>
-
-              <div class="prompt-list">
-                ${group.items
-                  .map(
-                    ([key, text]) => `
-                      <label class="evidence-item">
-                        <input
-                          type="checkbox"
-                          data-evidence="${escapeHtml(key)}"
-                          ${saved.has(key) ? "checked" : ""}
-                        >
-
-                        <span>${escapeHtml(text)}</span>
-
-                        ${requirementItems.has(key) ? `<span class="evidence-tag ${saved.has(key) ? "satisfied" : "needed"}">${saved.has(key) ? "Satisfied" : requirementItems.get(key).some(entry => entry.routeIndex === 0) ? "Still needed" : "Alternative"}</span>` : `<span class="evidence-tag not-applicable">Not applicable to current route</span>`}
-
-                        <span
-                          class="inline-info"
-                          tabindex="0"
-                          data-tooltip="Locate objective documentation in the medical record and verify that it satisfies the exact selected NHSN criterion and timing requirement."
-                        >
-                          i
-                        </span>
-                      </label>
-                    `
-                  )
-                  .join("")}
-              </div>
-            </div>
-          `
-        )
-              .join("")}
-
-      ${renderSecondaryGuidance(evaluation)}
-
-      <label class="evidence-review-complete">
-        <input type="checkbox" data-evidence="reviewComplete" ${saved.has("reviewComplete") ? "checked" : ""}>
-        Evidence review complete; unchecked criteria were reviewed and are absent or do not qualify.
-      </label>
-
-    </div>
-  `;
-
-  container
-    .querySelectorAll("[data-evidence]")
-    .forEach((input) => {
-      input.addEventListener("change", () => {
-        if (input.checked) {
-          saved.add(input.dataset.evidence);
-        } else {
-          saved.delete(input.dataset.evidence);
-        }
-        updateAll();
-      });
-    });
-
-  setupTooltips();
-}
-
-function renderSecondaryGuidance(evaluation) {
-  const routes = evaluation.candidateRoutes.map((candidate, index) => `
-    <section class="guidance-route ${candidate.complete ? "complete" : ""}">
-      <h5>Route ${index + 1} — ${escapeHtml(candidate.label)}${index === 0 && !candidate.complete ? " (closest to completion)" : ""}</h5>
-      <ul>${candidate.requirements.map(requirement => `<li class="${requirement.satisfied ? "satisfied" : "missing"}"><span aria-hidden="true">${requirement.satisfied ? "✓" : "○"}</span> ${escapeHtml(requirement.label)}</li>`).join("")}</ul>
-    </section>`).join("");
-  const remaining = evaluation.siteDefinitionComplete ? `<div class="remaining-checks"><strong>Remaining secondary-BSI checks</strong><ul>${evaluation.remainingAttributionChecks.length ? evaluation.remainingAttributionChecks.map(item => `<li>${escapeHtml(item)}</li>`).join("") : "<li>All attribution and review checks are complete.</li>"}</ul></div>` : "";
-  return `<div class="secondary-guidance ${evaluation.complete ? "success" : "warning"}" role="status" aria-live="polite"><strong>${escapeHtml(evaluation.complete ? "Secondary-BSI site-specific definition and attribution checks are complete for this pathway." : evaluation.guidanceMessage)}</strong>${evaluation.candidateRoutes.length > 1 ? "<p>Possible qualifying routes:</p>" : ""}<div class="guidance-routes">${routes}</div>${remaining}</div>`;
+ const container = document.getElementById("siteGuidance"); const category = secondarySiteCategories.find(item => item.majorCategoryCode === state.selectedMajorCategory);
+ if (!category) { container.innerHTML = ""; return; }
+ const definition = secondarySiteDefinitions[state.selectedSite];
+ container.innerHTML = `<div class="site-guide"><h3>${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</h3><p class="guide-intro">This grouped category is navigation only and cannot qualify as a site definition.</p><div class="site-button-grid">${category.siteCodes.map(code => { const site = secondarySiteDefinitions[code]; return `<button type="button" data-site-code="${code}" class="${code === state.selectedSite ? "selected" : ""}" aria-pressed="${code === state.selectedSite}"><strong>${code}</strong><span>${escapeHtml(site.siteName)}</span></button>`; }).join("")}</div>${definition ? `<div class="secondary-guidance warning" role="status"><strong>${escapeHtml(placeholderWarning)}</strong><div class="citation-display"><span>NHSN site code: ${definition.siteCode}</span><span>Site: ${escapeHtml(definition.siteName)}</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div></div><div class="evidence-group"><h4>Evidence review</h4><p>No clinical criteria are available until this site definition is validated.</p></div>` : ""}</div>`;
+ container.querySelectorAll("[data-site-code]").forEach(button => button.addEventListener("click", () => { if (state.selectedSite !== button.dataset.siteCode) state.siteEvidence = {}; state.selectedSite = button.dataset.siteCode; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); updateAll(); }));
 }
 
 function determineLcbi() {
@@ -1566,75 +1058,9 @@ function determineLcbi() {
   };
 }
 
-function getSecondaryEvaluation() {
-  return evaluateSecondaryPathway({
-    pathway: state.selectedSite,
-    evidence: state.siteEvidence[state.selectedSite] || new Set(),
-    organismRelationship: state.organismRelationship,
-    attributionTiming: state.attributionTiming
-  });
-}
-
-function getSiteSpecificDefinitionStatus() {
-  const site = siteLibrary[state.selectedSite];
-  if (!site) return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: "Select the suspected infection pathway." };
-  const evaluation = getSecondaryEvaluation();
-  if (evaluation.siteDefinitionComplete) return { status: "met", met: true, label: "Site-specific definition met", reason: `${site.label} evidence satisfies ${evaluation.candidateRoutes.find(candidate => candidate.complete).label}.` };
-  const reason = `${site.label} definition incomplete: ${evaluation.missingRequirements.join("; ")} still needed.`;
-  return evaluation.reviewComplete ? { status: "not-met", met: false, label: "Site-specific definition not met", reason } : { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason };
-}
-
-function determineSecondaryStatus() {
-  const siteDefinition = getSiteSpecificDefinitionStatus();
-  const evaluation = getSecondaryEvaluation();
-  const answers = [
-    siteDefinition.status === "met" ? "yes" : siteDefinition.status === "not-met" ? "no" : "",
-    state.organismRelationship,
-    state.attributionTiming
-  ];
-
-  const allYes = answers.every((answer) => answer === "yes");
-  const anyNo = answers.some((answer) => answer === "no");
-  const incomplete = answers.some((answer) => !answer);
-
-  if (allYes && evaluation.reviewComplete) {
-    return {
-      met: true,
-      status: "complete",
-      label: "Secondary BSI attribution appears satisfied",
-      reason:
-        "The active pathway definition, organism relationship, required timing, and evidence-review confirmation are complete."
-    };
-  }
-
-  if (incomplete) {
-    return {
-      met: false,
-      status: "incomplete",
-      label: "Secondary BSI review incomplete",
-      reason:
-        `${siteDefinition.reason} Complete any unresolved organism-relationship and attribution-timing checks.`
-    };
-  }
-
-  if (anyNo) {
-    return {
-      met: false,
-      status: "notMet",
-      label: "Secondary BSI attribution not established",
-      reason:
-        "At least one required secondary attribution element was answered No."
-    };
-  }
-
-  return {
-    met: false,
-    status: "incomplete",
-    label: "Secondary BSI review incomplete",
-    reason:
-      "Complete the secondary attribution review."
-  };
-}
+function getSecondaryEvaluation() { return evaluateSecondarySite({ siteCode: state.selectedSite }); }
+function getSiteSpecificDefinitionStatus() { const evaluation = getSecondaryEvaluation(); if (evaluation.status === "siteNotSelected") return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: state.selectedMajorCategory ? "Select a specific NHSN site code; the major category cannot qualify." : "Select a major category and then a specific NHSN site code." }; return { status: "incomplete", met: false, label: "Site definition not validated", reason: placeholderWarning }; }
+function determineSecondaryStatus() { return { met: false, status: "incomplete", architectureStatus: getSecondaryEvaluation().status, label: "Secondary BSI review incomplete", reason: getSiteSpecificDefinitionStatus().reason }; }
 
 function determineCentralLineStatus() {
   const values = [
@@ -1798,32 +1224,7 @@ function renderExclusionFollowups() {
   }));
 }
 
-function getSiteEvidenceSummary() {
-  if (!state.selectedSite) {
-    return {
-      selected: false,
-      label: "No suspected source selected",
-      checkedCount: 0,
-      totalCount: 0
-    };
-  }
-
-  const site = siteLibrary[state.selectedSite];
-  const checked =
-    state.siteEvidence[state.selectedSite] || new Set();
-
-  const total = site.groups.reduce(
-    (sum, group) => sum + group.items.length,
-    0
-  );
-
-  return {
-    selected: true,
-    label: site.label,
-    checkedCount: Array.from(checked).filter((key) => key !== "reviewComplete").length,
-    totalCount: total
-  };
-}
+function getSiteEvidenceSummary() { const site = secondarySiteDefinitions[state.selectedSite]; return site ? { selected: true, label: `${site.siteCode} — ${site.siteName}`, checkedCount: 0, totalCount: 0 } : { selected: false, label: "No suspected source selected", checkedCount: 0, totalCount: 0 }; }
 
 function renderSecondaryConclusion() {
   const result =
