@@ -1,4 +1,4 @@
-import { loadSynonymLookup, searchOrganisms } from "./organism-search.js";
+import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondaryPathway } from "./secondary-rules.js";
 
 "use strict";
@@ -10,6 +10,7 @@ const state = {
   cultureOrganismDate: "",
   patientAge: "adult",
   organismNames: [],
+  selectedOrganisms: [],
   organismSnomedCodes: {},
   organismCategory: "unresolved",
   commensalMatch: "",
@@ -477,6 +478,45 @@ function record(id, classification, suggestedPathways, flags = {}) {
   return { id, classification, suggestedPathways, priorityPathways: suggestedPathways, guidance: suggestedPathways.length ? "Review the highlighted organism-associated starting pathways and every other clinically plausible site." : NO_PATHWAY_GUIDANCE, mbiEligible: false, vgsRothia: false, specialRule: "", ...flags };
 }
 
+function makeCalculatorOrganismRecord(organism) {
+  const existing = organismRecordDefinitions[organism.displayName];
+  const priorityPathways = existing?.priorityPathways || (organism.isUtiBacterium ? ["uti"] : []);
+  return {
+    ...(existing || record(`nhsn-${organism.nhsnCode}`, organism.isCommonCommensal ? "common-commensal" : "recognized-pathogen", priorityPathways)),
+    ...organism,
+    id: `nhsn-${organism.nhsnCode}`,
+    classification: organism.isCommonCommensal ? "common-commensal" : "recognized-pathogen",
+    mbiEligible: organism.isMbiOrganism,
+    priorityPathways,
+    suggestedPathways: priorityPathways
+  };
+}
+
+function installNhsnOrganismRecords(organisms) {
+  organismRecords = Object.fromEntries(organisms.map((organism) => [
+    organism.displayName,
+    makeCalculatorOrganismRecord(organism)
+  ]));
+
+  const select = document.getElementById("organismName");
+  select.replaceChildren();
+  [
+    ["Recognized pathogens", false],
+    ["Common Commensals", true]
+  ].forEach(([label, isCommonCommensal]) => {
+    const group = document.createElement("optgroup");
+    group.label = label;
+    organisms.filter((organism) => organism.isCommonCommensal === isCommonCommensal).forEach((organism) => {
+      const option = document.createElement("option");
+      option.value = organism.displayName;
+      option.textContent = organism.displayName;
+      group.appendChild(option);
+    });
+    select.appendChild(group);
+  });
+  buildOrganismChecklist();
+}
+
 const coagulaseNegativeStaphylococciDefinition =
   "Coagulase-negative Staphylococcus species include: S. arlettae, S. auricularis, S. capitis, S. caprae, S. carnosus, S. chromogenes, S. cohnii, S. condimenti, S. epidermidis, S. equorum, S. felis, S. haemolyticus, S. hominis, S. kloosii, S. lentus, S. lugdunensis, S. pasteuri, S. pettenkoferi, S. piscifermentans, S. saccharolyticus, S. saprophyticus, S. schleiferi, S. sciuri, S. simulans, S. succinus, S. vitulinus, S. warneri, and S. xylosus. Confirm the laboratory identification and current NHSN Terminology Browser classification when reporting.";
 
@@ -505,7 +545,8 @@ async function initializeOrganismDatabase() {
   status.classList.add("loading");
 
   try {
-    organismDatabase = await loadSynonymLookup("./synonym_lookup.json");
+    organismDatabase = await loadNhsnOrganisms("./nhsn-organisms.json");
+    installNhsnOrganismRecords(organismDatabase);
     organismDatabaseAvailable = true;
     status.textContent = `${organismDatabase.length} NHSN organism records available.`;
     status.classList.remove("loading", "warning");
@@ -514,7 +555,7 @@ async function initializeOrganismDatabase() {
     status.textContent = "Organism search could not be loaded. You may still use the existing calculator list.";
     status.classList.remove("loading");
     status.classList.add("warning");
-    console.error("Organism synonym lookup failed to load:", error);
+    console.error("NHSN organism database failed to load:", error);
   }
 }
 
@@ -761,6 +802,7 @@ function syncOrganismSelection() {
   const count = document.getElementById("organismSelectionCount");
 
   state.organismNames = Array.from(select.selectedOptions).map((option) => option.value);
+  state.selectedOrganisms = state.organismNames.map((name) => organismRecords[name]).filter(Boolean);
   Object.keys(state.organismSnomedCodes).forEach((name) => {
     if (!state.organismNames.includes(name)) delete state.organismSnomedCodes[name];
   });
@@ -801,7 +843,25 @@ function syncOrganismSelection() {
     });
   }
 
+  renderSelectedOrganismDetails();
+
   updateAll();
+}
+
+function renderSelectedOrganismDetails() {
+  const container = document.getElementById("selectedOrganismDetails");
+  if (!container) return;
+  const records = state.organismNames.map((name) => organismRecords[name]).filter(Boolean);
+  container.hidden = records.length === 0;
+  container.innerHTML = records.map((organism) => `
+    <dl class="organism-detail-card">
+      <div><dt>Organism</dt><dd>${escapeHtml(organism.displayName)}</dd></div>
+      <div><dt>Common Commensal</dt><dd>${organism.isCommonCommensal ? "Yes" : "No"}</dd></div>
+      <div><dt>Recognized Pathogen</dt><dd>${organism.isCommonCommensal ? "No" : "Yes"}</dd></div>
+      <div><dt>MBI Organism</dt><dd>${organism.isMbiOrganism ? "Yes" : "No"}</dd></div>
+      <div><dt>UTI Organism</dt><dd>${organism.isUtiBacterium ? "Yes" : "No"}</dd></div>
+    </dl>
+  `).join("");
 }
 
 function applyKnownMbiEligibility() {
@@ -898,7 +958,7 @@ function bindOrganismSearch() {
   };
 
   const selectMatch = (organism) => {
-    const name = organism.preferredTerm;
+    const name = organism.displayName;
     let option = Array.from(select.options).find((item) => item.value === name);
     if (!option) {
       let group = select.querySelector('optgroup[label="NHSN organism dataset"]');
@@ -911,10 +971,7 @@ function bindOrganismSearch() {
       option.value = name;
       option.textContent = name;
       group.appendChild(option);
-      organismRecords[name] = record(`snomed-${organism.snomedCode}`, "unresolved", [], {
-        snomedCode: organism.snomedCode
-      });
-      organismRecords[name].displayName = name;
+      organismRecords[name] = makeCalculatorOrganismRecord(organism);
       buildOrganismChecklist();
     }
     option.selected = true;
@@ -929,6 +986,10 @@ function bindOrganismSearch() {
     search.value = "";
     closeResults();
     syncOrganismSelection();
+    search.dispatchEvent(new CustomEvent("organismselected", {
+      bubbles: true,
+      detail: organism
+    }));
     status.textContent = `${name}, SNOMED ${organism.snomedCode}, selected.`;
     status.classList.remove("warning");
   };
@@ -946,7 +1007,7 @@ function bindOrganismSearch() {
       button.id = `organism-result-${index}`;
       button.setAttribute("role", "option");
       button.setAttribute("aria-selected", "false");
-      button.innerHTML = `<strong>${escapeHtml(organism.preferredTerm)}</strong><span>SNOMED ${escapeHtml(organism.snomedCode)}</span>`;
+      button.innerHTML = `<strong>${escapeHtml(organism.displayName)}</strong><span>NHSN ${escapeHtml(organism.nhsnCode)} · SNOMED ${escapeHtml(organism.snomedCode)}</span>`;
       button.addEventListener("mousedown", (event) => event.preventDefault());
       button.addEventListener("click", () => selectMatch(organism));
       return button;
@@ -957,7 +1018,7 @@ function bindOrganismSearch() {
     search.removeAttribute("aria-activedescendant");
     status.textContent = matches.length
       ? `${matches.length} organism suggestion${matches.length === 1 ? "" : "s"} available.`
-      : "No organism found in the NHSN dataset. Check the spelling or use the existing list.";
+      : "Organism not found in NHSN organism database.";
     status.classList.toggle("warning", !matches.length);
   };
 
@@ -1048,6 +1109,7 @@ function resetIntroSection() {
 function resetBloodSection() {
   state.patientAge = "adult";
   state.organismNames = [];
+  state.selectedOrganisms = [];
   state.organismSnomedCodes = {};
   document.getElementById("selectedOrganismSnomedCodes").value = "";
   state.symptoms.clear();
