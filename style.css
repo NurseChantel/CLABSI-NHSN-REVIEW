@@ -310,6 +310,12 @@ button{cursor:pointer}
 .organism-category-status{margin:10px 0;padding:10px 12px;border-left:4px solid var(--border-dark);background:#f5f7f9;color:var(--navy);font-size:.76rem;font-weight:700}
 .organism-category-status.mixed,.organism-category-status.special-rule{border-left-color:#c98216;background:#fff7e8;color:#67420d}
 [data-name="organismCategory"] button[aria-disabled="true"]{cursor:default}
+.selected-organism-details{display:grid;gap:.75rem;margin-top:.8rem}
+.organism-detail-card{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:0;padding:.85rem;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;gap:.75rem}
+.organism-detail-card div{min-width:0}
+.organism-detail-card dt{color:#475569;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.organism-detail-card dd{margin:.2rem 0 0;font-weight:700;overflow-wrap:anywhere}
+@media (max-width:760px){.organism-detail-card{grid-template-columns:1fr 1fr}}
 .subsection-heading{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
 .subsection-heading h3{margin:0;color:var(--navy);font-size:1rem}
 .subsection-heading p{margin:3px 0 0;color:var(--muted);font-size:.78rem}
