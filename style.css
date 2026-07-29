@@ -206,18 +206,30 @@ button{cursor:pointer}
 .manual-book-sparkle{position:absolute;z-index:1;top:10px;left:13px;color:#d9b65e;font-size:.62rem;line-height:1;text-shadow:0 1px 2px #291b08}
 .clabsi-manual-book .manual-book-sparkle{color:#d9b65e}
 .manual-book-title{
-  position:relative;
+  position:absolute;
   z-index:1;
-  width:100%;
-  padding:0 9px 7px 12px;
+  inset:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  min-height:0;
+  padding:0;
+  overflow:visible;
   color:#e7c66f;
   font-family:Georgia,"Times New Roman",serif;
-  font-size:.67rem;
-  line-height:1.25;
+  font-size:clamp(.5rem,1.15vw,.67rem);
+  line-height:1.05;
   letter-spacing:.035em;
   text-align:center;
   text-transform:uppercase;
   text-shadow:0 1px 2px #171006;
+}
+.manual-book-title > span{
+  display:block;
+  max-width:100%;
+  overflow-wrap:break-word;
+  word-break:normal;
 }
 .manual-book-face{position:absolute;right:11px;bottom:9px;width:15px;height:8px;opacity:.48}
 .manual-book-face::before,.manual-book-face::after{content:"";position:absolute;top:0;width:2px;height:3px;border-radius:50%;background:#e7c66f}
@@ -651,7 +663,7 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   .bookend-left{left:7px}
   .bookend-right{right:7px}
   .manual-book-cover{width:62px;height:61px}
-  .manual-book-title{padding:0 5px 5px 9px;font-size:.5rem;letter-spacing:.01em}
+  .manual-book-title{inset:7px;font-size:clamp(.38rem,2.15vw,.5rem);letter-spacing:.01em}
   .manual-book-sparkle{top:7px;left:10px;font-size:.48rem}
   .manual-book-mark{right:8px;width:5px;height:13px}
   .manual-book-face{right:7px;bottom:5px;transform:scale(.8);transform-origin:right bottom}

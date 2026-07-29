@@ -157,11 +157,65 @@ function init() {
   bindCheckboxes();
   bindSectionResets();
   bindManualDialogs();
+  setupResponsiveBookTitles();
   bindReferenceTabs();
   bindReferenceGuideMinimize();
   setupTooltips();
   updateAll();
   initializeOrganismDatabase();
+}
+
+function setupResponsiveBookTitles() {
+  const titles = Array.from(document.querySelectorAll(".manual-book-title"));
+
+  const fitAllTitles = () => {
+    titles.forEach((title) => fitBookTitle(title));
+  };
+
+  fitAllTitles();
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(fitAllTitles);
+    titles.forEach((title) => observer.observe(title.closest(".manual-book-cover") || title));
+  } else {
+    window.addEventListener("resize", fitAllTitles);
+  }
+
+  document.fonts?.ready.then(fitAllTitles);
+}
+
+function fitBookTitle(title) {
+  const text = title.firstElementChild || title;
+  text.style.fontSize = "";
+
+  const maximumSize = Number.parseFloat(getComputedStyle(text).fontSize);
+  let smallestSize = 1;
+  let largestSize = maximumSize;
+
+  const fits = (size) => {
+    text.style.fontSize = `${size}px`;
+    const lineHeight = Number.parseFloat(getComputedStyle(text).lineHeight);
+    const lineCount = Math.ceil((text.scrollHeight - 0.5) / lineHeight);
+
+    return text.scrollWidth <= title.clientWidth + 0.5 &&
+      text.scrollHeight <= title.clientHeight + 0.5 &&
+      lineCount <= 3;
+  };
+
+  if (fits(largestSize)) {
+    return;
+  }
+
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const candidate = (smallestSize + largestSize) / 2;
+    if (fits(candidate)) {
+      smallestSize = candidate;
+    } else {
+      largestSize = candidate;
+    }
+  }
+
+  text.style.fontSize = `${Math.floor(smallestSize * 10) / 10}px`;
 }
 
 async function initializeOrganismDatabase() {
