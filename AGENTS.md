@@ -9,10 +9,9 @@ stored in this repository.
 Authoritative files currently include:
 
 - Secondary BSI Chapter.pdf
-- clabsi nhsn.pdf
 - any other explicitly identified NHSN protocol PDF in this repository
 - clabsi nhsn.pdf — complete NHSN Patient Safety Component Manual, if confirmed by its contents
-- 
+  
 Do not use:
 - general medical knowledge
 - remembered NHSN rules
