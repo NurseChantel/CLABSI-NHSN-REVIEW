@@ -751,3 +751,4 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   .lcbi-manual-criterion{grid-template-columns:1fr}
   .criterion-label{border-right:0;border-bottom:1px solid #c8d7d3}
 }
+.selection-step{margin:16px 0 8px;color:var(--navy);font-size:.82rem}.site-button-grid button span{display:block;margin-top:4px;font-size:.72rem;font-weight:600}.citation-display{display:grid;gap:4px;margin-top:12px;font-size:.78rem}
