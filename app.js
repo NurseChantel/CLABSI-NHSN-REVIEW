@@ -7,6 +7,7 @@ let organismDatabase = [];
 let organismDatabaseAvailable = false;
 
 const state = {
+  admitDate: "",
   cultureOrganismDate: "",
   patientAge: "adult",
   organismNames: [],
@@ -320,6 +321,12 @@ function bindChoiceGroups() {
 }
 
 function bindInputs() {
+  document
+    .getElementById("admitDate")
+    .addEventListener("change", (event) => {
+      state.admitDate = event.target.value;
+    });
+
   document
     .getElementById("cultureOrganismDate")
     .addEventListener("change", (event) => {
@@ -725,6 +732,8 @@ function resetSection(section) {
 }
 
 function resetIntroSection() {
+  state.admitDate = "";
+  document.getElementById("admitDate").value = "";
   state.cultureOrganismDate = "";
   document.getElementById("cultureOrganismDate").value = "";
   renderSurveillanceWindow();
