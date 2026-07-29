@@ -9,7 +9,6 @@ let organismDatabaseAvailable = false;
 const state = {
   cultureOrganismDate: "",
   patientAge: "adult",
-  culturePositive: "",
   organismNames: [],
   organismSnomedCodes: {},
   organismCategory: "unresolved",
@@ -1048,7 +1047,6 @@ function resetIntroSection() {
 
 function resetBloodSection() {
   state.patientAge = "adult";
-  state.culturePositive = "";
   state.organismNames = [];
   state.organismSnomedCodes = {};
   document.getElementById("selectedOrganismSnomedCodes").value = "";
@@ -1069,7 +1067,6 @@ function resetBloodSection() {
   });
   syncOrganismSelection();
   setChoiceValue("patientAge", "adult");
-  setChoiceValue("culturePositive", "");
   renderSymptoms();
   updateAll();
 }
@@ -1424,16 +1421,6 @@ function renderSecondaryGuidance(evaluation) {
 }
 
 function determineLcbi() {
-  if (state.culturePositive !== "yes") {
-    return {
-      met: false,
-      criterion: "",
-      label: "No LCBI",
-      reason:
-        "An eligible positive culture specimen has not been confirmed."
-    };
-  }
-
   if (state.organismCategory === "recognized-pathogen") {
     return {
       met: true,
@@ -1873,7 +1860,6 @@ function buildFinalDetermination() {
   const details = [];
 
   const hasLcbiSelection = Boolean(
-    state.culturePositive ||
     state.organismNames.length ||
     state.commensalMatch ||
     state.separateOccasions ||
@@ -2058,7 +2044,6 @@ function buildCalculatorModel() {
   ].every(Boolean);
 
   const steps = [
-    [state.culturePositive === "yes", "Eligible positive culture confirmed"],
     [state.organismNames.length > 0, "Culture organism selected"],
     [hasSource, "Plausible secondary source reviewed"],
     [secondaryComplete, "Secondary attribution checks completed"],
