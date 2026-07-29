@@ -1,4 +1,5 @@
 import { loadSynonymLookup, searchOrganisms } from "./organism-search.js";
+import { evaluateSecondaryPathway } from "./secondary-rules.js";
 
 "use strict";
 
@@ -1319,6 +1320,14 @@ function renderSiteGuide() {
   const saved =
     state.siteEvidence[state.selectedSite] || new Set();
 
+  const evaluation = getSecondaryEvaluation();
+  const requirementItems = new Map();
+  evaluation.candidateRoutes.forEach((candidate, routeIndex) => candidate.requirements.forEach(requirement => requirement.anyOf.forEach(item => {
+    const existing = requirementItems.get(item) || [];
+    existing.push({ requirement, routeIndex });
+    requirementItems.set(item, existing);
+  })));
+
   state.siteEvidence[state.selectedSite] = saved;
 
   container.innerHTML = `
@@ -1350,7 +1359,7 @@ function renderSiteGuide() {
                 ${group.items
                   .map(
                     ([key, text]) => `
-                      <label>
+                      <label class="evidence-item">
                         <input
                           type="checkbox"
                           data-evidence="${escapeHtml(key)}"
@@ -1358,6 +1367,8 @@ function renderSiteGuide() {
                         >
 
                         <span>${escapeHtml(text)}</span>
+
+                        ${requirementItems.has(key) ? `<span class="evidence-tag ${saved.has(key) ? "satisfied" : "needed"}">${saved.has(key) ? "Satisfied" : requirementItems.get(key).some(entry => entry.routeIndex === 0) ? "Still needed" : "Alternative"}</span>` : `<span class="evidence-tag not-applicable">Not applicable to current route</span>`}
 
                         <span
                           class="inline-info"
@@ -1374,7 +1385,9 @@ function renderSiteGuide() {
             </div>
           `
         )
-                .join("")}
+              .join("")}
+
+      ${renderSecondaryGuidance(evaluation)}
 
       <label class="evidence-review-complete">
         <input type="checkbox" data-evidence="reviewComplete" ${saved.has("reviewComplete") ? "checked" : ""}>
@@ -1398,6 +1411,16 @@ function renderSiteGuide() {
     });
 
   setupTooltips();
+}
+
+function renderSecondaryGuidance(evaluation) {
+  const routes = evaluation.candidateRoutes.map((candidate, index) => `
+    <section class="guidance-route ${candidate.complete ? "complete" : ""}">
+      <h5>Route ${index + 1} — ${escapeHtml(candidate.label)}${index === 0 && !candidate.complete ? " (closest to completion)" : ""}</h5>
+      <ul>${candidate.requirements.map(requirement => `<li class="${requirement.satisfied ? "satisfied" : "missing"}"><span aria-hidden="true">${requirement.satisfied ? "✓" : "○"}</span> ${escapeHtml(requirement.label)}</li>`).join("")}</ul>
+    </section>`).join("");
+  const remaining = evaluation.siteDefinitionComplete ? `<div class="remaining-checks"><strong>Remaining secondary-BSI checks</strong><ul>${evaluation.remainingAttributionChecks.length ? evaluation.remainingAttributionChecks.map(item => `<li>${escapeHtml(item)}</li>`).join("") : "<li>All attribution and review checks are complete.</li>"}</ul></div>` : "";
+  return `<div class="secondary-guidance ${evaluation.complete ? "success" : "warning"}" role="status" aria-live="polite"><strong>${escapeHtml(evaluation.complete ? "Secondary-BSI site-specific definition and attribution checks are complete for this pathway." : evaluation.guidanceMessage)}</strong>${evaluation.candidateRoutes.length > 1 ? "<p>Possible qualifying routes:</p>" : ""}<div class="guidance-routes">${routes}</div>${remaining}</div>`;
 }
 
 function determineLcbi() {
@@ -1494,76 +1517,27 @@ function determineLcbi() {
   };
 }
 
+function getSecondaryEvaluation() {
+  return evaluateSecondaryPathway({
+    pathway: state.selectedSite,
+    evidence: state.siteEvidence[state.selectedSite] || new Set(),
+    organismRelationship: state.organismRelationship,
+    attributionTiming: state.attributionTiming
+  });
+}
+
 function getSiteSpecificDefinitionStatus() {
   const site = siteLibrary[state.selectedSite];
   if (!site) return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: "Select the suspected infection pathway." };
-
-  const e = state.siteEvidence[state.selectedSite] || new Set();
-  const has = (key) => e.has(key);
-  const any = (...keys) => keys.some(has);
-  const all = (...keys) => keys.every(has);
-  let met = false;
-  let missing = [];
-
-  switch (state.selectedSite) {
-    case "uti":
-      met = has("urineCulture") && has("catheterTiming") && any("fever", "suprapubic", "cva", "urgency", "frequency", "dysuria") && any("cultureMatch", "cultureAsElement");
-      if (!has("urineCulture")) missing.push("an eligible urine culture");
-      if (!has("catheterTiming")) missing.push("catheter and timing eligibility");
-      if (!any("fever", "suprapubic", "cva", "urgency", "frequency", "dysuria")) missing.push("an additional qualifying sign or symptom");
-      if (!any("cultureMatch", "cultureAsElement")) missing.push("an eligible organism relationship");
-      break;
-    case "pneu":
-      met = any("newInfiltrate", "consolidation", "cavitation", "pneumatoceles") && any("fever", "wbc", "mentalStatus") && any("sputum", "cough", "dyspnea", "breathSounds", "gasExchange") && any("respSpecimen", "pleuralFluid", "lungTissue", "cultureAllowed", "viralEvidence");
-      if (!any("newInfiltrate", "consolidation", "cavitation", "pneumatoceles")) missing.push("qualifying imaging evidence");
-      if (!any("fever", "wbc", "mentalStatus")) missing.push("a systemic finding");
-      if (!any("sputum", "cough", "dyspnea", "breathSounds", "gasExchange")) missing.push("a respiratory finding");
-      if (!any("respSpecimen", "pleuralFluid", "lungTissue", "cultureAllowed", "viralEvidence")) missing.push("qualifying laboratory or microbiology evidence");
-      break;
-    case "ssi":
-      met = all("procedure", "surveillance", "level") && any("purulence", "siteOrganism", "opened", "imaging", "diagnosis") && (!has("siteOrganism") || has("cultureMatch"));
-      if (!all("procedure", "surveillance", "level")) missing.push("eligible procedure, surveillance timing, and tissue level");
-      if (!any("purulence", "siteOrganism", "opened", "imaging", "diagnosis")) missing.push("a qualifying SSI criterion pathway");
-      if (has("siteOrganism") && !has("cultureMatch")) missing.push("the organism relationship");
-      break;
-    case "gi":
-      met = any("operative", "siteSpecimen", "imaging") && (has("operative") || has("symptoms")) && any("cultureMatch", "cultureElement");
-      if (!any("operative", "siteSpecimen", "imaging")) missing.push("anatomic, imaging, operative, or site-specimen evidence");
-      if (!has("operative") && !has("symptoms")) missing.push("qualifying clinical findings");
-      if (!any("cultureMatch", "cultureElement")) missing.push("an eligible blood-to-site relationship");
-      break;
-    case "skin":
-      met = (has("purulence") || (has("localFindings") && any("siteCulture", "imaging"))) && (!has("siteCulture") || has("cultureMatch"));
-      if (!met) missing.push("purulence, or local findings plus qualifying site culture/imaging and any required organism match");
-      break;
-    case "boneJoint":
-      met = any("operative", "histology", "siteCulture", "imaging") && (any("operative", "histology", "siteCulture") || has("pain")) && has("cultureMatch");
-      if (!any("operative", "histology", "siteCulture", "imaging")) missing.push("qualifying site, imaging, operative, or histopathologic evidence");
-      if (has("imaging") && !has("pain")) missing.push("a qualifying clinical finding");
-      if (!has("cultureMatch")) missing.push("the blood-to-site organism relationship");
-      break;
-    case "cardiovascular":
-      met = has("culturePattern") && (has("siteSpecimen") || (has("echo") && has("clinical")));
-      if (!has("culturePattern")) missing.push("the required culture pattern and organism eligibility");
-      if (!has("siteSpecimen") && !(has("echo") && has("clinical"))) missing.push("a site specimen, or imaging plus clinical evidence");
-      break;
-    case "cns":
-      met = (has("operative") || has("csf") || (has("imaging") && has("symptoms"))) && has("cultureRelationship");
-      if (!has("operative") && !has("csf") && !(has("imaging") && has("symptoms"))) missing.push("operative/CSF evidence, or imaging plus symptoms");
-      if (!has("cultureRelationship")) missing.push("the eligible blood-culture relationship");
-      break;
-    default:
-      met = all("definition", "elements", "siteSpecimen", "timing");
-      if (!met) missing.push("the exact definition, all required elements, specimen relationship, and timing review");
-  }
-
-  if (met) return { status: "met", met: true, label: "Site-specific definition met", reason: `${site.label} evidence satisfies a complete configured criterion pathway.` };
-  if (has("reviewComplete")) return { status: "not-met", met: false, label: "Site-specific definition not met", reason: `${site.label} review is complete, but ${missing.join("; ")} was not established.` };
-  return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: `${site.label} definition incomplete: ${missing.join("; ")} still required.` };
+  const evaluation = getSecondaryEvaluation();
+  if (evaluation.siteDefinitionComplete) return { status: "met", met: true, label: "Site-specific definition met", reason: `${site.label} evidence satisfies ${evaluation.candidateRoutes.find(candidate => candidate.complete).label}.` };
+  const reason = `${site.label} definition incomplete: ${evaluation.missingRequirements.join("; ")} still needed.`;
+  return evaluation.reviewComplete ? { status: "not-met", met: false, label: "Site-specific definition not met", reason } : { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason };
 }
 
 function determineSecondaryStatus() {
   const siteDefinition = getSiteSpecificDefinitionStatus();
+  const evaluation = getSecondaryEvaluation();
   const answers = [
     siteDefinition.status === "met" ? "yes" : siteDefinition.status === "not-met" ? "no" : "",
     state.organismRelationship,
@@ -1574,13 +1548,13 @@ function determineSecondaryStatus() {
   const anyNo = answers.some((answer) => answer === "no");
   const incomplete = answers.some((answer) => !answer);
 
-  if (allYes) {
+  if (allYes && evaluation.reviewComplete) {
     return {
       met: true,
       status: "complete",
       label: "Secondary BSI attribution appears satisfied",
       reason:
-        "The active pathway definition was calculated as met, and the organism relationship and required timing were answered Yes."
+        "The active pathway definition, organism relationship, required timing, and evidence-review confirmation are complete."
     };
   }
 
@@ -2077,6 +2051,7 @@ function buildCalculatorModel() {
   const exclusion = determineExclusionStatus();
   const hasSource = Boolean(state.selectedSite);
   const secondaryComplete = [
+    getSecondaryEvaluation().reviewComplete,
     siteDefinition.status !== "incomplete",
     state.organismRelationship,
     state.attributionTiming
@@ -2177,6 +2152,7 @@ function updateAll() {
   renderSurveillanceWindow();
   renderMbiOrganismPrompt();
   renderOrganismSuggestions();
+  renderSiteGuide();
   renderSecondaryConclusion();
   renderExclusionFollowups();
   renderCalculatedStatuses();
