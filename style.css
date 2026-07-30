@@ -208,7 +208,7 @@ button{cursor:pointer}
 .manual-book-title{
   position:absolute;
   z-index:1;
-  inset:10px;
+  inset:10px 5px 8px 7px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -218,19 +218,22 @@ button{cursor:pointer}
   overflow:visible;
   color:#e7c66f;
   font-family:Georgia,"Times New Roman",serif;
-  font-size:clamp(.5rem,1.15vw,.67rem);
-  line-height:1.05;
-  letter-spacing:.035em;
+  font-size:.62rem;
+  line-height:1.08;
+  letter-spacing:0;
   text-align:center;
   text-transform:uppercase;
   text-shadow:0 1px 2px #171006;
 }
+
 .manual-book-title > span{
   display:block;
-  max-width:100%;
-  overflow-wrap:break-word;
+  width:100%;
+  white-space:normal;
+  overflow-wrap:normal;
   word-break:normal;
 }
+
 .manual-book-face{position:absolute;right:11px;bottom:9px;width:15px;height:8px;opacity:.48}
 .manual-book-face::before,.manual-book-face::after{content:"";position:absolute;top:0;width:2px;height:3px;border-radius:50%;background:#e7c66f}
 .manual-book-face::before{left:2px}.manual-book-face::after{right:2px}
