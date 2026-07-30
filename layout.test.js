@@ -55,3 +55,49 @@ test("the persistent sidebar contains summary widgets, not primary workflow card
     assert.doesNotMatch(sidebar, new RegExp(`id="${primaryCard}"`));
   }
 });
+
+test("all workflow sections stay inside the primary column", () => {
+  const layout = region(
+    '<div class="calculator-layout">',
+    '<section class="reference-tabs"'
+  );
+  const tags = layout.matchAll(/<\/?(div|section|aside)\b[^>]*>/g);
+  const stack = [];
+  const workflowSections = new Set([
+    "culture",
+    "organism",
+    "secondary",
+    "line",
+    "mbi",
+    "result"
+  ]);
+
+  for (const match of tags) {
+    const tag = match[0];
+    const tagName = match[1];
+
+    if (tag.startsWith("</")) {
+      assert.equal(stack.pop()?.tagName, tagName, `Unexpected closing tag: ${tag}`);
+      continue;
+    }
+
+    const id = tag.match(/\bid="([^"]+)"/)?.[1];
+    if (workflowSections.has(id)) {
+      assert.ok(
+        stack.some(({ tag }) => tag.includes('data-layout-region="primary-workflow"')),
+        `Expected #${id} to remain inside the primary workflow column`
+      );
+    }
+
+    if (tagName === "aside") {
+      assert.ok(
+        !stack.some(({ tag }) => tag.includes('data-layout-region="primary-workflow"')),
+        "Expected the classification calculator to be beside the primary workflow"
+      );
+    }
+
+    stack.push({ tagName, tag });
+  }
+
+  assert.deepEqual(stack, []);
+});
