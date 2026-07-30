@@ -515,10 +515,10 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   font-size:.79rem;
 }
 .alert-warning{border:1px solid #ecd39f;border-left:4px solid var(--amber);background:var(--amber-soft);color:#745019}
-.surveillance-window{display:grid;grid-template-columns:repeat(2,minmax(0,260px));gap:14px;margin-top:14px}
+.surveillance-window{display:grid;gap:14px;margin-top:14px}
+.surveillance-date-fields{display:grid;grid-template-columns:repeat(2,minmax(0,260px));gap:14px}
 .surveillance-window .field{width:min(100%,260px)}
 .surveillance-banner{
-  grid-column:1 / -1;
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:18px;
@@ -658,7 +658,8 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   .review-card{padding:15px 12px}
   .field-grid,.check-grid,.prompt-list{grid-template-columns:1fr}
   .span-2{grid-column:auto}
-  .surveillance-window{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .surveillance-window{gap:8px}
+  .surveillance-date-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .surveillance-window .field{width:100%}
   .surveillance-banner{grid-template-columns:1fr;gap:12px}
   .site-button-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
