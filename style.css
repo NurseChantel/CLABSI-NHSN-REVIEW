@@ -764,3 +764,6 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   .criterion-label{border-right:0;border-bottom:1px solid #c8d7d3}
 }
 .selection-step{margin:16px 0 8px;color:var(--navy);font-size:.82rem}.site-button-grid button span{display:block;margin-top:4px;font-size:.72rem;font-weight:600}.citation-display{display:grid;gap:4px;margin-top:12px;font-size:.78rem}
+.men-criterion{margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:9px;background:var(--surface)}
+.men-criterion h4{margin:0 0 10px}.men-logic-group,.men-branch{margin-top:10px;padding:10px;border-left:3px solid #b8d8d1}.men-evidence-item{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:9px}.men-choice{flex-wrap:wrap;justify-content:flex-end}.men-choice button{white-space:normal}.men-needed{margin:8px 0 0;padding-left:20px}.men-notes{margin-top:14px}.men-notes span{color:var(--muted);font-size:.8rem}
+@media (max-width:700px){.men-evidence-item{align-items:stretch;flex-direction:column}.men-choice{justify-content:flex-start}}
