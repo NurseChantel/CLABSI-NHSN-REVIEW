@@ -1,5 +1,6 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
+import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderCompactMenEvidence } from "./secondary-evidence-ui.js";
 
 "use strict";
 
@@ -20,6 +21,7 @@ const state = {
   selectedMajorCategory: "",
   selectedSite: "",
   siteEvidence: {},
+  openMenCriterion: "",
   organismRelationship: "",
   attributionTiming: "",
   centralDefinition: "",
@@ -366,6 +368,8 @@ function bindChoiceGroups() {
 
       if (name === "patientAge") {
         state.symptoms.clear();
+        state.siteEvidence = {};
+        state.openMenCriterion = "";
         renderSymptoms();
       }
 
@@ -836,6 +840,7 @@ function resetSecondarySection() {
   state.selectedMajorCategory = "";
   state.selectedSite = "";
   state.siteEvidence = {};
+  state.openMenCriterion = "";
   state.organismRelationship = "";
   state.attributionTiming = "";
   setChoiceValue("organismRelationship", "");
@@ -1033,10 +1038,16 @@ function renderSiteGuide() {
  const container = document.getElementById("siteGuidance"); const category = secondarySiteCategories.find(item => item.majorCategoryCode === state.selectedMajorCategory);
  if (!category) { container.innerHTML = ""; return; }
  const definition = secondarySiteDefinitions[state.selectedSite];
- container.innerHTML = `<div class="site-guide"><h3>${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</h3><p class="guide-intro">This grouped category is navigation only and cannot qualify as a site definition.</p><div class="site-button-grid">${category.siteCodes.map(code => { const site = secondarySiteDefinitions[code]; return `<button type="button" data-site-code="${code}" class="${code === state.selectedSite ? "selected" : ""}" aria-pressed="${code === state.selectedSite}"><strong>${code}</strong><span>${escapeHtml(site.siteName)}</span></button>`; }).join("")}</div>${definition ? `<div class="secondary-guidance warning" role="status"><strong>${escapeHtml(placeholderWarning)}</strong><div class="citation-display"><span>NHSN site code: ${definition.siteCode}</span><span>Site: ${escapeHtml(definition.siteName)}</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div></div><div class="evidence-group"><h4>Evidence review</h4><p>No clinical criteria are available until this site definition is validated.</p></div>` : ""}</div>`;
- container.querySelectorAll("[data-site-code]").forEach(button => button.addEventListener("click", () => { if (state.selectedSite !== button.dataset.siteCode) state.siteEvidence = {}; state.selectedSite = button.dataset.siteCode; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); updateAll(); }));
+ const isMen = definition?.siteCode === "MEN";
+ const evaluation = isMen ? getSecondaryEvaluation() : null;
+ if (isMen) console.info(COMPACT_MEN_RENDERER_VERSION);
+ const review = isMen ? renderCompactMenEvidence({ definition, evaluation, patientAge: state.patientAge, evidence: state.siteEvidence, openCriterion: state.openMenCriterion }) : definition ? `<div class="secondary-guidance warning" role="status"><strong>${escapeHtml(placeholderWarning)}</strong><div class="citation-display"><span>NHSN site code: ${definition.siteCode}</span><span>Site: ${escapeHtml(definition.siteName)}</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div></div><div class="evidence-group"><h4>Evidence review</h4><p>No clinical criteria are available until this site definition is validated.</p></div>` : "";
+ container.innerHTML = `<div class="site-guide"><h3>${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</h3><p class="guide-intro">This grouped category is navigation only and cannot qualify as a site definition.</p><div class="site-button-grid">${category.siteCodes.map(code => { const site = secondarySiteDefinitions[code]; return `<button type="button" data-site-code="${code}" class="${code === state.selectedSite ? "selected" : ""}" aria-pressed="${code === state.selectedSite}"><strong>${code}</strong><span>${escapeHtml(site.siteName)}</span></button>`; }).join("")}</div>${review}</div>`;
+ container.querySelectorAll("[data-site-code]").forEach(button => button.addEventListener("click", () => { if (state.selectedSite !== button.dataset.siteCode) { state.siteEvidence = {}; state.openMenCriterion = ""; } state.selectedSite = button.dataset.siteCode; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); updateAll(); }));
+ container.querySelectorAll("input[data-evidence-id]").forEach(input => input.addEventListener("change", () => { state.openMenCriterion = ""; state.siteEvidence[input.dataset.evidenceId] = checkboxEvidenceValue(input.checked); updateAll(); }));
+ container.querySelectorAll("[data-men-note-button]").forEach(button => button.addEventListener("click", (event) => { event.preventDefault(); event.stopPropagation(); const note = document.getElementById(button.dataset.menNoteButton); const expanded = button.getAttribute("aria-expanded") === "true"; button.setAttribute("aria-expanded", String(!expanded)); note.hidden = expanded; }));
+ container.querySelectorAll("details[data-men-criterion]").forEach(details => details.addEventListener("toggle", () => { if (details.open) state.openMenCriterion = details.dataset.menCriterion; else if (state.openMenCriterion === details.dataset.menCriterion) state.openMenCriterion = ""; }));
 }
-
 function determineLcbi() {
   if (state.organismCategory === "recognized-pathogen") {
     return {
@@ -1121,9 +1132,9 @@ function determineLcbi() {
   };
 }
 
-function getSecondaryEvaluation() { return evaluateSecondarySite({ siteCode: state.selectedSite }); }
-function getSiteSpecificDefinitionStatus() { const evaluation = getSecondaryEvaluation(); if (evaluation.status === "siteNotSelected") return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: state.selectedMajorCategory ? "Select a specific NHSN site code; the major category cannot qualify." : "Select a major category and then a specific NHSN site code." }; return { status: "incomplete", met: false, label: "Site definition not validated", reason: placeholderWarning }; }
-function determineSecondaryStatus() { return { met: false, status: "incomplete", architectureStatus: getSecondaryEvaluation().status, label: "Secondary BSI review incomplete", reason: getSiteSpecificDefinitionStatus().reason }; }
+function getSecondaryEvaluation() { return evaluateSecondarySite({ siteCode: state.selectedSite, evidence: state.siteEvidence, organismRelationship: state.organismRelationship, attributionTiming: state.attributionTiming }); }
+function getSiteSpecificDefinitionStatus() { const evaluation = getSecondaryEvaluation(); if (evaluation.status === "siteNotSelected") return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: state.selectedMajorCategory ? "Select a specific NHSN site code; the major category cannot qualify." : "Select a major category and then a specific NHSN site code." }; if (evaluation.status === "siteNotValidated") return { status: "incomplete", met: false, label: "Source validation required", reason: placeholderWarning }; if (evaluation.siteDefinitionMet) return { status: "met", met: true, label: "MEN site definition met", reason: `${evaluation.metCriterion} is completely satisfied.` }; return { status: "incomplete", met: false, label: evaluation.status === "exclusionApplies" ? "Cannot qualify because an exclusion applies" : evaluation.status === "notStarted" ? "Not started" : "Incomplete", reason: evaluation.status === "exclusionApplies" ? "A documented other recognized cause prevents an asterisked finding from qualifying." : "Complete one MEN criterion branch without combining incompatible finding groups." }; }
+function determineSecondaryStatus() { const evaluation = getSecondaryEvaluation(); return { met: evaluation.secondaryAttributionMet, status: evaluation.secondaryAttributionMet ? "met" : evaluation.siteDefinitionMet && evaluation.attributionMissing?.some(item => item.includes("not met")) ? "notMet" : "incomplete", architectureStatus: evaluation.status, label: evaluation.secondaryAttributionMet ? "Secondary BSI attribution met" : "Secondary BSI review incomplete", reason: evaluation.secondaryAttributionMet ? "MEN and both authorized attribution requirements are met." : evaluation.siteDefinitionMet ? evaluation.attributionMissing.join("; ") : getSiteSpecificDefinitionStatus().reason }; }
 
 function determineCentralLineStatus() {
   const values = [
@@ -1272,6 +1283,8 @@ function renderCalculatedStatuses() {
   const mbi = determineMbiStatus(determineLcbi());
   const exclusion = determineExclusionStatus();
   setResult(document.getElementById("siteDefinitionStatus"), site.met ? "success" : "neutral", `${site.label}. ${site.reason}`);
+  const attributionUnlocked = state.selectedSite !== "MEN" || site.met;
+  document.querySelectorAll('[data-name="organismRelationship"] button, [data-name="attributionTiming"] button').forEach(button => { button.disabled = !attributionUnlocked; });
   setResult(document.getElementById("mbiStatus"), mbi.met ? "success" : mbi.status === "incomplete" ? "neutral" : "warning", `${mbi.label}. ${mbi.reason}`);
   setResult(document.getElementById("exclusionStatus"), exclusion.status === "met" ? "warning" : "neutral", `${exclusion.label}. ${exclusion.reason}`);
 }
