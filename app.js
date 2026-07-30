@@ -1,5 +1,6 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
+import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderCompactMenEvidence } from "./secondary-evidence-ui.js";
 
 "use strict";
 
@@ -20,6 +21,7 @@ const state = {
   selectedMajorCategory: "",
   selectedSite: "",
   siteEvidence: {},
+  openMenCriterion: "",
   organismRelationship: "",
   attributionTiming: "",
   centralDefinition: "",
@@ -366,6 +368,8 @@ function bindChoiceGroups() {
 
       if (name === "patientAge") {
         state.symptoms.clear();
+        state.siteEvidence = {};
+        state.openMenCriterion = "";
         renderSymptoms();
       }
 
@@ -836,6 +840,7 @@ function resetSecondarySection() {
   state.selectedMajorCategory = "";
   state.selectedSite = "";
   state.siteEvidence = {};
+  state.openMenCriterion = "";
   state.organismRelationship = "";
   state.attributionTiming = "";
   setChoiceValue("organismRelationship", "");
@@ -1042,14 +1047,13 @@ function renderSiteGuide() {
  const definition = secondarySiteDefinitions[state.selectedSite];
  const isMen = definition?.siteCode === "MEN";
  const evaluation = isMen ? getSecondaryEvaluation() : null;
- const statusLabels = { notStarted: "Not started", siteDefinitionIncomplete: "Incomplete", siteDefinitionMet: "MEN site definition met", secondaryAttributionMet: "MEN site definition met", exclusionApplies: "Cannot qualify because an exclusion applies" };
- const detail = evaluation?.branches ? evaluation.branches.map(branch => `<li><strong>${branch.id}:</strong> ${branch.missing.map(escapeHtml).join("; ")}</li>`).join("") : "";
- const review = isMen ? `<div class="secondary-guidance" role="status"><strong>${statusLabels[evaluation.status]}</strong><div class="citation-display"><span>NHSN site code: MEN</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Section: ${escapeHtml(definition.source.sectionHeading)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div>${detail ? `<ul class="men-needed">${detail}</ul>` : ""}</div><div class="evidence-group"><h4>Evidence review</h4>${definition.criteria.map(renderMenCriterion).join("")}<section class="men-criterion exclusion"><h4>Exclusion review</h4>${definition.exclusions.map(renderEvidenceChoice).join("")}</section><div class="men-notes"><h4>NHSN notes and reporting instructions</h4><ul>${[...definition.notes, ...definition.reportingInstructions].map(note => `<li>${escapeHtml(note.text)} <span>(${note.source.printedPage})</span></li>`).join("")}</ul></div></div>` : definition ? `<div class="secondary-guidance warning" role="status"><strong>${escapeHtml(placeholderWarning)}</strong><div class="citation-display"><span>NHSN site code: ${definition.siteCode}</span><span>Site: ${escapeHtml(definition.siteName)}</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div></div><div class="evidence-group"><h4>Evidence review</h4><p>No clinical criteria are available until this site definition is validated.</p></div>` : "";
+ if (isMen) console.info(COMPACT_MEN_RENDERER_VERSION);
+ const review = isMen ? renderCompactMenEvidence({ definition, evaluation, patientAge: state.patientAge, evidence: state.siteEvidence, openCriterion: state.openMenCriterion }) : definition ? `<div class="secondary-guidance warning" role="status"><strong>${escapeHtml(placeholderWarning)}</strong><div class="citation-display"><span>NHSN site code: ${definition.siteCode}</span><span>Site: ${escapeHtml(definition.siteName)}</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div></div><div class="evidence-group"><h4>Evidence review</h4><p>No clinical criteria are available until this site definition is validated.</p></div>` : "";
  container.innerHTML = `<div class="site-guide"><h3>${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</h3><p class="guide-intro">This grouped category is navigation only and cannot qualify as a site definition.</p><div class="site-button-grid">${category.siteCodes.map(code => { const site = secondarySiteDefinitions[code]; return `<button type="button" data-site-code="${code}" class="${code === state.selectedSite ? "selected" : ""}" aria-pressed="${code === state.selectedSite}"><strong>${code}</strong><span>${escapeHtml(site.siteName)}</span></button>`; }).join("")}</div>${review}</div>`;
- container.querySelectorAll("[data-site-code]").forEach(button => button.addEventListener("click", () => { if (state.selectedSite !== button.dataset.siteCode) state.siteEvidence = {}; state.selectedSite = button.dataset.siteCode; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); updateAll(); }));
- container.querySelectorAll("[data-evidence-id] button").forEach(button => button.addEventListener("click", () => { state.siteEvidence[button.parentElement.dataset.evidenceId] = button.dataset.value; updateAll(); }));
+ container.querySelectorAll("[data-site-code]").forEach(button => button.addEventListener("click", () => { if (state.selectedSite !== button.dataset.siteCode) { state.siteEvidence = {}; state.openMenCriterion = ""; } state.selectedSite = button.dataset.siteCode; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); updateAll(); }));
+ container.querySelectorAll("input[data-evidence-id]").forEach(input => input.addEventListener("change", () => { state.openMenCriterion = input.closest("[data-men-criterion]")?.dataset.menCriterion || state.openMenCriterion; state.siteEvidence[input.dataset.evidenceId] = checkboxEvidenceValue(input.checked); updateAll(); }));
+ container.querySelectorAll("details[data-men-criterion]").forEach(details => details.addEventListener("toggle", () => { if (details.open) { state.openMenCriterion = details.dataset.menCriterion; container.querySelectorAll("details[data-men-criterion][open]").forEach(other => { if (other !== details) other.open = false; }); } else if (state.openMenCriterion === details.dataset.menCriterion) state.openMenCriterion = ""; }));
 }
-
 function determineLcbi() {
   if (state.organismCategory === "recognized-pathogen") {
     return {
