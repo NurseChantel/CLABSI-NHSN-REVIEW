@@ -67,16 +67,16 @@
         <button class="section-reset" type="button" data-reset-section="intro" aria-label="Reset surveillance window">Reset</button>
       </div>
 
-    </section>
-
-    <section class="surveillance-window" aria-label="Pinned surveillance window">
-        <div class="field">
-          <label for="admitDate">Admit Date</label>
-          <input id="admitDate" type="date">
-        </div>
-        <div class="field">
-          <label for="cultureOrganismDate">Date of Culture</label>
-          <input id="cultureOrganismDate" type="date">
+      <div class="surveillance-window">
+        <div class="surveillance-date-fields">
+          <div class="field">
+            <label for="admitDate">Admit Date</label>
+            <input id="admitDate" type="date">
+          </div>
+          <div class="field">
+            <label for="cultureOrganismDate">Date of Culture</label>
+            <input id="cultureOrganismDate" type="date">
+          </div>
         </div>
         <div id="surveillanceWindow" class="surveillance-banner" aria-live="polite">
           <div class="surveillance-stat">
@@ -94,6 +94,7 @@
             <strong id="surveillanceDateRange">Select a date to calculate</strong>
           </div>
         </div>
+      </div>
     </section>
 
     <section class="review-card" id="culture">

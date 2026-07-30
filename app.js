@@ -1034,6 +1034,13 @@ function renderSuggestedSiteButtons(suggestedSiteKeys) {
   }
 }
 
+function renderEvidenceChoice(item) {
+  const value = state.siteEvidence[item.id] || "unknown";
+  return `<div class="men-evidence-item"><span>${escapeHtml(item.label)}</span><div class="compact-choice men-choice" data-evidence-id="${item.id}">${[["met", "Met"], ["notMet", "Not met"], ["unknown", "Unknown / not documented"]].map(([key, label]) => `<button type="button" data-value="${key}" class="${value === key ? "selected" : ""}" aria-pressed="${value === key}">${label}</button>`).join("")}</div></div>`;
+}
+function renderMenCriterion(criterion) {
+  return `<section class="men-criterion"><h4>${escapeHtml(criterion.label)}</h4>${criterion.allOf.map(renderEvidenceChoice).join("")}${(criterion.groups || []).map(group => `<div class="men-logic-group"><strong>${escapeHtml(group.label)}</strong>${group.anyOf.map(branch => branch.anyOf ? `<div class="men-branch"><span>${escapeHtml(branch.label)}</span>${branch.anyOf.map(renderEvidenceChoice).join("")}</div>` : renderEvidenceChoice(branch)).join("")}</div>`).join("")}</section>`;
+}
 function renderSiteGuide() {
  const container = document.getElementById("siteGuidance"); const category = secondarySiteCategories.find(item => item.majorCategoryCode === state.selectedMajorCategory);
  if (!category) { container.innerHTML = ""; return; }
