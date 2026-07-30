@@ -1,16 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { evaluateSecondarySite, secondarySiteCategories, secondarySiteDefinitions, selectSecondarySite } from "./secondary-rules.js";
-
-const expected = {
-  BJ: ["BONE", "DISC", "JNT", "PJI"], CNS: ["IC", "MEN", "SA"], CVS: ["CARD", "ENDO", "MED", "VASC"],
-  EENT: ["CONJ", "EAR", "EYE", "ORAL", "SINU", "UR"], GI: ["CDI", "GE", "GIT", "IAB", "NEC"], LRI: ["LUNG"],
-  REPR: ["EMET", "EPIS", "OREP", "VCUF"], SST: ["BRST", "BURN", "CIRC", "DECU", "SKIN", "ST", "UMB"], USI: ["USI"]
-};
-
-test("every verified Chapter 17 site code is independently registered", () => assert.deepEqual(Object.keys(secondarySiteDefinitions).sort(), Object.values(expected).flat().sort()));
-test("the correct site list appears under every major category", () => assert.deepEqual(Object.fromEntries(secondarySiteCategories.map(item => [item.majorCategoryCode, [...item.siteCodes]])), expected));
-test("selecting only a major category cannot qualify a site", () => assert.deepEqual(evaluateSecondarySite({ majorCategoryCode: "GI" }), { status: "siteNotSelected", siteDefinitionMet: false, secondaryAttributionMet: false }));
-test("every placeholder remains empty and cannot meet a site definition", () => Object.values(secondarySiteDefinitions).forEach(site => { assert.equal(site.implementationStatus, "placeholder"); assert.deepEqual(site.criteria, []); assert.equal(evaluateSecondarySite({ siteCode: site.siteCode }).siteDefinitionMet, false); }));
-test("a placeholder cannot produce secondary attribution", () => Object.keys(secondarySiteDefinitions).forEach(siteCode => assert.equal(evaluateSecondarySite({ siteCode, organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, false)));
-test("switching site codes clears stale site evidence and attribution answers", () => { const before = { siteCode: "BONE", evidence: new Set(["stale"]), organismRelationship: "yes", attributionTiming: "yes" }; const after = selectSecondarySite(before, "DISC"); assert.equal(after.siteCode, "DISC"); assert.deepEqual(after.evidence, new Set()); assert.equal(after.organismRelationship, ""); assert.equal(after.attributionTiming, ""); });
+import { evaluateSecondarySite, menDefinition, secondarySiteCategories, secondarySiteDefinitions, selectSecondarySite } from "./secondary-rules.js";
+const expected = { BJ:["BONE","DISC","JNT","PJI"], CNS:["IC","MEN","SA"], CVS:["CARD","ENDO","MED","VASC"], EENT:["CONJ","EAR","EYE","ORAL","SINU","UR"], GI:["CDI","GE","GIT","IAB","NEC"], LRI:["LUNG"], REPR:["EMET","EPIS","OREP","VCUF"], SST:["BRST","BURN","CIRC","DECU","SKIN","ST","UMB"], USI:["USI"] };
+const evaluate = (evidence, extra={}) => evaluateSecondarySite({ siteCode:"MEN", evidence, ...extra });
+const support = { suspected:"met", fever:"met", "meningeal-signs":"met", "csf-gram-stain":"met" };
+test("every Chapter 17 site code remains registered under the existing categories",()=>{ assert.deepEqual(Object.keys(secondarySiteDefinitions).sort(),Object.values(expected).flat().sort()); assert.deepEqual(Object.fromEntries(secondarySiteCategories.map(x=>[x.majorCategoryCode,[...x.siteCodes]])),expected); });
+test("MEN 1 qualifies independently",()=>assert.equal(evaluate({"csf-organism":"met"}).metCriterion,"MEN-1"));
+test("MEN 2 qualifies with two distinct finding groups and one supporting alternative",()=>assert.equal(evaluate(support).metCriterion,"MEN-2"));
+test("MEN 3 qualifies only with the age branch and its complete requirements",()=>assert.equal(evaluate({"age-one-or-younger":"met",suspected:"met",hypothermia:"met","cranial-nerve-signs":"met","csf-profile":"met"}).metCriterion,"MEN-3"));
+test("missing one AND requirement and unknown evidence cannot qualify",()=>{ assert.equal(evaluate({suspected:"unknown",fever:"met","meningeal-signs":"met","csf-gram-stain":"met"}).siteDefinitionMet,false); assert.equal(evaluate({suspected:"met",fever:"met","meningeal-signs":"met"}).siteDefinitionMet,false); });
+test("two alternatives inside group i cannot be combined as two required finding groups",()=>assert.equal(evaluate({suspected:"met",fever:"met",headache:"met","csf-profile":"met"}).siteDefinitionMet,false));
+test("MEN 2 evidence cannot qualify the age-specific MEN 3 branch",()=>{ const result=evaluate({suspected:"met",hypothermia:"met",irritability:"met","csf-profile":"met"}); assert.equal(result.siteDefinitionMet,false); });
+test("a recognized cause exclusion prevents an asterisked finding from qualifying",()=>{ const result=evaluate({...support,"other-recognized-cause":"met"}); assert.equal(result.siteDefinitionMet,false); assert.equal(result.status,"exclusionApplies"); });
+test("meeting MEN does not automatically establish secondary BSI attribution",()=>{ const result=evaluate({"csf-organism":"met"}); assert.equal(result.siteDefinitionMet,true); assert.equal(result.secondaryAttributionMet,false); assert.equal(evaluate({"csf-organism":"met"},{organismRelationship:"yes",attributionTiming:"yes"}).secondaryAttributionMet,true); });
+test("MEN source fidelity metadata and criterion structure match the approved structured definition",()=>{ assert.equal(menDefinition.source.document,"Secondary BSI Chapter.pdf"); assert.equal(menDefinition.source.printedPage,"17-11"); assert.deepEqual(menDefinition.criteria.map(x=>x.id),["MEN-1","MEN-2","MEN-3"]); assert.equal(menDefinition.criteria[1].groups[0].minimumRequiredCount,2); assert.equal(menDefinition.criteria[2].allOf[0].id,"age-one-or-younger"); menDefinition.criteria.forEach(c=>assert.equal(c.source.sourceDataId,"MEN")); });
+test("IC and SA remain placeholders and cannot render or evaluate MEN criteria",()=>["IC","SA"].forEach(siteCode=>{ assert.equal(secondarySiteDefinitions[siteCode].criteria.length,0); assert.equal(evaluateSecondarySite({siteCode,evidence:{"csf-organism":"met"}}).status,"siteNotValidated"); }));
+test("switching site codes clears stale evidence and attribution answers",()=>assert.deepEqual(selectSecondarySite({siteCode:"MEN",evidence:{x:"met"},organismRelationship:"yes",attributionTiming:"yes"},"SA"),{siteCode:"SA",evidence:{},organismRelationship:"",attributionTiming:""}));
