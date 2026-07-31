@@ -61,6 +61,6 @@ test("DISC metadata traces every pathway to the approved manual", () => {
 
 test("DISC is wired to the unchanged compact MEN evidence renderer", () => {
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /definition\?\.siteCode === "DISC"/);
+  assert.match(app, /definition\?\.implementationStatus === "validated"/);
   assert.match(app, /renderCompactMenEvidence\(\{ definition, evaluation/);
 });

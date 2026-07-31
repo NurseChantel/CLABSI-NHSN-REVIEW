@@ -55,6 +55,6 @@ test("JNT metadata traces criteria, restriction, reporting, and attribution", ()
 
 test("JNT is wired to the existing compact MEN evidence renderer", () => {
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /definition\?\.siteCode === "JNT"/);
+  assert.match(app, /definition\?\.implementationStatus === "validated"/);
   assert.match(app, /renderCompactMenEvidence\(\{ definition, evaluation/);
 });

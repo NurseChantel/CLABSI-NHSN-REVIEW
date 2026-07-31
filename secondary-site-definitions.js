@@ -21,6 +21,20 @@ const pjiAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstre
 const usiCriterionSource = source("17-28–17-29", "29–30", "USI — Urinary System Infection", "USI");
 const usiInstructionSource = source("17-29", 30, "USI — Reporting Instructions", "USI.reporting-instructions");
 const usiAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "USI.secondary-bsi");
+const jntCriterionSource = source("17-9", 10, "JNT — Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures)", "JNT");
+const jntInstructionSource = source("17-9", 10, "JNT — Reporting Instruction", "JNT.reporting-instruction");
+const jntAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "JNT.secondary-bsi");
+const endoTimingSource = source("17-29", 30, "ENDO Appendix — infection window, RIT, and secondary BSI attribution period", "ENDO.timing-and-secondary-bsi");
+const endoCriterionSource = source("17-30–17-33", "31–34", "ENDO — Endocarditis", "ENDO");
+const endoFootnoteSource = source("17-34–17-35", "35–36", "ENDO Footnotes", "ENDO.footnotes");
+const medCriterionSource = source("17-13–17-14", "14–15", "MED — Mediastinitis", "MED");
+const medInstructionSource = source("17-14", 15, "MED — Comment and Reporting Instruction", "MED.reporting-instruction");
+const medAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "MED.secondary-bsi");
+const cardCriterionSource = source("17-13", 14, "CARD — Myocarditis or pericarditis", "CARD");
+const cardAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "CARD.secondary-bsi");
+const vascCriterionSource = source("17-14", 15, "VASC — Arterial or venous infection", "VASC");
+const vascInstructionSource = source("17-14", 15, "VASC — Reporting Instructions", "VASC.reporting-instructions");
+const vascAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "VASC.secondary-bsi");
 const item = (id, label, options = {}) => Object.freeze({ id, label, source: menCriterionSource, ...options });
 const labAlternatives = Object.freeze([
   item("csf-profile", "Increased white cells, elevated protein, and decreased glucose in CSF (per the reporting laboratory's reference range)"),
@@ -429,6 +443,163 @@ export const usiDefinition = Object.freeze({
   ]) })
 });
 
+const jntItem = (id, label, options = {}) => Object.freeze({ id, label, source: jntCriterionSource, ...options });
+const jntFindings = Object.freeze([
+  jntItem("jnt-swelling", "Swelling, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  jntItem("jnt-pain-tenderness", "Pain or tenderness, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  jntItem("jnt-heat", "Heat, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  jntItem("jnt-effusion", "Evidence of effusion, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  jntItem("jnt-limited-motion", "Limitation of motion, with no other recognized cause", { exclusionId: "other-recognized-cause" })
+]);
+const jntFindingsGroup = Object.freeze({ id: "JNT-3-findings", label: "At least two signs or symptoms", minimumRequiredCount: 2, anyOf: jntFindings });
+
+export const jntDefinition = Object.freeze({
+  majorCategoryCode: "BJ", majorCategoryName: "Bone and Joint Infection", siteCode: "JNT", siteName: "Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures)",
+  source: jntCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "JNT-1", label: "Criterion 1 — organism identified from joint fluid or synovial biopsy", source: jntCriterionSource, allOf: Object.freeze([jntItem("jnt-site-organism", "Organism(s) identified from joint fluid or synovial biopsy by culture or non-culture based microbiologic testing performed for purposes of clinical diagnosis and treatment (not ASC/AST)")]) }),
+    Object.freeze({ id: "JNT-2", label: "Criterion 2 — gross anatomic or histopathologic evidence", source: jntCriterionSource, allOf: Object.freeze([jntItem("jnt-gross-histopathologic-evidence", "Evidence of joint or bursa infection on gross anatomic or histopathologic examination")]) }),
+    Object.freeze({ id: "JNT-3a", label: "Criterion 3a — suspected infection, findings, and joint-fluid laboratory evidence", source: jntCriterionSource, allOf: Object.freeze([jntItem("jnt-suspected-infection", "Suspected joint or bursa infection")]), groups: Object.freeze([
+      jntFindingsGroup,
+      Object.freeze({ id: "JNT-3a-support", label: "At least one qualifying joint-fluid laboratory finding", minimumRequiredCount: 1, anyOf: Object.freeze([
+        jntItem("jnt-elevated-joint-wbc", "Elevated joint fluid white blood cell count (per reporting laboratory's reference range)"),
+        jntItem("jnt-positive-leukocyte-esterase", "Positive leukocyte esterase test strip of joint fluid"),
+        jntItem("jnt-gram-stain-organisms-wbc", "Organism(s) and white blood cells seen on Gram stain of joint fluid")
+      ]) })
+    ]) }),
+    Object.freeze({ id: "JNT-3c", label: "Criterion 3c — suspected infection, findings, and blood organism", source: jntCriterionSource, allOf: Object.freeze([
+      jntItem("jnt-suspected-infection", "Suspected joint or bursa infection"),
+      jntItem("jnt-blood-organism", "Organism(s) identified from blood by culture or non-culture based microbiologic testing performed for purposes of clinical diagnosis and treatment (not ASC/AST)")
+    ]), groups: Object.freeze([jntFindingsGroup]) }),
+    Object.freeze({ id: "JNT-3d-definitive", label: "Criterion 3d — suspected infection, findings, and definitive imaging", source: jntCriterionSource, allOf: Object.freeze([
+      jntItem("jnt-suspected-infection", "Suspected joint or bursa infection"),
+      jntItem("jnt-definitive-imaging", "Imaging test evidence definitive for infection (for example, x-ray, CT scan, MRI, or radiolabel scan [gallium, technetium, etc.])")
+    ]), groups: Object.freeze([jntFindingsGroup]) }),
+    Object.freeze({ id: "JNT-3d-equivocal", label: "Criterion 3d — suspected infection, findings, and clinically correlated equivocal imaging", source: jntCriterionSource, allOf: Object.freeze([
+      jntItem("jnt-suspected-infection", "Suspected joint or bursa infection"),
+      jntItem("jnt-equivocal-imaging", "Imaging test evidence for infection is equivocal"),
+      jntItem("jnt-antimicrobial-treatment", "Physician or physician-designee documentation of antimicrobial treatment for joint or bursa infection")
+    ]), groups: Object.freeze([jntFindingsGroup]) })
+  ]),
+  exclusions: Object.freeze([
+    jntItem("other-recognized-cause", "Another recognized cause applies to a sign or symptom marked by NHSN with an asterisk", { type: "exclusion" }),
+    jntItem("jnt-hpro-kpro-organ-space", "Use as Organ/Space SSI after HPRO or KPRO procedures", { type: "exclusion", blocksPathway: true })
+  ]),
+  notes: Object.freeze([
+    Object.freeze({ id: "JNT-note-restriction", text: "JNT — Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures).", source: jntCriterionSource }),
+    Object.freeze({ id: "JNT-note-equivocal-imaging", text: "Equivocal imaging qualifies only when supported by clinical correlation, specifically physician or physician-designee documentation of antimicrobial treatment for joint or bursa infection.", source: jntCriterionSource })
+  ]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "JNT-report-bone", text: "If a patient meets both organ space JNT and BONE report the SSI as BONE.", source: jntInstructionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: jntAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete JNT definition is met", source: jntAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the JNT criterion", source: jntAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the JNT secondary BSI attribution period (or in the infection window when used as a criterion element)", source: jntAttributionSource })
+  ]) })
+});
+
+const cardItem = (id, label, options = {}) => Object.freeze({ id, label, source: cardCriterionSource, ...options });
+const cardFindings = Object.freeze([
+  cardItem("card-fever", "Fever (>38.0°C)"),
+  cardItem("card-chest-pain", "Chest pain, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  cardItem("card-paradoxical-pulse", "Paradoxical pulse, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  cardItem("card-increased-heart-size", "Increased heart size, with no other recognized cause", { exclusionId: "other-recognized-cause" })
+]);
+const cardInfantFindings = Object.freeze([
+  cardItem("card-fever", "Fever (>38.0°C)"),
+  cardItem("card-hypothermia", "Hypothermia (<36.0°C)"),
+  cardItem("card-apnea", "Apnea, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  cardItem("card-bradycardia", "Bradycardia, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  cardItem("card-paradoxical-pulse", "Paradoxical pulse, with no other recognized cause", { exclusionId: "other-recognized-cause" }),
+  cardItem("card-increased-heart-size", "Increased heart size, with no other recognized cause", { exclusionId: "other-recognized-cause" })
+]);
+const cardSupport = Object.freeze([
+  cardItem("card-abnormal-ekg", "Abnormal EKG consistent with myocarditis or pericarditis"),
+  cardItem("card-histologic-heart-tissue", "Histologic examination of heart tissue shows evidence of myocarditis or pericarditis"),
+  cardItem("card-igg-rise", "4-fold rise in paired sera from IgG antibody titer"),
+  cardItem("card-pericardial-effusion", "Pericardial effusion identified by echocardiogram, CT scan, MRI, or angiography")
+]);
+const cardGroup = (id, label, minimumRequiredCount, anyOf) => Object.freeze({ id, label, minimumRequiredCount, anyOf });
+
+export const cardDefinition = Object.freeze({
+  majorCategoryCode: "CVS", majorCategoryName: "Cardiovascular System Infection", siteCode: "CARD", siteName: "Myocarditis or pericarditis",
+  source: cardCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "CARD-1", label: "Criterion 1 — organism from pericardial tissue or fluid", source: cardCriterionSource, allOf: Object.freeze([
+      cardItem("card-pericardial-organism", "Organism(s) identified from pericardial tissue or fluid by a culture or non-culture based microbiologic testing method performed for purposes of clinical diagnosis or treatment (not ASC/AST)")
+    ]) }),
+    Object.freeze({ id: "CARD-2", label: "Criterion 2 — findings and supporting evidence", source: cardCriterionSource, allOf: Object.freeze([]), groups: Object.freeze([
+      cardGroup("CARD-2-findings", "At least two signs or symptoms", 2, cardFindings),
+      cardGroup("CARD-2-support", "At least one supporting test", 1, cardSupport)
+    ]) }),
+    Object.freeze({ id: "CARD-3", label: "Criterion 3 — patient ≤1 year of age", source: cardCriterionSource, allOf: Object.freeze([
+      cardItem("card-age-one-or-younger", "Patient ≤1 year of age")
+    ]), groups: Object.freeze([
+      cardGroup("CARD-3-findings", "At least two age-specific signs or symptoms", 2, cardInfantFindings),
+      cardGroup("CARD-3-support", "At least one supporting test", 1, cardSupport)
+    ]) })
+  ]),
+  exclusions: Object.freeze([cardItem("other-recognized-cause", "Another recognized cause applies to a sign or symptom marked by NHSN with an asterisk", { type: "exclusion" })]),
+  notes: Object.freeze([
+    Object.freeze({ id: "CARD-note-asterisk", text: "Chest pain, paradoxical pulse, increased heart size, apnea, and bradycardia qualify only when there is no other recognized cause.", source: cardCriterionSource })
+  ]),
+  reportingInstructions: Object.freeze([]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: cardAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete CARD definition is met", source: cardAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the CARD criterion", source: cardAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the CARD secondary BSI attribution period (or in the infection window when used as a criterion element)", source: cardAttributionSource })
+  ]) })
+});
+
+const vascRestrictionId = "vasc-access-device-blood-organism";
+const vascItem = (id, label, options = {}) => Object.freeze({ id, label, source: vascCriterionSource, ...options });
+const vascFindings = Object.freeze([
+  vascItem("vasc-fever", "Fever (>38.0°C)"),
+  vascItem("vasc-pain", "Pain at the involved vascular site, with no other recognized cause", { exclusionId: "vasc-other-recognized-cause" }),
+  vascItem("vasc-erythema", "Erythema at the involved vascular site, with no other recognized cause", { exclusionId: "vasc-other-recognized-cause" }),
+  vascItem("vasc-heat", "Heat at the involved vascular site, with no other recognized cause", { exclusionId: "vasc-other-recognized-cause" })
+]);
+const vascInfantFindings = Object.freeze([
+  vascFindings[0], vascItem("vasc-hypothermia", "Hypothermia (<36.0°C)"),
+  vascItem("vasc-apnea", "Apnea, with no other recognized cause", { exclusionId: "vasc-other-recognized-cause" }),
+  vascItem("vasc-bradycardia", "Bradycardia, with no other recognized cause", { exclusionId: "vasc-other-recognized-cause" }),
+  vascItem("vasc-lethargy", "Lethargy, with no other recognized cause", { exclusionId: "vasc-other-recognized-cause" }), ...vascFindings.slice(1)
+]);
+const vascFindingGroup = (id, findings) => Object.freeze({ id, label: "At least one qualifying sign or symptom", minimumRequiredCount: 1, anyOf: findings });
+const vascCannulaCulture = vascItem("vasc-cannula-tip-colonies", "More than 15 colonies cultured from an intravascular cannula tip using a semi-quantitative culture method");
+
+export const vascDefinition = Object.freeze({
+  majorCategoryCode: "CVS", majorCategoryName: "Cardiovascular System Infection", siteCode: "VASC", siteName: "Arterial or venous infection excluding infections involving vascular access devices with organisms identified in the blood",
+  source: vascCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "VASC-1", label: "Criterion 1 — organism from extracted artery or vein", source: vascCriterionSource, allOf: Object.freeze([vascItem("vasc-extracted-vessel-organism", "Organism(s) identified from extracted arteries or veins by an eligible culture or non-culture based microbiologic testing method performed for clinical diagnosis or treatment (not ASC/AST)")]) }),
+    Object.freeze({ id: "VASC-2", label: "Criterion 2 — gross anatomic or histopathologic evidence", source: vascCriterionSource, allOf: Object.freeze([vascItem("vasc-gross-histopathologic-evidence", "Evidence of arterial or venous infection on gross anatomic or histopathologic examination")]) }),
+    Object.freeze({ id: "VASC-3", label: "Criterion 3 — vascular-site finding and cannula-tip culture", source: vascCriterionSource, allOf: Object.freeze([vascCannulaCulture]), groups: Object.freeze([vascFindingGroup("VASC-3-findings", vascFindings)]) }),
+    Object.freeze({ id: "VASC-4", label: "Criterion 4 — purulent drainage", source: vascCriterionSource, allOf: Object.freeze([vascItem("vasc-purulent-drainage", "Purulent drainage at the involved vascular site")]) }),
+    Object.freeze({ id: "VASC-5", label: "Criterion 5 — patient ≤1 year, age-specific finding, and cannula-tip culture", source: vascCriterionSource, allOf: Object.freeze([vascItem("vasc-age-one-or-younger", "Patient ≤1 year of age"), vascCannulaCulture]), groups: Object.freeze([vascFindingGroup("VASC-5-findings", vascInfantFindings)]) })
+  ]),
+  exclusions: Object.freeze([
+    Object.freeze({ id: vascRestrictionId, label: "The infection involves a vascular access device and organism(s) are identified in the blood (excluded from VASC)", source: vascCriterionSource, type: "exclusion" }),
+    Object.freeze({ id: "vasc-other-recognized-cause", label: "Another recognized cause applies to a sign or symptom marked by NHSN with an asterisk", source: vascCriterionSource, type: "exclusion" })
+  ]),
+  hardExclusionIds: Object.freeze([vascRestrictionId]),
+  notes: Object.freeze([
+    Object.freeze({ id: "VASC-note-imaging", text: "The VASC definition lists no imaging criterion or physician-diagnosis criterion.", source: vascCriterionSource }),
+    Object.freeze({ id: "VASC-note-lcbi", text: "If LCBI criteria are met in the presence of an arterial or vascular infection, report LCBI rather than VASC.", source: vascCriterionSource })
+  ]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "VASC-report-device-no-blood", text: "Report infection of an arteriovenous graft, shunt, fistula, or intravascular cannulation site without organism(s) identified from blood as CVS-VASC.", source: vascInstructionSource }),
+    Object.freeze({ id: "VASC-report-ssi", text: "Report an Organ/Space VASC infection as an SSI, not an LCBI, when an SSI has a secondary BSI.", source: vascInstructionSource }),
+    Object.freeze({ id: "VASC-report-lcbi", text: "Report intravascular infection with organism(s) identified from blood that meets LCBI criteria as BSI-LCBI.", source: vascInstructionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: vascAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete VASC definition is met", source: vascAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the VASC criterion", source: vascAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the VASC secondary BSI attribution period (or in the infection window when used as a criterion element)", source: vascAttributionSource })
+  ]) })
+});
+
 const categoryData = [
   ["BJ", "Bone and Joint Infection", [["BONE", "Osteomyelitis", 7], ["DISC", "Disc space infection", 8], ["JNT", "Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures)", 9], ["PJI", "Periprosthetic Joint Infection (for use as Organ/Space SSI following HPRO and KPRO only)", 9]]],
   ["CNS", "Central Nervous System Infection", [["IC", "Intracranial infection (brain abscess, subdural or epidural infection, encephalitis)", 10], ["MEN", "Meningitis or ventriculitis", 11], ["SA", "Spinal abscess/infection (spinal abscess, spinal subdural or epidural infection)", 12]]],
@@ -441,7 +612,8 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, DISC: discDefinition, IC: icDefinition, MEN: menDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition });
+export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, ENDO: endoDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition });
+export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "ENDO", "IC", "JNT", "MED", "MEN", "PJI", "SA", "USI", "VASC"]);
 export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
 export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
 export { warning as placeholderWarning };
@@ -458,12 +630,15 @@ function requiredMessages(criterion, evidence) {
 export function evaluateSecondarySite({ siteCode = "", evidence = {}, organismRelationship = "", attributionTiming = "" } = {}) {
   const definition = secondarySiteDefinitions[siteCode];
   if (!definition) return { status: "siteNotSelected", siteDefinitionMet: false, secondaryAttributionMet: false };
-  if (definition.implementationStatus !== "validated") return { status: "siteNotValidated", siteDefinitionMet: false, secondaryAttributionMet: false, definition, message: warning };
+  const schemaIsRenderable = Array.isArray(definition.criteria) && Array.isArray(definition.exclusions) && Array.isArray(definition.notes)
+    && definition.criteria.every(criterion => Array.isArray(criterion.allOf) && (!criterion.groups || criterion.groups.every(group => Array.isArray(group.anyOf) && Number.isFinite(group.minimumRequiredCount))));
+  if (definition.implementationStatus !== "validated" || !schemaIsRenderable) return { status: "siteNotValidated", siteDefinitionMet: false, secondaryAttributionMet: false, definition, message: warning };
   const started = Object.values(evidence).some(Boolean);
-  const metCriterion = definition.criteria.find(criterion => criterionMet(criterion, evidence));
+  const hardExclusionApplies = definition.exclusions.some(item => (item.disqualifiesSite || item.blocksPathway) && answer(evidence, item.id) === "met")
+    || (definition.hardExclusionIds || []).some(id => answer(evidence, id) === "met");
+  const metCriterion = hardExclusionApplies ? undefined : definition.criteria.find(criterion => criterionMet(criterion, evidence));
   const exclusionApplies = definition.exclusions.some(item => answer(evidence, item.id) === "met");
-  const siteExclusionApplies = definition.exclusions.some(item => item.disqualifiesSite && answer(evidence, item.id) === "met");
-  if (!metCriterion || siteExclusionApplies) return { status: exclusionApplies ? "exclusionApplies" : started ? "siteDefinitionIncomplete" : "notStarted", siteDefinitionMet: false, secondaryAttributionMet: false, definition, branches: definition.criteria.map(criterion => ({ id: criterion.id, missing: requiredMessages(criterion, evidence) })) };
+  if (!metCriterion) return { status: exclusionApplies || hardExclusionApplies ? "exclusionApplies" : started ? "siteDefinitionIncomplete" : "notStarted", siteDefinitionMet: false, secondaryAttributionMet: false, definition, branches: definition.criteria.map(criterion => ({ id: criterion.id, missing: requiredMessages(criterion, evidence) })) };
   const secondaryAttributionMet = organismRelationship === "yes" && attributionTiming === "yes";
   return { status: secondaryAttributionMet ? "secondaryAttributionMet" : "siteDefinitionMet", siteDefinitionMet: true, secondaryAttributionMet, metCriterion: metCriterion.id, definition, attributionMissing: [!organismRelationship && "Organism/specimen relationship is unknown", organismRelationship === "no" && "Organism/specimen relationship is not met", !attributionTiming && "Attribution timing is unknown", attributionTiming === "no" && "Attribution timing is not met"].filter(Boolean) };
 }

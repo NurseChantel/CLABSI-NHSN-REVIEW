@@ -52,7 +52,7 @@ test("ENDO metadata traces criteria, footnotes, and extended attribution timing"
 
 test("ENDO uses the existing compact MEN evidence-review renderer", () => {
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /definition\?\.siteCode === "ENDO"/);
+  assert.match(app, /definition\?\.implementationStatus === "validated"/);
   const markup = renderCompactMenEvidence({ definition: endoDefinition, evaluation: evaluate({}), patientAge: "adult", evidence: {} });
   assert.match(markup, /data-men-renderer="compact-v3"/);
   assert.match(markup, /Exclusion review/);

@@ -57,6 +57,6 @@ test("USI uses the existing compact MEN renderer with status, criteria, exclusio
   assert.match(html, /Exclusion review/);
   assert.match(html, /<details class="secondary-references">/);
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /definition\?\.siteCode === "USI"/);
+  assert.match(app, /definition\?\.implementationStatus === "validated"/);
   assert.match(app, /renderCompactMenEvidence\(\{ definition, evaluation/);
 });

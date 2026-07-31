@@ -59,6 +59,6 @@ test("BONE metadata records criterion, timing, reporting, and attribution source
 
 test("BONE is wired to the existing compact MEN evidence renderer without renderer changes", () => {
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /\["BONE", "MEN", "SA"\]\.includes\(definition\?\.siteCode\)/);
+  assert.match(app, /definition\?\.implementationStatus === "validated"/);
   assert.match(app, /renderCompactMenEvidence\(\{ definition, evaluation/);
 });
