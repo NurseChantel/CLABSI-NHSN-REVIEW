@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { evaluateSecondarySite, icDefinition, menDefinition, secondarySiteCategories, secondarySiteDefinitions, selectSecondarySite } from "./secondary-rules.js";
+import { evaluateSecondarySite, icDefinition, menDefinition, saDefinition, secondarySiteCategories, secondarySiteDefinitions, selectSecondarySite } from "./secondary-rules.js";
 const expected = { BJ:["BONE","DISC","JNT","PJI"], CNS:["IC","MEN","SA"], CVS:["CARD","ENDO","MED","VASC"], EENT:["CONJ","EAR","EYE","ORAL","SINU","UR"], GI:["CDI","GE","GIT","IAB","NEC"], LRI:["LUNG"], REPR:["EMET","EPIS","OREP","VCUF"], SST:["BRST","BURN","CIRC","DECU","SKIN","ST","UMB"], USI:["USI"] };
 const evaluate = (evidence, extra={}) => evaluateSecondarySite({ siteCode:"MEN", evidence, ...extra });
 const support = { suspected:"met", fever:"met", "meningeal-signs":"met", "csf-gram-stain":"met" };
@@ -14,7 +14,44 @@ test("MEN 2 evidence cannot qualify the age-specific MEN 3 branch",()=>{ const r
 test("a recognized cause exclusion prevents an asterisked finding from qualifying",()=>{ const result=evaluate({...support,"other-recognized-cause":"met"}); assert.equal(result.siteDefinitionMet,false); assert.equal(result.status,"exclusionApplies"); });
 test("meeting MEN does not automatically establish secondary BSI attribution",()=>{ const result=evaluate({"csf-organism":"met"}); assert.equal(result.siteDefinitionMet,true); assert.equal(result.secondaryAttributionMet,false); assert.equal(evaluate({"csf-organism":"met"},{organismRelationship:"yes",attributionTiming:"yes"}).secondaryAttributionMet,true); });
 test("MEN source fidelity metadata and criterion structure match the approved structured definition",()=>{ assert.equal(menDefinition.source.document,"Secondary BSI Chapter.pdf"); assert.equal(menDefinition.source.printedPage,"17-11"); assert.deepEqual(menDefinition.criteria.map(x=>x.id),["MEN-1","MEN-2","MEN-3"]); assert.equal(menDefinition.criteria[1].groups[0].minimumRequiredCount,2); assert.equal(menDefinition.criteria[2].allOf[0].id,"age-one-or-younger"); menDefinition.criteria.forEach(c=>assert.equal(c.source.sourceDataId,"MEN")); });
-test("SA remains a placeholder and cannot evaluate MEN criteria",()=>{ assert.equal(secondarySiteDefinitions.SA.criteria.length,0); assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{"csf-organism":"met"}}).status,"siteNotValidated"); });
+test("SA does not accept MEN evidence",()=>{ assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{"csf-organism":"met"}}).siteDefinitionMet,false); });
+test("SA criteria 1 and 2 qualify independently",()=>{
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{"sa-site-organism":"met"}}).metCriterion,"SA-1");
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{"sa-gross-histopathologic-evidence":"met"}}).metCriterion,"SA-2");
+});
+test("SA 3a requires a localized finding, blood organism, and definitive imaging",()=>{
+  const complete={"sa-back-pain":"met","sa-blood-organism":"met","sa-definitive-imaging":"met"};
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:complete}).metCriterion,"SA-3a");
+  for(const id of Object.keys(complete)) assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{...complete,[id]:"notMet"}}).siteDefinitionMet,id === "sa-blood-organism");
+});
+test("SA 3b requires both one localized finding and definitive imaging",()=>{
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{"sa-fever":"met","sa-definitive-imaging":"met"}}).metCriterion,"SA-3b");
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{"sa-fever":"met"}}).siteDefinitionMet,false);
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{"sa-definitive-imaging":"met"}}).siteDefinitionMet,false);
+});
+test("SA asterisked localized findings are excluded by another recognized cause",()=>{
+  const excluded=evaluateSecondarySite({siteCode:"SA",evidence:{"sa-back-pain":"met","sa-other-recognized-cause":"met","sa-definitive-imaging":"met"}});
+  assert.equal(excluded.siteDefinitionMet,false);
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence:{"sa-fever":"met","sa-other-recognized-cause":"met","sa-definitive-imaging":"met"}}).metCriterion,"SA-3b");
+});
+test("SA age boundaries do not alter its non-age-specific pathways",()=>{
+  const evidence={"sa-fever":"met","sa-definitive-imaging":"met"};
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence,patientAge:"infant"}).metCriterion,"SA-3b");
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence,patientAge:"adult"}).metCriterion,"SA-3b");
+});
+test("meeting SA unlocks but does not infer secondary BSI attribution",()=>{
+  const evidence={"sa-site-organism":"met"};
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence}).secondaryAttributionMet,false);
+  assert.equal(evaluateSecondarySite({siteCode:"SA",evidence,organismRelationship:"yes",attributionTiming:"yes"}).secondaryAttributionMet,true);
+});
+test("SA source metadata and branch structure trace to the approved manual",()=>{
+  assert.equal(saDefinition.source.document,"Secondary BSI Chapter.pdf");
+  assert.equal(saDefinition.source.printedPage,"17-12");
+  assert.equal(saDefinition.source.pdfPage,13);
+  assert.deepEqual(saDefinition.criteria.map(({id})=>id),["SA-1","SA-2","SA-3a","SA-3b"]);
+  assert.deepEqual(saDefinition.criteria.slice(2).map(c=>c.groups[0].minimumRequiredCount),[1,1]);
+  saDefinition.criteria.forEach(criterion=>assert.equal(criterion.source.sourceDataId,"SA"));
+});
 test("IC criteria 1 and 2 each qualify independently",()=>{
   assert.equal(evaluateSecondarySite({siteCode:"IC",evidence:{"brain-tissue-dura-organism":"met"}}).metCriterion,"IC-1");
   assert.equal(evaluateSecondarySite({siteCode:"IC",evidence:{"gross-histopathologic-evidence":"met"}}).metCriterion,"IC-2");
