@@ -43,6 +43,9 @@ const episAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstr
 const orepCriterionSource = source("17-23–17-24", "24–25", "OREP — Pelvic tissue/space infection or other infection of the male or female reproductive tract", "OREP");
 const orepInstructionSource = source("17-24", 25, "OREP — Reporting Instructions", "OREP.reporting-instructions");
 const orepAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "OREP.secondary-bsi");
+const cdiCriterionSource = source("17-18–17-19", "19–20", "CDI — Clostridioides difficile Infection", "CDI");
+const cdiInstructionSource = source("17-19", 20, "CDI — Reporting Instructions and Comments", "CDI.reporting-instructions");
+const cdiAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "CDI.secondary-bsi");
 const vcufCriterionSource = source("17-24", 25, "VCUF — Vaginal cuff infection", "VCUF");
 const vcufInstructionSource = source("17-24", 25, "VCUF — Reporting Instruction", "VCUF.reporting-instruction");
 const vcufAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "VCUF.secondary-bsi");
@@ -233,6 +236,25 @@ export const orepDefinition = Object.freeze({
   ]) })
 });
 
+const cdiItem = (id, label, options = {}) => Object.freeze({ id, label, source: cdiCriterionSource, ...options });
+const cdiRitItem = cdiItem("cdi-new-event-rit-eligible", "No existing GI-CDI Repeat Infection Timeframe (RIT) prevents this from being reported as a new GI-CDI event", { source: cdiInstructionSource });
+
+export const cdiDefinition = Object.freeze({
+  majorCategoryCode: "GI", majorCategoryName: "Gastrointestinal System Infection", siteCode: "CDI", siteName: "Clostridioides difficile Infection",
+  source: cdiCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "CDI-1", label: "Criterion 1 — toxin-producing C. difficile test from an unformed stool specimen", source: cdiCriterionSource, allOf: Object.freeze([
+      cdiItem("cdi-positive-toxin-producing-test", "Positive test for toxin-producing C. difficile"),
+      cdiItem("cdi-unformed-stool-specimen", "The tested stool specimen was unformed (conformed to the shape of the container)"),
+      cdiRitItem
+    ]) }),
+    Object.freeze({ id: "CDI-2", label: "Criterion 2 — pseudomembranous colitis", source: cdiCriterionSource, allOf: Object.freeze([
+      cdiRitItem
+    ]), groups: Object.freeze([
+      Object.freeze({ id: "CDI-2-evidence", label: "At least one qualifying examination finding", minimumRequiredCount: 1, anyOf: Object.freeze([
+        cdiItem("cdi-pseudomembranous-colitis-gross", "Evidence of pseudomembranous colitis on gross anatomic examination (including endoscopic examination)"),
+        cdiItem("cdi-pseudomembranous-colitis-histopathology", "Evidence of pseudomembranous colitis on histopathologic examination")
+      ]) })
 const vcufItem = (id, label) => Object.freeze({ id, label, source: vcufCriterionSource });
 export const vcufDefinition = Object.freeze({
   majorCategoryCode: "REPR", majorCategoryName: "Reproductive Tract Infection", siteCode: "VCUF", siteName: "Vaginal cuff infection",
@@ -250,6 +272,18 @@ export const vcufDefinition = Object.freeze({
   ]),
   exclusions: Object.freeze([]),
   notes: Object.freeze([
+    Object.freeze({ id: "CDI-note-multitest", text: "When a multi-testing methodology is used for C. difficile identification, the result of the last test finding placed in the patient medical record determines whether CDI criterion 1 is met.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-note-doe", text: "For CDI criterion 1, the date of event is the collection date of the unformed stool specimen, not the date diarrhea began.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-note-labid", text: "CDI LabID Event categorizations do not apply to HAIs, including C. difficile-associated gastrointestinal infections (GI-CDI).", source: cdiInstructionSource })
+  ]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "CDI-report-coexisting-enteric", text: "Report CDI and GE or GIT when additional enteric organism(s) are identified and the GE or GIT criteria are also met.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-report-rit", text: "Report each new GI-CDI according to the NHSN Repeat Infection Timeframe (RIT) rule for HAIs in Chapter 2.", source: cdiInstructionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: cdiAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete CDI definition is met", source: cdiAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism has the required NHSN relationship to the CDI site criterion; CDI qualification alone does not establish this relationship", source: cdiAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the CDI secondary BSI attribution period", source: cdiAttributionSource })
     Object.freeze({ id: "VCUF-note-site-definition-timing", text: "The VCUF site definition does not make a hysterectomy procedure or the SSI surveillance period a qualifying element; those facts determine SSI reporting under the separate reporting instruction.", source: vcufInstructionSource })
   ]),
   reportingInstructions: Object.freeze([
@@ -785,11 +819,46 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, EMET: emetDefinition, ENDO: endoDefinition, EPIS: episDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, OREP: orepDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition, VCUF: vcufDefinition });
-export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "EMET", "ENDO", "EPIS", "IC", "JNT", "MED", "MEN", "OREP", "PJI", "SA", "USI", "VASC", "VCUF"]);
-export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
-export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
-export { warning as placeholderWarning };
+export const secondarySiteDefinitions = Object.freeze({
+  ...Object.fromEntries(placeholders),
+  BONE: boneDefinition,
+  CARD: cardDefinition,
+  CDI: cdiDefinition,
+  DISC: discDefinition,
+  EMET: emetDefinition,
+  ENDO: endoDefinition,
+  EPIS: episDefinition,
+  IC: icDefinition,
+  JNT: jntDefinition,
+  MED: medDefinition,
+  MEN: menDefinition,
+  OREP: orepDefinition,
+  PJI: pjiDefinition,
+  SA: saDefinition,
+  USI: usiDefinition,
+  VASC: vascDefinition,
+  VCUF: vcufDefinition
+});
+
+export const implementedSecondaryPathways = Object.freeze([
+  "BONE",
+  "CARD",
+  "CDI",
+  "DISC",
+  "EMET",
+  "ENDO",
+  "EPIS",
+  "IC",
+  "JNT",
+  "MED",
+  "MEN",
+  "OREP",
+  "PJI",
+  "SA",
+  "USI",
+  "VASC",
+  "VCUF"
+]);
 
 const answer = (evidence, id) => evidence?.[id] || "unknown";
 function atomMet(atom, evidence) { return answer(evidence, atom.id) === "met" && (!atom.exclusionId || answer(evidence, atom.exclusionId) !== "met"); }
