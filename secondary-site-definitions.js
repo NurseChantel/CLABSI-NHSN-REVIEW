@@ -46,6 +46,9 @@ const orepAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstr
 const vcufCriterionSource = source("17-24", 25, "VCUF — Vaginal cuff infection", "VCUF");
 const vcufInstructionSource = source("17-24", 25, "VCUF — Reporting Instruction", "VCUF.reporting-instruction");
 const vcufAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "VCUF.secondary-bsi");
+const geCriterionSource = source("17-19", 20, "GE — Gastroenteritis (excluding C. difficile infections)", "GE");
+const geInstructionSource = source("17-19", 20, "GE — Comment and Reporting Instruction", "GE.reporting-instruction");
+const geAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "GE.secondary-bsi");
 const item = (id, label, options = {}) => Object.freeze({ id, label, source: menCriterionSource, ...options });
 const labAlternatives = Object.freeze([
   item("csf-profile", "Increased white cells, elevated protein, and decreased glucose in CSF (per the reporting laboratory's reference range)"),
@@ -773,6 +776,54 @@ export const vascDefinition = Object.freeze({
   ]) })
 });
 
+const geOtherCauseId = "ge-other-recognized-cause";
+const geItem = (id, label, options = {}) => Object.freeze({ id, label, source: geCriterionSource, ...options });
+const geSymptoms = Object.freeze([
+  geItem("ge-nausea", "Nausea, with no other recognized cause", { exclusionId: geOtherCauseId }),
+  geItem("ge-vomiting", "Vomiting, with no other recognized cause", { exclusionId: geOtherCauseId }),
+  geItem("ge-abdominal-pain", "Abdominal pain, with no other recognized cause", { exclusionId: geOtherCauseId }),
+  geItem("ge-fever", "Fever (>38.0°C)"),
+  geItem("ge-headache", "Headache, with no other recognized cause", { exclusionId: geOtherCauseId })
+]);
+const geLaboratoryAlternatives = Object.freeze([
+  geItem("ge-stool-rectal-enteric-pathogen", "An enteric pathogen is identified from a stool or rectal swab by culture or a non-culture based microbiologic testing method performed for purposes of clinical diagnosis or treatment (not ASC/AST)"),
+  geItem("ge-stool-microscopy-enteric-pathogen", "An enteric pathogen is detected by microscopy on stool"),
+  geItem("ge-enteric-antibody", "Diagnostic single antibody titer (IgM) or 4-fold increase in paired sera (IgG) for an enteric organism")
+]);
+const geCdiExclusionId = "ge-cdi-infection";
+
+export const geDefinition = Object.freeze({
+  majorCategoryCode: "GI", majorCategoryName: "Gastrointestinal System Infection", siteCode: "GE", siteName: "Gastroenteritis (excluding C. difficile infections)",
+  source: geCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "GE-1", label: "Criterion 1 — acute-onset diarrhea without a likely noninfectious cause", source: geCriterionSource, allOf: Object.freeze([
+      geItem("ge-acute-diarrhea", "Acute onset of diarrhea (liquid stools for >12 hours)"),
+      geItem("ge-no-likely-noninfectious-cause", "No likely noninfectious cause (for example, diagnostic tests, therapeutic regimen other than antimicrobial agents, acute exacerbation of a chronic condition, or psychological stress information)")
+    ]) }),
+    Object.freeze({ id: "GE-2", label: "Criterion 2 — two signs or symptoms and enteric-pathogen evidence", source: geCriterionSource, allOf: Object.freeze([]), groups: Object.freeze([
+      Object.freeze({ id: "GE-2-findings", label: "At least two qualifying signs or symptoms", minimumRequiredCount: 2, anyOf: geSymptoms }),
+      Object.freeze({ id: "GE-2-laboratory", label: "At least one qualifying enteric-pathogen laboratory result", minimumRequiredCount: 1, anyOf: geLaboratoryAlternatives })
+    ]) })
+  ]),
+  exclusions: Object.freeze([
+    geItem(geCdiExclusionId, "C. difficile infection applies; GE explicitly excludes C. difficile infections", { type: "exclusion", blocksPathway: true, routeTo: "CDI" }),
+    geItem(geOtherCauseId, "Another recognized cause applies to a sign or symptom marked by NHSN with an asterisk", { type: "exclusion" })
+  ]),
+  hardExclusionIds: Object.freeze([geCdiExclusionId]),
+  notes: Object.freeze([
+    Object.freeze({ id: "GE-note-boundary", text: "GE excludes C. difficile infections. CDI laboratory evidence is not a GE laboratory alternative and cannot establish GE.", source: geCriterionSource }),
+    Object.freeze({ id: "GE-note-enteric-pathogens", text: "The source comment lists examples of enteric pathogens that are not normal intestinal flora; the pathway requires the source-defined enteric-pathogen relationship rather than treating any organism as qualifying.", source: geInstructionSource })
+  ]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "GE-report-git", text: "Report only GI-GIT using the GI-GIT event date when the patient meets criteria for both GI-GE and GI-GIT.", source: geInstructionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: geAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete GE definition is met", source: geAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the GE criterion", source: geAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the GE secondary BSI attribution period (or in the infection window when used as a criterion element)", source: geAttributionSource })
+  ]) })
+});
+
 const categoryData = [
   ["BJ", "Bone and Joint Infection", [["BONE", "Osteomyelitis", 7], ["DISC", "Disc space infection", 8], ["JNT", "Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures)", 9], ["PJI", "Periprosthetic Joint Infection (for use as Organ/Space SSI following HPRO and KPRO only)", 9]]],
   ["CNS", "Central Nervous System Infection", [["IC", "Intracranial infection (brain abscess, subdural or epidural infection, encephalitis)", 10], ["MEN", "Meningitis or ventriculitis", 11], ["SA", "Spinal abscess/infection (spinal abscess, spinal subdural or epidural infection)", 12]]],
@@ -785,8 +836,8 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, EMET: emetDefinition, ENDO: endoDefinition, EPIS: episDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, OREP: orepDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition, VCUF: vcufDefinition });
-export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "EMET", "ENDO", "EPIS", "IC", "JNT", "MED", "MEN", "OREP", "PJI", "SA", "USI", "VASC", "VCUF"]);
+export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, EMET: emetDefinition, ENDO: endoDefinition, EPIS: episDefinition, GE: geDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, OREP: orepDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition, VCUF: vcufDefinition });
+export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "EMET", "ENDO", "EPIS", "GE", "IC", "JNT", "MED", "MEN", "OREP", "PJI", "SA", "USI", "VASC", "VCUF"]);
 export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
 export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
 export { warning as placeholderWarning };

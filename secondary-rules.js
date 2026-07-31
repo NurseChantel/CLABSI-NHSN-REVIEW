@@ -5,6 +5,7 @@ export {
   emetDefinition,
   endoDefinition,
   episDefinition,
+  geDefinition,
   evaluateSecondarySite,
   icDefinition,
   jntDefinition,
