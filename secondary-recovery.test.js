@@ -40,3 +40,27 @@ test("the application has one renderer path and no obsolete three-state evidence
   assert.doesNotMatch(app, /function renderEvidenceChoice|function renderMenCriterion|Unknown \/ not documented/);
   assert.match(app, /renderSecondaryEvidenceSafely as renderCompactMenEvidence/);
 });
+
+test("secondary category and GI site-code navigation renders from the registry", () => {
+  assert.ok(secondarySiteCategories.length > 0);
+
+  const expectedMajorCategories = ["BJ", "CNS", "CVS", "EENT", "GI", "LRI", "REPR", "SST", "USI"];
+  assert.deepEqual(secondarySiteCategories.map(category => category.majorCategoryCode), expectedMajorCategories);
+
+  const gi = secondarySiteCategories.find(category => category.majorCategoryCode === "GI");
+  assert.ok(gi, "GI category is missing");
+  assert.deepEqual(gi.siteCodes, ["CDI", "GE", "GIT", "IAB", "NEC"]);
+
+  const majorCategoryButtonContainer = {
+    innerHTML: secondarySiteCategories.map(category => `<button data-category="${category.majorCategoryCode}">${category.majorCategoryCode}</button>`).join("")
+  };
+  assert.notEqual(majorCategoryButtonContainer.innerHTML, "");
+  for (const categoryCode of expectedMajorCategories) assert.match(majorCategoryButtonContainer.innerHTML, new RegExp(`data-category="${categoryCode}"`));
+
+  const siteCodeButtonContainer = {
+    innerHTML: gi.siteCodes.map(siteCode => `<button data-site-code="${siteCode}">${siteCode}</button>`).join("")
+  };
+  for (const siteCode of ["CDI", "GE", "GIT", "IAB", "NEC"]) {
+    assert.match(siteCodeButtonContainer.innerHTML, new RegExp(`data-site-code="${siteCode}"`));
+  }
+});

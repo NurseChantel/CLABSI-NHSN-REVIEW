@@ -258,6 +258,25 @@ export const cdiDefinition = Object.freeze({
         cdiItem("cdi-pseudomembranous-colitis-gross", "Evidence of pseudomembranous colitis on gross anatomic examination (including endoscopic examination)"),
         cdiItem("cdi-pseudomembranous-colitis-histopathology", "Evidence of pseudomembranous colitis on histopathologic examination")
       ]) })
+    ]) })
+  ]),
+  exclusions: Object.freeze([]),
+  notes: Object.freeze([
+    Object.freeze({ id: "CDI-note-multitest", text: "When a multi-testing methodology is used for C. difficile identification, the result of the last test finding placed in the patient medical record determines whether CDI criterion 1 is met.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-note-doe", text: "For CDI criterion 1, the date of event is the collection date of the unformed stool specimen, not the date diarrhea began.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-note-labid", text: "CDI LabID Event categorizations do not apply to HAIs, including C. difficile-associated gastrointestinal infections (GI-CDI).", source: cdiInstructionSource })
+  ]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "CDI-report-coexisting-enteric", text: "Report CDI and GE or GIT when additional enteric organism(s) are identified and the GE or GIT criteria are also met.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-report-rit", text: "Report each new GI-CDI according to the NHSN Repeat Infection Timeframe (RIT) rule for HAIs in Chapter 2.", source: cdiInstructionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: cdiAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete CDI definition is met", source: cdiAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism has the required NHSN relationship to the CDI site criterion; CDI qualification alone does not establish this relationship", source: cdiAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the CDI secondary BSI attribution period", source: cdiAttributionSource })
+  ]) })
+});
+
 const vcufItem = (id, label) => Object.freeze({ id, label, source: vcufCriterionSource });
 export const vcufDefinition = Object.freeze({
   majorCategoryCode: "REPR", majorCategoryName: "Reproductive Tract Infection", siteCode: "VCUF", siteName: "Vaginal cuff infection",
@@ -275,18 +294,6 @@ export const vcufDefinition = Object.freeze({
   ]),
   exclusions: Object.freeze([]),
   notes: Object.freeze([
-    Object.freeze({ id: "CDI-note-multitest", text: "When a multi-testing methodology is used for C. difficile identification, the result of the last test finding placed in the patient medical record determines whether CDI criterion 1 is met.", source: cdiInstructionSource }),
-    Object.freeze({ id: "CDI-note-doe", text: "For CDI criterion 1, the date of event is the collection date of the unformed stool specimen, not the date diarrhea began.", source: cdiInstructionSource }),
-    Object.freeze({ id: "CDI-note-labid", text: "CDI LabID Event categorizations do not apply to HAIs, including C. difficile-associated gastrointestinal infections (GI-CDI).", source: cdiInstructionSource })
-  ]),
-  reportingInstructions: Object.freeze([
-    Object.freeze({ id: "CDI-report-coexisting-enteric", text: "Report CDI and GE or GIT when additional enteric organism(s) are identified and the GE or GIT criteria are also met.", source: cdiInstructionSource }),
-    Object.freeze({ id: "CDI-report-rit", text: "Report each new GI-CDI according to the NHSN Repeat Infection Timeframe (RIT) rule for HAIs in Chapter 2.", source: cdiInstructionSource })
-  ]),
-  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: cdiAttributionSource, requirements: Object.freeze([
-    Object.freeze({ id: "site-definition", label: "A complete CDI definition is met", source: cdiAttributionSource }),
-    Object.freeze({ id: "organism-relationship", label: "The blood organism has the required NHSN relationship to the CDI site criterion; CDI qualification alone does not establish this relationship", source: cdiAttributionSource }),
-    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the CDI secondary BSI attribution period", source: cdiAttributionSource })
     Object.freeze({ id: "VCUF-note-site-definition-timing", text: "The VCUF site definition does not make a hysterectomy procedure or the SSI surveillance period a qualifying element; those facts determine SSI reporting under the separate reporting instruction.", source: vcufInstructionSource })
   ]),
   reportingInstructions: Object.freeze([
@@ -877,6 +884,7 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
+export const geDefinition = placeholders.find(([siteCode]) => siteCode === "GE")[1];
 export const secondarySiteDefinitions = Object.freeze({
   ...Object.fromEntries(placeholders),
   BONE: boneDefinition,
@@ -884,6 +892,7 @@ export const secondarySiteDefinitions = Object.freeze({
   CDI: cdiDefinition,
   DISC: discDefinition,
   EMET: emetDefinition,
+  GE: geDefinition,
   ENDO: endoDefinition,
   EPIS: episDefinition,
   IC: icDefinition,
@@ -919,6 +928,10 @@ export const implementedSecondaryPathways = Object.freeze([
   "VASC",
   "VCUF"
 ]);
+
+export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
+export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
+export { warning as placeholderWarning };
 
 const answer = (evidence, id) => evidence?.[id] || "unknown";
 function atomMet(atom, evidence) { return answer(evidence, atom.id) === "met" && (!atom.exclusionId || answer(evidence, atom.exclusionId) !== "met"); }
