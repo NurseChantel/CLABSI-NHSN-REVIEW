@@ -1290,7 +1290,7 @@ function renderCalculatedStatuses() {
   const mbi = determineMbiStatus(determineLcbi());
   const exclusion = determineExclusionStatus();
   setResult(document.getElementById("siteDefinitionStatus"), site.met ? "success" : "neutral", `${site.label}. ${site.reason}`);
-  const attributionUnlocked = !["BONE", "DISC", "MEN", "SA"].includes(state.selectedSite) || site.met;
+  const attributionUnlocked = !["BONE", "DISC", "ENDO", "MED", "MEN", "SA"].includes(state.selectedSite) || site.met;
   document.querySelectorAll('[data-name="organismRelationship"] button, [data-name="attributionTiming"] button').forEach(button => { button.disabled = !attributionUnlocked; });
   setResult(document.getElementById("mbiStatus"), mbi.met ? "success" : mbi.status === "incomplete" ? "neutral" : "warning", `${mbi.label}. ${mbi.reason}`);
   setResult(document.getElementById("exclusionStatus"), exclusion.status === "met" ? "warning" : "neutral", `${exclusion.label}. ${exclusion.reason}`);

@@ -5,7 +5,7 @@ const numberWord = (value) => ({ 1: "One", 2: "Two", 3: "Three" })[value] || Str
 const qualificationNoteIdsByCriterion = Object.freeze({ "MEN-1": ["MEN-note-shunt"], "MEN-2": ["MEN-note-group-i", "MEN-note-seizures"], "MEN-3": ["MEN-note-group-i", "MEN-note-seizures"] });
 
 export function getVisibleMenCriteria(criteria, patientAge) {
-  return criteria.filter((criterion) => criterion.id === "MEN-2" ? patientAge !== "infant" : criterion.id === "MEN-3" ? patientAge === "infant" : true);
+  return criteria.filter((criterion) => criterion.ageApplicability === "infant" ? patientAge === "infant" : criterion.id === "MEN-2" ? patientAge !== "infant" : criterion.id === "MEN-3" ? patientAge === "infant" : true);
 }
 export function checkboxEvidenceValue(checked) { return checked ? "met" : "notMet"; }
 
@@ -32,7 +32,7 @@ function renderQualificationNotes(criterion, notes) {
 }
 function renderRequirement(group, evidence) {
   const progress = getRequirementPresentation(group, evidence);
-  const instruction = progress.grouped ? `Select findings from ${numberWord(progress.required).toUpperCase()} different groups.` : progress.required === 1 ? "Select ONE qualifying supporting test." : `Select ${numberWord(progress.required).toUpperCase()} qualifying options.`;
+  const instruction = progress.grouped ? `Select findings from ${numberWord(progress.required).toUpperCase()} different groups.` : "Select ONE qualifying supporting test.";
   const content = progress.grouped
     ? group.anyOf.map((branch, index) => `<section class="secondary-logic-group ${alternativeMet(branch, evidence) ? "satisfied" : ""}"><h6>${alternativeMet(branch, evidence) ? "✓" : "☐"} Group ${["I", "II", "III", "IV"][index] || index + 1}</h6><p>${escapeHtml(branch.label)}</p>${branch.anyOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>`).join("")
     : group.anyOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("");
