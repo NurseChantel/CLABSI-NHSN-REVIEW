@@ -1,1 +1,1 @@
-export { boneDefinition, evaluateSecondarySite, icDefinition, menDefinition, saDefinition, secondaryEvaluationStatuses, secondarySiteCategories, secondarySiteDefinitions, placeholderWarning, selectSecondarySite } from "./secondary-site-definitions.js";
+export { boneDefinition, discDefinition, evaluateSecondarySite, icDefinition, menDefinition, saDefinition, secondaryEvaluationStatuses, secondarySiteCategories, secondarySiteDefinitions, placeholderWarning, selectSecondarySite } from "./secondary-site-definitions.js";
