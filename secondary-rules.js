@@ -7,6 +7,7 @@ export {
   endoDefinition,
   episDefinition,
   evaluateSecondarySite,
+  iabDefinition,
   icDefinition,
   jntDefinition,
   medDefinition,

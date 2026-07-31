@@ -49,6 +49,9 @@ const cdiAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstre
 const vcufCriterionSource = source("17-24", 25, "VCUF — Vaginal cuff infection", "VCUF");
 const vcufInstructionSource = source("17-24", 25, "VCUF — Reporting Instruction", "VCUF.reporting-instruction");
 const vcufAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "VCUF.secondary-bsi");
+const iabCriterionSource = source("17-21–17-22", "22–23", "IAB — Intraabdominal infection, not specified elsewhere", "IAB");
+const iabInstructionSource = source("17-22", 23, "IAB — Reporting Instructions", "IAB.reporting-instructions");
+const iabAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "IAB.secondary-bsi");
 const item = (id, label, options = {}) => Object.freeze({ id, label, source: menCriterionSource, ...options });
 const labAlternatives = Object.freeze([
   item("csf-profile", "Increased white cells, elevated protein, and decreased glucose in CSF (per the reporting laboratory's reference range)"),
@@ -255,6 +258,26 @@ export const cdiDefinition = Object.freeze({
         cdiItem("cdi-pseudomembranous-colitis-gross", "Evidence of pseudomembranous colitis on gross anatomic examination (including endoscopic examination)"),
         cdiItem("cdi-pseudomembranous-colitis-histopathology", "Evidence of pseudomembranous colitis on histopathologic examination")
       ]) })
+    ]) })
+  ]),
+  exclusions: Object.freeze([]),
+  notes: Object.freeze([
+    Object.freeze({ id: "CDI-note-multitest", text: "When a multi-testing methodology is used for C. difficile identification, the result of the last test finding placed in the patient medical record determines whether CDI criterion 1 is met.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-note-doe", text: "For CDI criterion 1, the date of event is the collection date of the unformed stool specimen, not the date diarrhea began.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-note-labid", text: "CDI LabID Event categorizations do not apply to HAIs, including C. difficile-associated gastrointestinal infections (GI-CDI).", source: cdiInstructionSource })
+  ]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "CDI-report-coexisting-enteric", text: "Report CDI and GE or GIT when additional enteric organism(s) are identified and the GE or GIT criteria are also met.", source: cdiInstructionSource }),
+    Object.freeze({ id: "CDI-report-rit", text: "Report each new GI-CDI according to the NHSN Repeat Infection Timeframe (RIT) rule for HAIs in Chapter 2.", source: cdiInstructionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: cdiAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete CDI definition is met", source: cdiAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism has the required NHSN relationship to the CDI site criterion; CDI qualification alone does not establish this relationship", source: cdiAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the CDI secondary BSI attribution period", source: cdiAttributionSource })
+  ]) })
+});
+
+
 const vcufItem = (id, label) => Object.freeze({ id, label, source: vcufCriterionSource });
 export const vcufDefinition = Object.freeze({
   majorCategoryCode: "REPR", majorCategoryName: "Reproductive Tract Infection", siteCode: "VCUF", siteName: "Vaginal cuff infection",
@@ -272,18 +295,6 @@ export const vcufDefinition = Object.freeze({
   ]),
   exclusions: Object.freeze([]),
   notes: Object.freeze([
-    Object.freeze({ id: "CDI-note-multitest", text: "When a multi-testing methodology is used for C. difficile identification, the result of the last test finding placed in the patient medical record determines whether CDI criterion 1 is met.", source: cdiInstructionSource }),
-    Object.freeze({ id: "CDI-note-doe", text: "For CDI criterion 1, the date of event is the collection date of the unformed stool specimen, not the date diarrhea began.", source: cdiInstructionSource }),
-    Object.freeze({ id: "CDI-note-labid", text: "CDI LabID Event categorizations do not apply to HAIs, including C. difficile-associated gastrointestinal infections (GI-CDI).", source: cdiInstructionSource })
-  ]),
-  reportingInstructions: Object.freeze([
-    Object.freeze({ id: "CDI-report-coexisting-enteric", text: "Report CDI and GE or GIT when additional enteric organism(s) are identified and the GE or GIT criteria are also met.", source: cdiInstructionSource }),
-    Object.freeze({ id: "CDI-report-rit", text: "Report each new GI-CDI according to the NHSN Repeat Infection Timeframe (RIT) rule for HAIs in Chapter 2.", source: cdiInstructionSource })
-  ]),
-  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: cdiAttributionSource, requirements: Object.freeze([
-    Object.freeze({ id: "site-definition", label: "A complete CDI definition is met", source: cdiAttributionSource }),
-    Object.freeze({ id: "organism-relationship", label: "The blood organism has the required NHSN relationship to the CDI site criterion; CDI qualification alone does not establish this relationship", source: cdiAttributionSource }),
-    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the CDI secondary BSI attribution period", source: cdiAttributionSource })
     Object.freeze({ id: "VCUF-note-site-definition-timing", text: "The VCUF site definition does not make a hysterectomy procedure or the SSI surveillance period a qualifying element; those facts determine SSI reporting under the separate reporting instruction.", source: vcufInstructionSource })
   ]),
   reportingInstructions: Object.freeze([
@@ -295,6 +306,7 @@ export const vcufDefinition = Object.freeze({
     Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the VCUF secondary BSI attribution period (or in the infection window when used as a criterion element)", source: vcufAttributionSource })
   ]) })
 });
+
 
 const medItem = (id, label, options = {}) => Object.freeze({ id, label, source: medCriterionSource, ...options });
 const medOtherCause = { exclusionId: "med-other-recognized-cause" };
@@ -807,6 +819,77 @@ export const vascDefinition = Object.freeze({
   ]) })
 });
 
+const iabItem = (id, label, options = {}) => Object.freeze({ id, label, source: iabCriterionSource, ...options });
+const iabEligibleSite = () => iabItem("iab-eligible-anatomical-site", "Infection is in an eligible intraabdominal site not specified elsewhere: gallbladder, bile ducts, liver (excluding viral hepatitis), spleen, pancreas, peritoneum, retroperitoneal space, subphrenic or subdiaphragmatic space, or other qualifying intraabdominal tissue or area");
+const iabClinicalFindings = Object.freeze([
+  iabItem("iab-fever", "Fever (>38.0°C)"),
+  iabItem("iab-hypotension", "Hypotension"),
+  iabItem("iab-nausea", "Nausea, with no other recognized cause", { exclusionId: "iab-other-recognized-cause" }),
+  iabItem("iab-vomiting", "Vomiting, with no other recognized cause", { exclusionId: "iab-other-recognized-cause" }),
+  iabItem("iab-abdominal-pain-tenderness", "Abdominal pain or tenderness, with no other recognized cause", { exclusionId: "iab-other-recognized-cause" }),
+  iabItem("iab-elevated-transaminase", "At least one elevated SGOT, SGPT, ALT, or AST according to the reporting laboratory's normal range, with no other recognized cause", { exclusionId: "iab-other-recognized-cause" }),
+  iabItem("iab-jaundice", "Jaundice, with no other recognized cause", { exclusionId: "iab-other-recognized-cause" })
+]);
+const iabClinicalGroup = () => Object.freeze({ id: "IAB-3-findings", label: "At least two qualifying signs or symptoms", minimumRequiredCount: 2, anyOf: iabClinicalFindings });
+
+export const iabDefinition = Object.freeze({
+  majorCategoryCode: "GI", majorCategoryName: "Gastrointestinal System Infection", siteCode: "IAB", siteName: "Intraabdominal infection, not specified elsewhere, including gallbladder, bile ducts, liver (excluding viral hepatitis), spleen, pancreas, peritoneum, retroperitoneal, subphrenic or subdiaphragmatic space, or other intraabdominal tissue or area not specified elsewhere",
+  source: iabCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "IAB-1", label: "Criterion 1 — organism from an abscess or purulent intraabdominal material", source: iabCriterionSource, allOf: Object.freeze([
+      iabEligibleSite(),
+      iabItem("iab-abscess-purulent-material-organism", "Organism(s) identified from an abscess or purulent material from the intraabdominal space by culture or non-culture based microbiologic testing performed for clinical diagnosis or treatment (not ASC/AST)")
+    ]) }),
+    Object.freeze({ id: "IAB-2b", label: "Criterion 2b — gross anatomic or histopathologic evidence plus an MBI organism from blood", source: iabCriterionSource, allOf: Object.freeze([
+      iabEligibleSite(),
+      iabItem("iab-gross-or-histopathologic-evidence", "Abscess or other evidence of intraabdominal infection on gross anatomic or histopathologic examination"),
+      iabItem("iab-blood-mbi-organism", "Organism(s) identified from blood by culture or non-culture based microbiologic testing performed for clinical diagnosis or treatment (not ASC/AST), including at least one MBI organism from the NHSN Terminology Browser"),
+      iabItem("iab-histopathology-blood-match-if-organism-seen", "If an organism is identified on histopathologic examination, the blood specimen contains a matching organism (mark met when no organism was identified on histopathology)", { source: iabInstructionSource })
+    ]) }),
+    Object.freeze({ id: "IAB-2a", label: "Criterion 2a — gross anatomic or histopathologic evidence", source: iabCriterionSource, allOf: Object.freeze([
+      iabEligibleSite(),
+      iabItem("iab-gross-or-histopathologic-evidence", "Abscess or other evidence of intraabdominal infection on gross anatomic or histopathologic examination")
+    ]) }),
+    Object.freeze({ id: "IAB-3a", label: "Criterion 3a — clinical findings plus intraabdominal fluid or tissue microbiology", source: iabCriterionSource, allOf: Object.freeze([iabEligibleSite()]), groups: Object.freeze([
+      iabClinicalGroup(),
+      Object.freeze({ id: "IAB-3a-microbiology", label: "At least one qualifying intraabdominal microbiology result", minimumRequiredCount: 1, anyOf: Object.freeze([
+        iabItem("iab-site-gram-stain-organism", "Organism(s) seen on Gram stain of intraabdominal fluid or tissue obtained during an invasive procedure or from an aseptically placed intraabdominal drain"),
+        iabItem("iab-site-organism", "Organism(s) identified from intraabdominal fluid or tissue obtained during an invasive procedure or from an aseptically placed intraabdominal drain (for example, closed suction, open, T-tube, or CT-guided drainage) by eligible testing performed for clinical diagnosis or treatment (not ASC/AST)")
+      ]) })
+    ]) }),
+    Object.freeze({ id: "IAB-3b", label: "Criterion 3b — clinical findings, blood MBI organism, and imaging", source: iabCriterionSource, allOf: Object.freeze([
+      iabEligibleSite(),
+      iabItem("iab-blood-mbi-organism", "Organism(s) identified from blood by culture or non-culture based microbiologic testing performed for clinical diagnosis or treatment (not ASC/AST), including at least one MBI organism from the NHSN Terminology Browser")
+    ]), groups: Object.freeze([
+      iabClinicalGroup(),
+      Object.freeze({ id: "IAB-3b-imaging", label: "Qualifying imaging evidence", minimumRequiredCount: 1, anyOf: Object.freeze([
+        iabItem("iab-definitive-imaging", "Imaging test evidence definitive for intraabdominal infection (for example, ultrasound, CT, MRI, ERCP, radiolabel scan, or abdominal x-ray)"),
+        iabItem("iab-equivocal-imaging-with-treatment", "Equivocal imaging supported by clinical correlation: physician or physician-designee documentation of antimicrobial treatment for intraabdominal infection")
+      ]) })
+    ]) })
+  ]),
+  exclusions: Object.freeze([
+    iabItem("iab-other-recognized-cause", "Another recognized cause applies to an asterisked clinical finding", { type: "exclusion" }),
+    iabItem("iab-viral-hepatitis", "Viral hepatitis is excluded from the eligible liver scope", { type: "exclusion", disqualifiesSite: true }),
+    iabItem("iab-noninfectious-pancreatitis", "Pancreatitis has not been determined to be infectious in origin", { type: "exclusion", disqualifiesSite: true, source: iabInstructionSource })
+  ]),
+  notes: Object.freeze([
+    Object.freeze({ id: "IAB-note-scope", text: "IAB is limited to the listed intraabdominal sites or other intraabdominal tissue or area not specified elsewhere; gastrointestinal tract evidence does not satisfy IAB evidence requirements.", source: iabCriterionSource }),
+    Object.freeze({ id: "IAB-note-biliary-dilatation", text: "Biliary ductal dilatation is an equivocal imaging finding for cholangitis and therefore requires the documented-treatment clinical correlation used by the equivocal-imaging alternative.", source: iabInstructionSource }),
+    Object.freeze({ id: "IAB-note-transaminases", text: "Eligible transaminases are SGOT, SGPT, ALT, or AST; at least one must be elevated under the reporting laboratory's normal range.", source: iabInstructionSource })
+  ]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "IAB-report-histopathology-match", text: "For IAB 2b, when an organism is identified on histopathologic examination, the blood specimen must contain a matching organism.", source: iabInstructionSource }),
+    Object.freeze({ id: "IAB-report-pancreatitis", text: "Do not report pancreatitis unless it is determined to be infectious in origin.", source: iabInstructionSource }),
+    Object.freeze({ id: "IAB-report-not-elsewhere", text: "Do not use IAB for an infection assigned to another specified NHSN anatomical site; IAB is the intraabdominal infection site not specified elsewhere.", source: iabCriterionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: iabAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete IAB definition is met", source: iabAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism has the required NHSN relationship: it matches an organism from the site specimen used to meet IAB, or the blood organism is itself used as an eligible IAB criterion element", source: iabAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the IAB secondary BSI attribution period (or in the infection window when used as an IAB criterion element)", source: iabAttributionSource })
+  ]) })
+});
+
 const categoryData = [
   ["BJ", "Bone and Joint Infection", [["BONE", "Osteomyelitis", 7], ["DISC", "Disc space infection", 8], ["JNT", "Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures)", 9], ["PJI", "Periprosthetic Joint Infection (for use as Organ/Space SSI following HPRO and KPRO only)", 9]]],
   ["CNS", "Central Nervous System Infection", [["IC", "Intracranial infection (brain abscess, subdural or epidural infection, encephalitis)", 10], ["MEN", "Meningitis or ventriculitis", 11], ["SA", "Spinal abscess/infection (spinal abscess, spinal subdural or epidural infection)", 12]]],
@@ -828,6 +911,7 @@ export const secondarySiteDefinitions = Object.freeze({
   EMET: emetDefinition,
   ENDO: endoDefinition,
   EPIS: episDefinition,
+  IAB: iabDefinition,
   IC: icDefinition,
   JNT: jntDefinition,
   MED: medDefinition,
@@ -848,6 +932,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "EMET",
   "ENDO",
   "EPIS",
+  "IAB",
   "IC",
   "JNT",
   "MED",
@@ -859,6 +944,10 @@ export const implementedSecondaryPathways = Object.freeze([
   "VASC",
   "VCUF"
 ]);
+
+export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
+export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
+export { warning as placeholderWarning };
 
 const answer = (evidence, id) => evidence?.[id] || "unknown";
 function atomMet(atom, evidence) { return answer(evidence, atom.id) === "met" && (!atom.exclusionId || answer(evidence, atom.exclusionId) !== "met"); }
