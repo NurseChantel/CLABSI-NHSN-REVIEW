@@ -35,6 +35,9 @@ const cardAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstr
 const vascCriterionSource = source("17-14", 15, "VASC — Arterial or venous infection", "VASC");
 const vascInstructionSource = source("17-14", 15, "VASC — Reporting Instructions", "VASC.reporting-instructions");
 const vascAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "VASC.secondary-bsi");
+const necSource = Object.freeze({ document: "clabsi nhsn.pdf", chapter: "Chapter 4 — Bloodstream Infection Event (Central Line-Associated Bloodstream Infection and Non-central Line Associated Bloodstream Infection)", printedPage: "4-30–4-31", pdfPage: "31–32", sectionHeading: "Appendix: Secondary BSI Guide — Exception to Scenarios 1 & 2: Necrotizing Enterocolitis (NEC)", sourceDataId: "NEC" });
+const necChapter17Source = source("17-22", 23, "NEC — Necrotizing enterocolitis (See Chapter 4)", "NEC.chapter-17-note");
+const necAttributionSource = Object.freeze({ ...necSource, sourceDataId: "NEC.secondary-bsi-exception" });
 const emetCriterionSource = source("17-23", 24, "EMET — Endometritis", "EMET");
 const emetInstructionSource = source("17-23", 24, "EMET — Reporting Instructions", "EMET.reporting-instructions");
 const emetAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "EMET.secondary-bsi");
@@ -807,6 +810,61 @@ export const vascDefinition = Object.freeze({
   ]) })
 });
 
+const necItem = (id, label, options = {}) => Object.freeze({ id, label, source: necSource, ...options });
+const necAge = necItem("nec-age-one-or-younger", "Infant is ≤1 year of age");
+const necClinical = Object.freeze([
+  necItem("nec-bilious-aspirate", "Bilious aspirate (excluding aspirate from a transpyloric feeding tube)", { exclusionId: "nec-transpyloric-bilious-aspirate" }),
+  necItem("nec-vomiting", "Vomiting"),
+  necItem("nec-abdominal-distention", "Abdominal distention"),
+  necItem("nec-blood-in-stool", "Occult or gross blood in stools (with no rectal fissure)", { exclusionId: "nec-rectal-fissure" })
+]);
+const necClinicalGroup = (id) => Object.freeze({ id, label: "At least one qualifying clinical sign", minimumRequiredCount: 1, anyOf: necClinical });
+const necDiagnosticCriterion = (id, label, imaging) => Object.freeze({ id, label, source: necSource, allOf: Object.freeze([necAge, ...imaging]), groups: Object.freeze([necClinicalGroup(`${id}-clinical`)]) });
+
+export const necDefinition = Object.freeze({
+  majorCategoryCode: "GI", majorCategoryName: "Gastrointestinal System Infection", siteCode: "NEC", siteName: "Necrotizing enterocolitis",
+  source: necSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  patientAgeApplicability: "infant",
+  criteria: Object.freeze([
+    necDiagnosticCriterion("NEC-1a", "Criterion 1 — clinical sign and pneumatosis intestinalis", [
+      necItem("nec-pneumatosis", "Pneumatosis intestinalis on abdominal imaging (an equivocal finding)"),
+      necItem("nec-equivocal-imaging-treatment", "Physician or physician-designee documentation of antimicrobial treatment for NEC supports the equivocal imaging finding")
+    ]),
+    necDiagnosticCriterion("NEC-1b", "Criterion 1 — clinical sign and definitive portal venous gas", [necItem("nec-definitive-portal-venous-gas", "Definitive portal venous gas (hepatobiliary gas) on abdominal imaging")]),
+    necDiagnosticCriterion("NEC-1c", "Criterion 1 — clinical sign and equivocal portal venous gas", [
+      necItem("nec-equivocal-portal-venous-gas", "Equivocal portal venous gas (hepatobiliary gas) on abdominal imaging"),
+      necItem("nec-equivocal-imaging-treatment", "Physician or physician-designee documentation of antimicrobial treatment for NEC supports the equivocal imaging finding")
+    ]),
+    necDiagnosticCriterion("NEC-1d", "Criterion 1 — clinical sign and definitive pneumoperitoneum", [necItem("nec-definitive-pneumoperitoneum", "Definitive pneumoperitoneum on abdominal imaging")]),
+    necDiagnosticCriterion("NEC-1e", "Criterion 1 — clinical sign and equivocal pneumoperitoneum", [
+      necItem("nec-equivocal-pneumoperitoneum", "Equivocal pneumoperitoneum on abdominal imaging"),
+      necItem("nec-equivocal-imaging-treatment", "Physician or physician-designee documentation of antimicrobial treatment for NEC supports the equivocal imaging finding")
+    ]),
+    Object.freeze({ id: "NEC-2", label: "Criterion 2 — surgical NEC", source: necSource, allOf: Object.freeze([necAge]), groups: Object.freeze([
+      Object.freeze({ id: "NEC-2-surgical", label: "At least one qualifying surgical finding", minimumRequiredCount: 1, anyOf: Object.freeze([
+        necItem("nec-extensive-bowel-necrosis", "Surgical evidence of extensive bowel necrosis (>2 cm of bowel affected)"),
+        necItem("nec-surgical-pneumatosis", "Surgical evidence of pneumatosis intestinalis, with or without intestinal perforation")
+      ])
+    ]) })
+  ]),
+  exclusions: Object.freeze([
+    necItem("nec-transpyloric-bilious-aspirate", "The bilious aspirate is from a transpyloric feeding tube and is excluded", { type: "exclusion" }),
+    necItem("nec-rectal-fissure", "A rectal fissure is present, so blood in stool does not qualify", { type: "exclusion" })
+  ]),
+  notes: Object.freeze([
+    Object.freeze({ id: "NEC-note-purpose", text: "NEC definitions exist only to provide the exception for assigning a BSI secondary to NEC and must not be used for HAI surveillance.", source: necChapter17Source }),
+    Object.freeze({ id: "NEC-note-imaging", text: "Pneumatosis is an equivocal abdominal imaging finding. Examples of abdominal imaging include KUB, ultrasound, or abdominal x-ray.", source: necSource }),
+    Object.freeze({ id: "NEC-note-no-microbiology", text: "The NEC criteria contain neither a site-specific specimen nor an organism identified from blood.", source: necSource }),
+    Object.freeze({ id: "NEC-note-age", text: "NEC criteria cannot be met in patients >1 year of age; review GIT for eligibility.", source: necSource })
+  ]),
+  reportingInstructions: Object.freeze([]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, exception: "NEC", source: necAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "One complete NEC criterion is met", source: necAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an LCBI pathogen, or the same common commensal is identified from at least two blood specimens drawn on separate occasions on the same or consecutive calendar days", source: necAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The qualifying blood specimen(s) are collected during the NEC secondary BSI attribution period", source: necAttributionSource })
+  ]) })
+});
+
 const categoryData = [
   ["BJ", "Bone and Joint Infection", [["BONE", "Osteomyelitis", 7], ["DISC", "Disc space infection", 8], ["JNT", "Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures)", 9], ["PJI", "Periprosthetic Joint Infection (for use as Organ/Space SSI following HPRO and KPRO only)", 9]]],
   ["CNS", "Central Nervous System Infection", [["IC", "Intracranial infection (brain abscess, subdural or epidural infection, encephalitis)", 10], ["MEN", "Meningitis or ventriculitis", 11], ["SA", "Spinal abscess/infection (spinal abscess, spinal subdural or epidural infection)", 12]]],
@@ -832,6 +890,7 @@ export const secondarySiteDefinitions = Object.freeze({
   JNT: jntDefinition,
   MED: medDefinition,
   MEN: menDefinition,
+  NEC: necDefinition,
   OREP: orepDefinition,
   PJI: pjiDefinition,
   SA: saDefinition,
@@ -852,6 +911,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "JNT",
   "MED",
   "MEN",
+  "NEC",
   "OREP",
   "PJI",
   "SA",
@@ -869,13 +929,14 @@ function requiredMessages(criterion, evidence) {
   for (const group of criterion.groups || []) if (!groupMet(group, evidence)) missing.push(`${group.label}: ${group.minimumRequiredCount} required; current qualifying groups do not meet the minimum`);
   return missing;
 }
-export function evaluateSecondarySite({ siteCode = "", evidence = {}, organismRelationship = "", attributionTiming = "" } = {}) {
+export function evaluateSecondarySite({ siteCode = "", evidence = {}, organismRelationship = "", attributionTiming = "", patientAge = "" } = {}) {
   const definition = secondarySiteDefinitions[siteCode];
   if (!definition) return { status: "siteNotSelected", siteDefinitionMet: false, secondaryAttributionMet: false };
   const schemaIsRenderable = Array.isArray(definition.criteria) && Array.isArray(definition.exclusions) && Array.isArray(definition.notes)
     && definition.criteria.every(criterion => Array.isArray(criterion.allOf) && (!criterion.groups || criterion.groups.every(group => Array.isArray(group.anyOf) && Number.isFinite(group.minimumRequiredCount))));
   if (definition.implementationStatus !== "validated" || !schemaIsRenderable) return { status: "siteNotValidated", siteDefinitionMet: false, secondaryAttributionMet: false, definition, message: warning };
   const started = Object.values(evidence).some(Boolean);
+  if (definition.patientAgeApplicability === "infant" && patientAge !== "infant") return { status: started ? "exclusionApplies" : "notStarted", siteDefinitionMet: false, secondaryAttributionMet: false, definition, message: "This definition is restricted to patients ≤1 year of age." };
   const hardExclusionApplies = definition.exclusions.some(item => (item.disqualifiesSite || item.blocksPathway) && answer(evidence, item.id) === "met")
     || (definition.hardExclusionIds || []).some(id => answer(evidence, id) === "met");
   const metCriterion = hardExclusionApplies ? undefined : definition.criteria.find(criterion => criterionMet(criterion, evidence));
