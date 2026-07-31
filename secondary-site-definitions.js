@@ -35,6 +35,9 @@ const cardAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstr
 const vascCriterionSource = source("17-14", 15, "VASC — Arterial or venous infection", "VASC");
 const vascInstructionSource = source("17-14", 15, "VASC — Reporting Instructions", "VASC.reporting-instructions");
 const vascAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "VASC.secondary-bsi");
+const emetCriterionSource = source("17-23", 24, "EMET — Endometritis", "EMET");
+const emetInstructionSource = source("17-23", 24, "EMET — Reporting Instructions", "EMET.reporting-instructions");
+const emetAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "EMET.secondary-bsi");
 const item = (id, label, options = {}) => Object.freeze({ id, label, source: menCriterionSource, ...options });
 const labAlternatives = Object.freeze([
   item("csf-profile", "Increased white cells, elevated protein, and decreased glucose in CSF (per the reporting laboratory's reference range)"),
@@ -86,6 +89,40 @@ export const menDefinition = Object.freeze({
     Object.freeze({ id: "site-definition", label: "A complete MEN definition is met", source: attributionSource }),
     Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the MEN criterion", source: attributionSource }),
     Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the MEN secondary BSI attribution period (or in the infection window when used as a criterion element)", source: attributionSource })
+  ]) })
+});
+
+const emetItem = (id, label, options = {}) => Object.freeze({ id, label, source: emetCriterionSource, ...options });
+export const emetDefinition = Object.freeze({
+  majorCategoryCode: "REPR", majorCategoryName: "Reproductive Tract Infection", siteCode: "EMET", siteName: "Endometritis",
+  source: emetCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "EMET-1", label: "Criterion 1 — organism from endometrial fluid or tissue", source: emetCriterionSource, allOf: Object.freeze([
+      emetItem("emet-endometrial-organism", "Organism(s) identified from endometrial fluid or tissue by a culture or non-culture based microbiologic testing method performed for clinical diagnosis or treatment (not ASC/AST)")
+    ]) }),
+    Object.freeze({ id: "EMET-2", label: "Criterion 2 — suspected endometritis and at least two signs or symptoms", source: emetCriterionSource, allOf: Object.freeze([
+      emetItem("emet-suspected", "Suspected endometritis")
+    ]), groups: Object.freeze([
+      Object.freeze({ id: "EMET-2-findings", label: "At least two qualifying signs or symptoms", minimumRequiredCount: 2, anyOf: Object.freeze([
+        emetItem("emet-fever", "Fever (>38.0°C)"),
+        emetItem("emet-pain-tenderness", "Pain or tenderness (uterine or abdominal), with no other recognized cause", { exclusionId: "emet-other-recognized-cause" }),
+        emetItem("emet-purulent-drainage", "Purulent drainage from uterus")
+      ]) })
+    ]) })
+  ]),
+  exclusions: Object.freeze([
+    emetItem("emet-other-recognized-cause", "Another recognized cause applies to uterine or abdominal pain or tenderness", { type: "exclusion" })
+  ]),
+  notes: Object.freeze([]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "EMET-report-chorioamnionitis", text: "Do not report an HAI chorioamnionitis as EMET; see OREP.", source: emetInstructionSource }),
+    Object.freeze({ id: "EMET-report-poa-chorioamnionitis", text: "Do not report subsequent postpartum endometritis after a vaginal delivery as an HAI when the patient is admitted with POA chorioamnionitis (OREP).", source: emetInstructionSource }),
+    Object.freeze({ id: "EMET-report-cesarean", text: "Report organ-space SSI-EMET when a C-section was performed on a patient with chorioamnionitis and the patient later develops endometritis.", source: emetInstructionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: emetAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete EMET definition is met", source: emetAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the EMET criterion", source: emetAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the EMET secondary BSI attribution period (or in the infection window when used as a criterion element)", source: emetAttributionSource })
   ]) })
 });
 
@@ -612,8 +649,8 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, ENDO: endoDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition });
-export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "ENDO", "IC", "JNT", "MED", "MEN", "PJI", "SA", "USI", "VASC"]);
+export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, EMET: emetDefinition, ENDO: endoDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition });
+export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "EMET", "ENDO", "IC", "JNT", "MED", "MEN", "PJI", "SA", "USI", "VASC"]);
 export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
 export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
 export { warning as placeholderWarning };

@@ -2,6 +2,7 @@ export {
   boneDefinition,
   cardDefinition,
   discDefinition,
+  emetDefinition,
   endoDefinition,
   evaluateSecondarySite,
   icDefinition,
