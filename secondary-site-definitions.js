@@ -43,6 +43,9 @@ const episAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstr
 const orepCriterionSource = source("17-23–17-24", "24–25", "OREP — Pelvic tissue/space infection or other infection of the male or female reproductive tract", "OREP");
 const orepInstructionSource = source("17-24", 25, "OREP — Reporting Instructions", "OREP.reporting-instructions");
 const orepAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "OREP.secondary-bsi");
+const vcufCriterionSource = source("17-24", 25, "VCUF — Vaginal cuff infection", "VCUF");
+const vcufInstructionSource = source("17-24", 25, "VCUF — Reporting Instruction", "VCUF.reporting-instruction");
+const vcufAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "VCUF.secondary-bsi");
 const item = (id, label, options = {}) => Object.freeze({ id, label, source: menCriterionSource, ...options });
 const labAlternatives = Object.freeze([
   item("csf-profile", "Increased white cells, elevated protein, and decreased glucose in CSF (per the reporting laboratory's reference range)"),
@@ -227,6 +230,35 @@ export const orepDefinition = Object.freeze({
     Object.freeze({ id: "site-definition", label: "A complete OREP definition is met", source: orepAttributionSource }),
     Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the OREP criterion", source: orepAttributionSource }),
     Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the OREP secondary BSI attribution period (or in the infection window when used as a criterion element)", source: orepAttributionSource })
+  ]) })
+});
+
+const vcufItem = (id, label) => Object.freeze({ id, label, source: vcufCriterionSource });
+export const vcufDefinition = Object.freeze({
+  majorCategoryCode: "REPR", majorCategoryName: "Reproductive Tract Infection", siteCode: "VCUF", siteName: "Vaginal cuff infection",
+  source: vcufCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "VCUF-1", label: "Criterion 1 — purulent drainage", source: vcufCriterionSource, allOf: Object.freeze([
+      vcufItem("vcuf-purulent-drainage", "Purulent drainage from the vaginal cuff")
+    ]) }),
+    Object.freeze({ id: "VCUF-2", label: "Criterion 2 — abscess or other evidence of infection", source: vcufCriterionSource, allOf: Object.freeze([
+      vcufItem("vcuf-abscess-or-infection-evidence", "Abscess or other evidence of infection at the vaginal cuff on gross anatomic examination or invasive procedure")
+    ]) }),
+    Object.freeze({ id: "VCUF-3", label: "Criterion 3 — organism from vaginal cuff fluid or tissue", source: vcufCriterionSource, allOf: Object.freeze([
+      vcufItem("vcuf-cuff-fluid-tissue-organism", "Organism(s) identified from fluid or tissue from the vaginal cuff by an eligible culture or non-culture based microbiologic testing method performed for clinical diagnosis or treatment (not ASC/AST)")
+    ]) })
+  ]),
+  exclusions: Object.freeze([]),
+  notes: Object.freeze([
+    Object.freeze({ id: "VCUF-note-site-definition-timing", text: "The VCUF site definition does not make a hysterectomy procedure or the SSI surveillance period a qualifying element; those facts determine SSI reporting under the separate reporting instruction.", source: vcufInstructionSource })
+  ]),
+  reportingInstructions: Object.freeze([
+    Object.freeze({ id: "VCUF-report-ssi", text: "Report vaginal cuff infections as SSI-VCUF when the date of event occurs within the 30-day surveillance period following a hysterectomy procedure.", source: vcufInstructionSource })
+  ]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: vcufAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete VCUF definition is met", source: vcufAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the VCUF criterion", source: vcufAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the VCUF secondary BSI attribution period (or in the infection window when used as a criterion element)", source: vcufAttributionSource })
   ]) })
 });
 
@@ -753,8 +785,8 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, EMET: emetDefinition, ENDO: endoDefinition, EPIS: episDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, OREP: orepDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition });
-export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "EMET", "ENDO", "EPIS", "IC", "JNT", "MED", "MEN", "OREP", "PJI", "SA", "USI", "VASC"]);
+export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, EMET: emetDefinition, ENDO: endoDefinition, EPIS: episDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, OREP: orepDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition, VCUF: vcufDefinition });
+export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "EMET", "ENDO", "EPIS", "IC", "JNT", "MED", "MEN", "OREP", "PJI", "SA", "USI", "VASC", "VCUF"]);
 export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
 export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
 export { warning as placeholderWarning };
