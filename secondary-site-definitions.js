@@ -38,6 +38,8 @@ const vascAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstr
 const emetCriterionSource = source("17-23", 24, "EMET — Endometritis", "EMET");
 const emetInstructionSource = source("17-23", 24, "EMET — Reporting Instructions", "EMET.reporting-instructions");
 const emetAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "EMET.secondary-bsi");
+const episCriterionSource = source("17-23", 24, "EPIS — Episiotomy infection", "EPIS");
+const episAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "EPIS.secondary-bsi");
 const item = (id, label, options = {}) => Object.freeze({ id, label, source: menCriterionSource, ...options });
 const labAlternatives = Object.freeze([
   item("csf-profile", "Increased white cells, elevated protein, and decreased glucose in CSF (per the reporting laboratory's reference range)"),
@@ -123,6 +125,31 @@ export const emetDefinition = Object.freeze({
     Object.freeze({ id: "site-definition", label: "A complete EMET definition is met", source: emetAttributionSource }),
     Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the EMET criterion", source: emetAttributionSource }),
     Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the EMET secondary BSI attribution period (or in the infection window when used as a criterion element)", source: emetAttributionSource })
+  ]) })
+});
+
+const episItem = (id, label) => Object.freeze({ id, label, source: episCriterionSource });
+const episPostpartumVaginalDelivery = episItem("epis-postpartum-vaginal-delivery", "Patient had a postpartum vaginal delivery");
+export const episDefinition = Object.freeze({
+  majorCategoryCode: "REPR", majorCategoryName: "Reproductive Tract Infection", siteCode: "EPIS", siteName: "Episiotomy infection",
+  source: episCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "EPIS-1", label: "Criterion 1 — purulent drainage from episiotomy site", source: episCriterionSource, allOf: Object.freeze([
+      episPostpartumVaginalDelivery,
+      episItem("epis-purulent-drainage", "Purulent drainage from the episiotomy site")
+    ]) }),
+    Object.freeze({ id: "EPIS-2", label: "Criterion 2 — episiotomy abscess", source: episCriterionSource, allOf: Object.freeze([
+      episPostpartumVaginalDelivery,
+      episItem("epis-abscess", "Episiotomy abscess")
+    ]) })
+  ]),
+  exclusions: Object.freeze([]),
+  notes: Object.freeze([]),
+  reportingInstructions: Object.freeze([]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: episAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete EPIS definition is met", source: episAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the EPIS criterion", source: episAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the EPIS secondary BSI attribution period (or in the infection window when used as a criterion element)", source: episAttributionSource })
   ]) })
 });
 
@@ -649,8 +676,8 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, EMET: emetDefinition, ENDO: endoDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition });
-export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "EMET", "ENDO", "IC", "JNT", "MED", "MEN", "PJI", "SA", "USI", "VASC"]);
+export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, CARD: cardDefinition, DISC: discDefinition, EMET: emetDefinition, ENDO: endoDefinition, EPIS: episDefinition, IC: icDefinition, JNT: jntDefinition, MED: medDefinition, MEN: menDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition, VASC: vascDefinition });
+export const implementedSecondaryPathways = Object.freeze(["BONE", "CARD", "DISC", "EMET", "ENDO", "EPIS", "IC", "JNT", "MED", "MEN", "PJI", "SA", "USI", "VASC"]);
 export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
 export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
 export { warning as placeholderWarning };
