@@ -15,6 +15,7 @@ export {
   saDefinition,
   usiDefinition,
   vascDefinition,
+  vcufDefinition,
   implementedSecondaryPathways,
   secondaryEvaluationStatuses,
   secondarySiteCategories,
