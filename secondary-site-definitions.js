@@ -18,6 +18,9 @@ const discAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstr
 const pjiCriterionSource = source("17-9–17-10", "10–11", "PJI — Periprosthetic Joint Infection", "PJI");
 const pjiInstructionSource = source("17-10", 11, "PJI — Reporting Instruction", "PJI.reporting-instruction");
 const pjiAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "PJI.secondary-bsi");
+const usiCriterionSource = source("17-28–17-29", "29–30", "USI — Urinary System Infection", "USI");
+const usiInstructionSource = source("17-29", 30, "USI — Reporting Instructions", "USI.reporting-instructions");
+const usiAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "USI.secondary-bsi");
 const item = (id, label, options = {}) => Object.freeze({ id, label, source: menCriterionSource, ...options });
 const labAlternatives = Object.freeze([
   item("csf-profile", "Increased white cells, elevated protein, and decreased glucose in CSF (per the reporting laboratory's reference range)"),
@@ -289,6 +292,45 @@ export const pjiDefinition = Object.freeze({
   ]) })
 });
 
+const usiItem = (id, label, options = {}) => Object.freeze({ id, label, source: usiCriterionSource, ...options });
+const usiNotUti = "usi-chapter-7-uti";
+const usiCriterionItem = (id, label, options = {}) => usiItem(id, label, options);
+const usiDrainageOrBlood = (id) => Object.freeze({ id, label: "At least one drainage or blood finding", minimumRequiredCount: 1, anyOf: Object.freeze([
+  usiCriterionItem("usi-purulent-drainage", "Purulent drainage from affected site"),
+  usiCriterionItem("usi-blood-organism", "Organism(s) identified from blood by a culture or non-culture based microbiologic testing method performed for clinical diagnosis or treatment (not ASC/AST)")
+]) });
+const usiImaging = usiCriterionItem("usi-definitive-imaging", "Imaging test evidence definitive for infection (for example, ultrasound, CT scan, MRI, or radiolabel scan [gallium, technetium]); if equivocal, supported by clinical correlation, specifically physician or physician-designee documentation of antimicrobial treatment for urinary system infection");
+
+export const usiDefinition = Object.freeze({
+  majorCategoryCode: "USI", majorCategoryName: "Urinary System Infection", siteCode: "USI", siteName: "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)",
+  source: usiCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "USI-1", label: "Criterion 1 — affected-site fluid (not urine) or tissue organism", source: usiCriterionSource, allOf: Object.freeze([usiCriterionItem("usi-site-organism", "Organism(s) identified from fluid (not urine) or tissue from affected site by a culture or non-culture based microbiologic testing method performed for clinical diagnosis or treatment (not ASC/AST)")]) }),
+    Object.freeze({ id: "USI-2", label: "Criterion 2 — abscess or other evidence of infection", source: usiCriterionSource, allOf: Object.freeze([usiCriterionItem("usi-anatomic-pathology-evidence", "Abscess or other evidence of infection on gross anatomical exam, during invasive procedure, or on histopathologic exam")]) }),
+    Object.freeze({ id: "USI-3", label: "Criterion 3 — sign or symptom, drainage or blood finding, and imaging", source: usiCriterionSource, allOf: Object.freeze([usiImaging]), groups: Object.freeze([
+      Object.freeze({ id: "USI-3-findings", label: "At least one sign or symptom", minimumRequiredCount: 1, anyOf: Object.freeze([usiCriterionItem("usi-fever", "Fever (>38.0°C)"), usiCriterionItem("usi-localized-pain-tenderness", "Localized pain or tenderness, with no other recognized cause", { exclusionId: "usi-other-recognized-cause" })]) }), usiDrainageOrBlood("USI-3-support")
+    ]) }),
+    Object.freeze({ id: "USI-4", label: "Criterion 4 — patient <1 year of age", source: usiCriterionSource, allOf: Object.freeze([usiCriterionItem("usi-age-under-one", "Patient <1 year of age"), usiImaging]), groups: Object.freeze([
+      Object.freeze({ id: "USI-4-findings", label: "At least one sign or symptom", minimumRequiredCount: 1, anyOf: Object.freeze([
+        usiCriterionItem("usi-fever", "Fever (>38.0°C)"), usiCriterionItem("usi-hypothermia", "Hypothermia (<36.0°C)"),
+        usiCriterionItem("usi-apnea", "Apnea, with no other recognized cause", { exclusionId: "usi-other-recognized-cause" }), usiCriterionItem("usi-bradycardia", "Bradycardia, with no other recognized cause", { exclusionId: "usi-other-recognized-cause" }),
+        usiCriterionItem("usi-lethargy", "Lethargy, with no other recognized cause", { exclusionId: "usi-other-recognized-cause" }), usiCriterionItem("usi-vomiting", "Vomiting, with no other recognized cause", { exclusionId: "usi-other-recognized-cause" })
+      ]) }), usiDrainageOrBlood("USI-4-support")
+    ]) })
+  ]),
+  exclusions: Object.freeze([
+    usiItem(usiNotUti, "This event is a UTI evaluated under Chapter 7; Chapter 7 UTI evidence is excluded from USI and must be evaluated under the NHSN UTI chapter instead (no automatic redirect or classification)", { type: "exclusion", disqualifiesSite: true }),
+    usiItem("usi-other-recognized-cause", "Another recognized cause applies to a sign or symptom marked by NHSN with an asterisk", { type: "exclusion" })
+  ]),
+  notes: Object.freeze([Object.freeze({ id: "USI-note-uti-exclusion", text: "USI excludes UTI (see Chapter 7); urine is not an eligible fluid for USI criterion 1.", source: usiCriterionSource })]),
+  reportingInstructions: Object.freeze([Object.freeze({ id: "USI-report-circ", text: "Report infections following circumcision in newborns as SST-CIRC.", source: usiInstructionSource })]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: usiAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete USI definition is met", source: usiAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the USI criterion", source: usiAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the USI secondary BSI attribution period (or in the infection window when used as a criterion element)", source: usiAttributionSource })
+  ]) })
+});
+
 const categoryData = [
   ["BJ", "Bone and Joint Infection", [["BONE", "Osteomyelitis", 7], ["DISC", "Disc space infection", 8], ["JNT", "Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures)", 9], ["PJI", "Periprosthetic Joint Infection (for use as Organ/Space SSI following HPRO and KPRO only)", 9]]],
   ["CNS", "Central Nervous System Infection", [["IC", "Intracranial infection (brain abscess, subdural or epidural infection, encephalitis)", 10], ["MEN", "Meningitis or ventriculitis", 11], ["SA", "Spinal abscess/infection (spinal abscess, spinal subdural or epidural infection)", 12]]],
@@ -301,7 +343,7 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, DISC: discDefinition, IC: icDefinition, MEN: menDefinition, PJI: pjiDefinition, SA: saDefinition });
+export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, DISC: discDefinition, IC: icDefinition, MEN: menDefinition, PJI: pjiDefinition, SA: saDefinition, USI: usiDefinition });
 export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
 export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
 export { warning as placeholderWarning };
@@ -322,7 +364,8 @@ export function evaluateSecondarySite({ siteCode = "", evidence = {}, organismRe
   const started = Object.values(evidence).some(Boolean);
   const metCriterion = definition.criteria.find(criterion => criterionMet(criterion, evidence));
   const exclusionApplies = definition.exclusions.some(item => answer(evidence, item.id) === "met");
-  if (!metCriterion) return { status: exclusionApplies ? "exclusionApplies" : started ? "siteDefinitionIncomplete" : "notStarted", siteDefinitionMet: false, secondaryAttributionMet: false, definition, branches: definition.criteria.map(criterion => ({ id: criterion.id, missing: requiredMessages(criterion, evidence) })) };
+  const siteExclusionApplies = definition.exclusions.some(item => item.disqualifiesSite && answer(evidence, item.id) === "met");
+  if (!metCriterion || siteExclusionApplies) return { status: exclusionApplies ? "exclusionApplies" : started ? "siteDefinitionIncomplete" : "notStarted", siteDefinitionMet: false, secondaryAttributionMet: false, definition, branches: definition.criteria.map(criterion => ({ id: criterion.id, missing: requiredMessages(criterion, evidence) })) };
   const secondaryAttributionMet = organismRelationship === "yes" && attributionTiming === "yes";
   return { status: secondaryAttributionMet ? "secondaryAttributionMet" : "siteDefinitionMet", siteDefinitionMet: true, secondaryAttributionMet, metCriterion: metCriterion.id, definition, attributionMissing: [!organismRelationship && "Organism/specimen relationship is unknown", organismRelationship === "no" && "Organism/specimen relationship is not met", !attributionTiming && "Attribution timing is unknown", attributionTiming === "no" && "Attribution timing is not met"].filter(Boolean) };
 }
