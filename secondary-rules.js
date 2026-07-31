@@ -10,6 +10,7 @@ export {
   jntDefinition,
   medDefinition,
   menDefinition,
+  orepDefinition,
   pjiDefinition,
   saDefinition,
   usiDefinition,
