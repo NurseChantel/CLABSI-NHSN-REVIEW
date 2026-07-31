@@ -15,12 +15,18 @@ const boneInstructionSource = source("17-8", 9, "BONE — Reporting Instructions
 const boneTimingSource = source("17-7", 8, "BONE infection window, RIT, and secondary BSI attribution period", "BONE.timing-and-secondary-bsi");
 const discCriterionSource = source("17-8", 9, "DISC — Disc space infection", "DISC");
 const discAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "DISC.secondary-bsi");
+const pjiCriterionSource = source("17-9–17-10", "10–11", "PJI — Periprosthetic Joint Infection", "PJI");
+const pjiInstructionSource = source("17-10", 11, "PJI — Reporting Instruction", "PJI.reporting-instruction");
+const pjiAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "PJI.secondary-bsi");
 const jntCriterionSource = source("17-9", 10, "JNT — Joint or bursa infection (not for use as Organ/Space SSI after HPRO or KPRO procedures)", "JNT");
 const jntInstructionSource = source("17-9", 10, "JNT — Reporting Instruction", "JNT.reporting-instruction");
 const jntAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "JNT.secondary-bsi");
 const endoTimingSource = source("17-29", 30, "ENDO Appendix — infection window, RIT, and secondary BSI attribution period", "ENDO.timing-and-secondary-bsi");
 const endoCriterionSource = source("17-30–17-33", "31–34", "ENDO — Endocarditis", "ENDO");
 const endoFootnoteSource = source("17-34–17-35", "35–36", "ENDO Footnotes", "ENDO.footnotes");
+const medCriterionSource = source("17-13–17-14", "14–15", "MED — Mediastinitis", "MED");
+const medInstructionSource = source("17-14", 15, "MED — Comment and Reporting Instruction", "MED.reporting-instruction");
+const medAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "MED.secondary-bsi");
 const item = (id, label, options = {}) => Object.freeze({ id, label, source: menCriterionSource, ...options });
 const labAlternatives = Object.freeze([
   item("csf-profile", "Increased white cells, elevated protein, and decreased glucose in CSF (per the reporting laboratory's reference range)"),
@@ -72,6 +78,39 @@ export const menDefinition = Object.freeze({
     Object.freeze({ id: "site-definition", label: "A complete MEN definition is met", source: attributionSource }),
     Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the MEN criterion", source: attributionSource }),
     Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the MEN secondary BSI attribution period (or in the infection window when used as a criterion element)", source: attributionSource })
+  ]) })
+});
+
+const medItem = (id, label, options = {}) => Object.freeze({ id, label, source: medCriterionSource, ...options });
+const medOtherCause = { exclusionId: "med-other-recognized-cause" };
+const medDrainageOrImaging = Object.freeze([medItem("med-purulent-drainage", "Purulent drainage from mediastinal area"), medItem("med-mediastinal-widening", "Mediastinal widening on imaging test")]);
+export const medDefinition = Object.freeze({
+  majorCategoryCode: "CVS", majorCategoryName: "Cardiovascular System Infection", siteCode: "MED", siteName: "Mediastinitis",
+  source: medCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
+  criteria: Object.freeze([
+    Object.freeze({ id: "MED-1", label: "Criterion 1 — organism from mediastinal tissue or fluid", source: medCriterionSource, allOf: Object.freeze([medItem("med-site-organism", "Organism(s) identified from mediastinal tissue or mediastinal fluid by an eligible culture or non-culture based microbiologic testing method performed for clinical diagnosis or treatment (not ASC/AST)")]) }),
+    Object.freeze({ id: "MED-2", label: "Criterion 2 — gross anatomic or histopathologic evidence", source: medCriterionSource, allOf: Object.freeze([]), groups: Object.freeze([
+      Object.freeze({ id: "MED-2-exam", label: "At least one qualifying examination finding", minimumRequiredCount: 1, anyOf: Object.freeze([medItem("med-gross-anatomic", "Evidence of mediastinitis on gross anatomic exam"), medItem("med-histopathology", "Evidence of mediastinitis on histopathologic exam")]) })
+    ]) }),
+    Object.freeze({ id: "MED-3", label: "Criterion 3 — sign or symptom plus drainage or imaging", source: medCriterionSource, allOf: Object.freeze([]), groups: Object.freeze([
+      Object.freeze({ id: "MED-3-symptoms", label: "At least one qualifying sign or symptom", minimumRequiredCount: 1, anyOf: Object.freeze([medItem("med-fever", "Fever (>38.0°C)"), medItem("med-chest-pain", "Chest pain, with no other recognized cause", medOtherCause), medItem("med-sternal-instability", "Sternal instability, with no other recognized cause", medOtherCause)]) }),
+      Object.freeze({ id: "MED-3-support", label: "At least one qualifying drainage or imaging finding", minimumRequiredCount: 1, anyOf: medDrainageOrImaging })
+    ]) }),
+    Object.freeze({ id: "MED-4", label: "Criterion 4 — patient ≤1 year of age", source: medCriterionSource, ageApplicability: "infant", allOf: Object.freeze([medItem("med-age-one-or-younger", "Patient ≤1 year of age")]), groups: Object.freeze([
+      Object.freeze({ id: "MED-4-symptoms", label: "At least one qualifying sign or symptom", minimumRequiredCount: 1, anyOf: Object.freeze([medItem("med-fever", "Fever (>38.0°C)"), medItem("med-hypothermia", "Hypothermia (<36.0°C)"), medItem("med-apnea", "Apnea, with no other recognized cause", medOtherCause), medItem("med-bradycardia", "Bradycardia, with no other recognized cause", medOtherCause), medItem("med-sternal-instability", "Sternal instability, with no other recognized cause", medOtherCause)]) }),
+      Object.freeze({ id: "MED-4-support", label: "At least one qualifying drainage or imaging finding", minimumRequiredCount: 1, anyOf: medDrainageOrImaging })
+    ]) })
+  ]),
+  exclusions: Object.freeze([medItem("med-other-recognized-cause", "Another recognized cause applies to a finding marked by NHSN with an asterisk", { type: "exclusion" })]),
+  notes: Object.freeze([
+    Object.freeze({ id: "MED-note-space", text: "The mediastinal space is the area under the sternum and in front of the vertebral column; it is divided into anterior, middle, posterior, and superior regions.", source: medInstructionSource }),
+    Object.freeze({ id: "MED-note-imaging", text: "For MED 4b, mediastinal stranding, mediastinal fluid collection, mediastinal edema, and mediastinal abscess are eligible imaging findings for the mediastinal-widening element.", source: medInstructionSource })
+  ]),
+  reportingInstructions: Object.freeze([Object.freeze({ id: "MED-report-bone", text: "Report mediastinitis following cardiac surgery that is accompanied by osteomyelitis as SSI-MED rather than SSI-BONE.", source: medInstructionSource })]),
+  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: medAttributionSource, requirements: Object.freeze([
+    Object.freeze({ id: "site-definition", label: "A complete MED definition is met", source: medAttributionSource }),
+    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the MED criterion", source: medAttributionSource }),
+    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the MED secondary BSI attribution period (or in the infection window when used as a criterion element)", source: medAttributionSource })
   ]) })
 });
 
@@ -369,7 +408,7 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, DISC: discDefinition, ENDO: endoDefinition, JNT: jntDefinition, IC: icDefinition, MEN: menDefinition, SA: saDefinition });
+export const secondarySiteDefinitions = Object.freeze({ ...Object.fromEntries(placeholders), BONE: boneDefinition, DISC: discDefinition, ENDO: endoDefinition, IC: icDefinition, MED: medDefinition, MEN: menDefinition, SA: saDefinition });
 export const secondarySiteCategories = Object.freeze(categoryData.map(([majorCategoryCode, majorCategoryName, sites]) => Object.freeze({ majorCategoryCode, majorCategoryName, siteCodes: Object.freeze(sites.map(([siteCode]) => siteCode)) })));
 export const secondaryEvaluationStatuses = Object.freeze(["siteNotSelected", "siteNotValidated", "notStarted", "siteDefinitionIncomplete", "siteDefinitionMet", "exclusionApplies", "secondaryAttributionIncomplete", "secondaryAttributionMet"]);
 export { warning as placeholderWarning };
