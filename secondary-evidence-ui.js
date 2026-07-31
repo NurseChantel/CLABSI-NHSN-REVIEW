@@ -32,7 +32,7 @@ function renderQualificationNotes(criterion, notes) {
 }
 function renderRequirement(group, evidence) {
   const progress = getRequirementPresentation(group, evidence);
-  const instruction = progress.grouped ? "Select findings from TWO different groups." : "Select ONE qualifying supporting test.";
+  const instruction = progress.grouped ? `Select findings from ${numberWord(progress.required).toUpperCase()} different groups.` : progress.required === 1 ? "Select ONE qualifying supporting test." : `Select ${numberWord(progress.required).toUpperCase()} qualifying options.`;
   const content = progress.grouped
     ? group.anyOf.map((branch, index) => `<section class="secondary-logic-group ${alternativeMet(branch, evidence) ? "satisfied" : ""}"><h6>${alternativeMet(branch, evidence) ? "✓" : "☐"} Group ${["I", "II", "III", "IV"][index] || index + 1}</h6><p>${escapeHtml(branch.label)}</p>${branch.anyOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>`).join("")
     : group.anyOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("");
