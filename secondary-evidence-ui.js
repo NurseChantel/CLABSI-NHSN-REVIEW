@@ -67,9 +67,22 @@ export function renderCompactMenEvidence({ definition, evaluation, patientAge, e
   const criteria = getVisibleMenCriteria(definition.criteria, patientAge);
   const closest = [...criteria].sort((a, b) => criterionScore(b, evidence) - criterionScore(a, evidence))[0];
   const remaining = evaluation.siteDefinitionMet ? [] : criterionRemaining(closest, evidence);
-  const status = `<div class="secondary-site-status ${evaluation.siteDefinitionMet ? "met" : "incomplete"}" role="status" aria-live="polite"><strong>${evaluation.siteDefinitionMet ? "🟢 MEN Site Definition Met" : "🟡 MEN Site Definition Not Met"}</strong>${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</div>`;
+  const status = `<div class="secondary-site-status ${evaluation.siteDefinitionMet ? "met" : "incomplete"}" role="status" aria-live="polite"><strong>${evaluation.siteDefinitionMet ? `🟢 ${escapeHtml(definition.siteCode)} Site Definition Met` : `🟡 ${escapeHtml(definition.siteCode)} Site Definition Not Met`}</strong>${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</div>`;
   const criterionMarkup = criteria.map((criterion) => renderCriterion(criterion, evidence, evaluation, openCriterion, definition.notes)).join("");
   const exclusionSelected = definition.exclusions.some((item) => evidence[item.id] === "met") || evaluation.status === "exclusionApplies";
   const exclusion = `<details class="secondary-criterion exclusion" ${exclusionSelected ? "open" : ""}><summary>Exclusion review</summary><div class="secondary-criterion-body">${definition.exclusions.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</div></details>`;
   return `${status}<div class="evidence-group secondary-evidence-review" data-men-renderer="compact-v3">${criterionMarkup}${exclusion}${renderReferences(definition)}</div>`;
+}
+
+export function renderSecondaryEvidenceSafely(options) {
+  try {
+    return renderCompactMenEvidence(options);
+  } catch (error) {
+    const siteCode = options?.definition?.siteCode || "unknown";
+    const isDevelopment = typeof process !== "undefined"
+      ? process.env.NODE_ENV !== "production"
+      : ["localhost", "127.0.0.1", ""].includes(globalThis.location?.hostname || "");
+    if (isDevelopment) console.error(`Secondary BSI pathway rendering failed for site ${siteCode}.`, error);
+    return '<div class="secondary-guidance warning" role="status">Site-specific guidance could not be loaded for this pathway.</div>';
+  }
 }

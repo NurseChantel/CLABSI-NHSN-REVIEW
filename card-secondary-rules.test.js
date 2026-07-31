@@ -54,6 +54,6 @@ test("CARD metadata cites the approved NHSN manual", () => {
 
 test("CARD is wired to the unchanged compact evidence renderer", () => {
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /definition\?\.siteCode === "CARD"/);
+  assert.match(app, /definition\?\.implementationStatus === "validated"/);
   assert.match(app, /renderCompactMenEvidence\(\{ definition, evaluation/);
 });

@@ -1,6 +1,6 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
-import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderCompactMenEvidence } from "./secondary-evidence-ui.js";
+import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js";
 
 "use strict";
 
@@ -1034,21 +1034,14 @@ function renderSuggestedSiteButtons(suggestedSiteKeys) {
   }
 }
 
-function renderEvidenceChoice(item) {
-  const value = state.siteEvidence[item.id] || "unknown";
-  return `<div class="men-evidence-item"><span>${escapeHtml(item.label)}</span><div class="compact-choice men-choice" data-evidence-id="${item.id}">${[["met", "Met"], ["notMet", "Not met"], ["unknown", "Unknown / not documented"]].map(([key, label]) => `<button type="button" data-value="${key}" class="${value === key ? "selected" : ""}" aria-pressed="${value === key}">${label}</button>`).join("")}</div></div>`;
-}
-function renderMenCriterion(criterion) {
-  return `<section class="men-criterion"><h4>${escapeHtml(criterion.label)}</h4>${criterion.allOf.map(renderEvidenceChoice).join("")}${(criterion.groups || []).map(group => `<div class="men-logic-group"><strong>${escapeHtml(group.label)}</strong>${group.anyOf.map(branch => branch.anyOf ? `<div class="men-branch"><span>${escapeHtml(branch.label)}</span>${branch.anyOf.map(renderEvidenceChoice).join("")}</div>` : renderEvidenceChoice(branch)).join("")}</div>`).join("")}</section>`;
-}
 function renderSiteGuide() {
  const container = document.getElementById("siteGuidance"); const category = secondarySiteCategories.find(item => item.majorCategoryCode === state.selectedMajorCategory);
  if (!category) { container.innerHTML = ""; return; }
  const definition = secondarySiteDefinitions[state.selectedSite];
- const usesEvidenceReview = ["BONE", "MEN", "SA"].includes(definition?.siteCode) || definition?.siteCode === "USI" || definition?.siteCode === "DISC" || definition?.siteCode === "PJI";
+ const usesEvidenceReview = definition?.implementationStatus === "validated";
  const evaluation = usesEvidenceReview ? getSecondaryEvaluation() : null;
  if (usesEvidenceReview) console.info(COMPACT_MEN_RENDERER_VERSION);
- const review = usesEvidenceReview ? renderCompactMenEvidence({ definition, evaluation, patientAge: state.patientAge, evidence: state.siteEvidence, openCriterion: state.openMenCriterion }).replaceAll("MEN Site Definition", `${definition.siteCode} Site Definition`) : definition ? `<div class="secondary-guidance warning" role="status"><strong>${escapeHtml(placeholderWarning)}</strong><div class="citation-display"><span>NHSN site code: ${definition.siteCode}</span><span>Site: ${escapeHtml(definition.siteName)}</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div></div><div class="evidence-group"><h4>Evidence review</h4><p>No clinical criteria are available until this site definition is validated.</p></div>` : "";
+ const review = usesEvidenceReview ? renderCompactMenEvidence({ definition, evaluation, patientAge: state.patientAge, evidence: state.siteEvidence, openCriterion: state.openMenCriterion }) : definition ? `<div class="secondary-guidance warning" role="status"><strong>${escapeHtml(placeholderWarning)}</strong><div class="citation-display"><span>NHSN site code: ${definition.siteCode}</span><span>Site: ${escapeHtml(definition.siteName)}</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div></div><div class="evidence-group"><h4>Evidence review</h4><p>No clinical criteria are available until this site definition is validated.</p></div>` : "";
  container.innerHTML = `<div class="site-guide"><h3>${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</h3><p class="guide-intro">This grouped category is navigation only and cannot qualify as a site definition.</p><div class="site-button-grid">${category.siteCodes.map(code => { const site = secondarySiteDefinitions[code]; return `<button type="button" data-site-code="${code}" class="${code === state.selectedSite ? "selected" : ""}" aria-pressed="${code === state.selectedSite}"><strong>${code}</strong><span>${escapeHtml(site.siteName)}</span></button>`; }).join("")}</div>${review}</div>`;
  container.querySelectorAll("[data-site-code]").forEach(button => button.addEventListener("click", () => { if (state.selectedSite !== button.dataset.siteCode) { state.siteEvidence = {}; state.openMenCriterion = ""; } state.selectedSite = button.dataset.siteCode; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); updateAll(); }));
  container.querySelectorAll("input[data-evidence-id]").forEach(input => input.addEventListener("change", () => { state.openMenCriterion = ""; state.siteEvidence[input.dataset.evidenceId] = checkboxEvidenceValue(input.checked); updateAll(); }));

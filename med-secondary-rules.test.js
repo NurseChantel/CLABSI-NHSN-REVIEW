@@ -63,5 +63,5 @@ test("MED uses the existing evidence-review renderer and hides only MED 4 for ad
   const html = renderCompactMenEvidence({ definition: medDefinition, evaluation, patientAge: "infant", evidence: {} });
   assert.match(html, /data-men-renderer="compact-v3"/);
   assert.match(html, /data-men-criterion="MED-4"/);
-  assert.match(fs.readFileSync(new URL("./app.js", import.meta.url), "utf8"), /definition\?\.siteCode === "MED"/);
+  assert.match(fs.readFileSync(new URL("./app.js", import.meta.url), "utf8"), /definition\?\.implementationStatus === "validated"/);
 });

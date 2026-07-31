@@ -52,6 +52,6 @@ test("PJI metadata traces criteria, reporting, and attribution to NHSN pages", (
 
 test("PJI reuses the existing compact evidence renderer", () => {
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /definition\?\.siteCode === "PJI"/);
+  assert.match(app, /definition\?\.implementationStatus === "validated"/);
   assert.match(app, /renderCompactMenEvidence\(\{ definition, evaluation/);
 });

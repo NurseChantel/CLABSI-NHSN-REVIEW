@@ -57,6 +57,6 @@ test("VASC metadata traces criteria, reporting instructions, and attribution", (
 
 test("VASC reuses the existing compact evidence renderer", () => {
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /definition\?\.siteCode === "VASC"/);
+  assert.match(app, /definition\?\.implementationStatus === "validated"/);
   assert.match(app, /renderCompactMenEvidence\(\{ definition, evaluation/);
 });
