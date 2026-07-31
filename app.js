@@ -1045,7 +1045,7 @@ function renderSiteGuide() {
  const container = document.getElementById("siteGuidance"); const category = secondarySiteCategories.find(item => item.majorCategoryCode === state.selectedMajorCategory);
  if (!category) { container.innerHTML = ""; return; }
  const definition = secondarySiteDefinitions[state.selectedSite];
- const usesEvidenceReview = ["BONE", "MEN", "SA"].includes(definition?.siteCode) || definition?.siteCode === "DISC" || definition?.siteCode === "JNT";
+ const usesEvidenceReview = ["BONE", "MEN", "SA"].includes(definition?.siteCode) || definition?.siteCode === "CARD" || definition?.siteCode === "DISC" || definition?.siteCode === "JNT";
  const evaluation = usesEvidenceReview ? getSecondaryEvaluation() : null;
  if (usesEvidenceReview) console.info(COMPACT_MEN_RENDERER_VERSION);
  const review = usesEvidenceReview ? renderCompactMenEvidence({ definition, evaluation, patientAge: state.patientAge, evidence: state.siteEvidence, openCriterion: state.openMenCriterion }).replaceAll("MEN Site Definition", `${definition.siteCode} Site Definition`) : definition ? `<div class="secondary-guidance warning" role="status"><strong>${escapeHtml(placeholderWarning)}</strong><div class="citation-display"><span>NHSN site code: ${definition.siteCode}</span><span>Site: ${escapeHtml(definition.siteName)}</span><span>Source: ${escapeHtml(definition.source.document)}</span><span>Printed page: ${definition.source.printedPage}</span><span>PDF page: ${definition.source.pdfPage}</span></div></div><div class="evidence-group"><h4>Evidence review</h4><p>No clinical criteria are available until this site definition is validated.</p></div>` : "";
