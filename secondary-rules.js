@@ -4,6 +4,7 @@ export {
   discDefinition,
   emetDefinition,
   endoDefinition,
+  episDefinition,
   evaluateSecondarySite,
   icDefinition,
   jntDefinition,
