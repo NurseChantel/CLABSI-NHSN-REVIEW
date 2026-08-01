@@ -1,5 +1,6 @@
 import { source, warning } from "./source.js";
 import { boneDefinition } from "./definitions/bone.js";
+import { brstDefinition } from "./definitions/brst.js";
 import { burnDefinition } from "./definitions/burn.js";
 import { cardDefinition } from "./definitions/card.js";
 import { cdiDefinition } from "./definitions/cdi.js";
@@ -38,6 +39,7 @@ export const geDefinition = placeholders.find(([siteCode]) => siteCode === "GE")
 export const secondarySiteDefinitions = Object.freeze({
   ...Object.fromEntries(placeholders),
   BONE: boneDefinition,
+  BRST: brstDefinition,
   BURN: burnDefinition,
   CARD: cardDefinition,
   CDI: cdiDefinition,
@@ -64,6 +66,7 @@ export const secondarySiteDefinitions = Object.freeze({
 
 export const implementedSecondaryPathways = Object.freeze([
   "BONE",
+  "BRST",
   "BURN",
   "CARD",
   "CDI",
@@ -93,6 +96,7 @@ export { warning as placeholderWarning };
 
 export {
   boneDefinition,
+  brstDefinition,
   burnDefinition,
   cardDefinition,
   cdiDefinition,

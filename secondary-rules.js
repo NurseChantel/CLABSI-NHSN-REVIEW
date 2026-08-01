@@ -1,5 +1,6 @@
 export {
   boneDefinition,
+  brstDefinition,
   cardDefinition,
   cdiDefinition,
   discDefinition,
