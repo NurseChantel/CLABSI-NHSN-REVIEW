@@ -20,6 +20,7 @@ import { saDefinition } from "./definitions/sa.js";
 import { skinDefinition } from "./definitions/skin.js";
 import { stDefinition } from "./definitions/st.js";
 import { usiDefinition } from "./definitions/usi.js";
+import { umbDefinition } from "./definitions/umb.js";
 import { vascDefinition } from "./definitions/vasc.js";
 import { vcufDefinition } from "./definitions/vcuf.js";
 
@@ -59,6 +60,7 @@ export const secondarySiteDefinitions = Object.freeze({
   SA: saDefinition,
   SKIN: skinDefinition,
   ST: stDefinition,
+  UMB: umbDefinition,
   USI: usiDefinition,
   VASC: vascDefinition,
   VCUF: vcufDefinition
@@ -85,6 +87,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "SA",
   "SKIN",
   "ST",
+  "UMB",
   "USI",
   "VASC",
   "VCUF"
@@ -115,6 +118,7 @@ export {
   saDefinition,
   skinDefinition,
   stDefinition,
+  umbDefinition,
   usiDefinition,
   vascDefinition,
   vcufDefinition
