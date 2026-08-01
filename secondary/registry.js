@@ -3,6 +3,7 @@ import { boneDefinition } from "./definitions/bone.js";
 import { brstDefinition } from "./definitions/brst.js";
 import { burnDefinition } from "./definitions/burn.js";
 import { circDefinition } from "./definitions/circ.js";
+import { conjDefinition } from "./definitions/conj.js";
 import { cardDefinition } from "./definitions/card.js";
 import { cdiDefinition } from "./definitions/cdi.js";
 import { decuDefinition } from "./definitions/decu.js";
@@ -44,6 +45,7 @@ export const secondarySiteDefinitions = Object.freeze({
   BRST: brstDefinition,
   BURN: burnDefinition,
   CIRC: circDefinition,
+  CONJ: conjDefinition,
   CARD: cardDefinition,
   CDI: cdiDefinition,
   DECU: decuDefinition,
@@ -73,6 +75,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "BRST",
   "BURN",
   "CIRC",
+  "CONJ",
   "CARD",
   "CDI",
   "DECU",
@@ -105,6 +108,7 @@ export {
   brstDefinition,
   burnDefinition,
   circDefinition,
+  conjDefinition,
   cardDefinition,
   cdiDefinition,
   decuDefinition,
