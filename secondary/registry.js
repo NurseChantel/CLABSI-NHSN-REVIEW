@@ -14,6 +14,7 @@ import { necDefinition } from "./definitions/nec.js";
 import { orepDefinition } from "./definitions/orep.js";
 import { pjiDefinition } from "./definitions/pji.js";
 import { saDefinition } from "./definitions/sa.js";
+import { skinDefinition } from "./definitions/skin.js";
 import { usiDefinition } from "./definitions/usi.js";
 import { vascDefinition } from "./definitions/vasc.js";
 import { vcufDefinition } from "./definitions/vcuf.js";
@@ -49,6 +50,7 @@ export const secondarySiteDefinitions = Object.freeze({
   OREP: orepDefinition,
   PJI: pjiDefinition,
   SA: saDefinition,
+  SKIN: skinDefinition,
   USI: usiDefinition,
   VASC: vascDefinition,
   VCUF: vcufDefinition
@@ -70,6 +72,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "OREP",
   "PJI",
   "SA",
+  "SKIN",
   "USI",
   "VASC",
   "VCUF"
@@ -95,6 +98,7 @@ export {
   orepDefinition,
   pjiDefinition,
   saDefinition,
+  skinDefinition,
   usiDefinition,
   vascDefinition,
   vcufDefinition
