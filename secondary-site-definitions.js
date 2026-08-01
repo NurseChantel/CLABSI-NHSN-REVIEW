@@ -851,7 +851,7 @@ export const necDefinition = Object.freeze({
       Object.freeze({ id: "NEC-2-surgical", label: "At least one qualifying surgical finding", minimumRequiredCount: 1, anyOf: Object.freeze([
         necItem("nec-extensive-bowel-necrosis", "Surgical evidence of extensive bowel necrosis (>2 cm of bowel affected)"),
         necItem("nec-surgical-pneumatosis", "Surgical evidence of pneumatosis intestinalis, with or without intestinal perforation")
-      ])
+      ]) })
     ]) })
   ]),
   exclusions: Object.freeze([
