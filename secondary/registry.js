@@ -2,6 +2,7 @@ import { source, warning } from "./source.js";
 import { boneDefinition } from "./definitions/bone.js";
 import { cardDefinition } from "./definitions/card.js";
 import { cdiDefinition } from "./definitions/cdi.js";
+import { decuDefinition } from "./definitions/decu.js";
 import { discDefinition } from "./definitions/disc.js";
 import { emetDefinition } from "./definitions/emet.js";
 import { endoDefinition } from "./definitions/endo.js";
@@ -37,6 +38,7 @@ export const secondarySiteDefinitions = Object.freeze({
   BONE: boneDefinition,
   CARD: cardDefinition,
   CDI: cdiDefinition,
+  DECU: decuDefinition,
   DISC: discDefinition,
   EMET: emetDefinition,
   GE: geDefinition,
@@ -60,6 +62,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "BONE",
   "CARD",
   "CDI",
+  "DECU",
   "DISC",
   "EMET",
   "ENDO",
@@ -86,6 +89,7 @@ export {
   boneDefinition,
   cardDefinition,
   cdiDefinition,
+  decuDefinition,
   discDefinition,
   emetDefinition,
   endoDefinition,
