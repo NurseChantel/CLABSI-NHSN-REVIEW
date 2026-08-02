@@ -16,6 +16,7 @@ import { discDefinition } from "./definitions/disc.js";
 import { emetDefinition } from "./definitions/emet.js";
 import { geDefinition } from "./definitions/ge.js";
 import { gitDefinition } from "./definitions/git.js";
+import { iabDefinition } from "./definitions/iab.js";
 import { endoDefinition } from "./definitions/endo.js";
 import { episDefinition } from "./definitions/epis.js";
 import { icDefinition } from "./definitions/ic.js";
@@ -64,6 +65,7 @@ export const secondarySiteDefinitions = Object.freeze({
   EMET: emetDefinition,
   GE: geDefinition,
   GIT: gitDefinition,
+  IAB: iabDefinition,
   ENDO: endoDefinition,
   EPIS: episDefinition,
   IC: icDefinition,
@@ -100,6 +102,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "EMET",
   "GE",
   "GIT",
+  "IAB",
   "ENDO",
   "EPIS",
   "IC",
@@ -140,6 +143,7 @@ export {
   emetDefinition,
   geDefinition,
   gitDefinition,
+  iabDefinition,
   endoDefinition,
   episDefinition,
   icDefinition,

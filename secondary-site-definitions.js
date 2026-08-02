@@ -10,6 +10,7 @@ export {
   episDefinition,
   geDefinition,
   gitDefinition,
+  iabDefinition,
   icDefinition,
   jntDefinition,
   medDefinition,
