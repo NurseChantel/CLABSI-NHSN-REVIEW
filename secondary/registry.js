@@ -6,6 +6,7 @@ import { circDefinition } from "./definitions/circ.js";
 import { conjDefinition } from "./definitions/conj.js";
 import { earDefinition } from "./definitions/ear.js";
 import { eyeDefinition } from "./definitions/eye.js";
+import { oralDefinition } from "./definitions/oral.js";
 import { cardDefinition } from "./definitions/card.js";
 import { cdiDefinition } from "./definitions/cdi.js";
 import { decuDefinition } from "./definitions/decu.js";
@@ -50,6 +51,7 @@ export const secondarySiteDefinitions = Object.freeze({
   CONJ: conjDefinition,
   EAR: earDefinition,
   EYE: eyeDefinition,
+  ORAL: oralDefinition,
   CARD: cardDefinition,
   CDI: cdiDefinition,
   DECU: decuDefinition,
@@ -82,6 +84,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "CONJ",
   "EAR",
   "EYE",
+  "ORAL",
   "CARD",
   "CDI",
   "DECU",
@@ -117,6 +120,7 @@ export {
   conjDefinition,
   earDefinition,
   eyeDefinition,
+  oralDefinition,
   cardDefinition,
   cdiDefinition,
   decuDefinition,
