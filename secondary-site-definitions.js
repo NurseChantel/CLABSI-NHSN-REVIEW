@@ -9,6 +9,7 @@ export {
   endoDefinition,
   episDefinition,
   geDefinition,
+  gitDefinition,
   icDefinition,
   jntDefinition,
   medDefinition,
