@@ -3,6 +3,7 @@ export {
   brstDefinition,
   cardDefinition,
   cdiDefinition,
+  earDefinition,
   discDefinition,
   emetDefinition,
   endoDefinition,
