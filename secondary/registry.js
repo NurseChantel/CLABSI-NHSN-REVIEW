@@ -14,6 +14,7 @@ import { cdiDefinition } from "./definitions/cdi.js";
 import { decuDefinition } from "./definitions/decu.js";
 import { discDefinition } from "./definitions/disc.js";
 import { emetDefinition } from "./definitions/emet.js";
+import { geDefinition } from "./definitions/ge.js";
 import { endoDefinition } from "./definitions/endo.js";
 import { episDefinition } from "./definitions/epis.js";
 import { icDefinition } from "./definitions/ic.js";
@@ -43,7 +44,6 @@ const categoryData = [
   ["USI", "Urinary System Infection", [["USI", "Urinary System Infection (kidney, ureter, bladder, urethra, or perinephric space excluding UTI [see Chapter 7].)", 28]]]
 ];
 const placeholders = categoryData.flatMap(([majorCategoryCode, majorCategoryName, sites]) => sites.map(([siteCode, siteName, printed]) => [siteCode, Object.freeze({ majorCategoryCode, majorCategoryName, siteCode, siteName, source: source(`17-${printed}`, printed + 1, `${siteCode}-${siteName}`, siteCode), implementationStatus: "placeholder", criteria: Object.freeze([]), notes: warning })]));
-export const geDefinition = placeholders.find(([siteCode]) => siteCode === "GE")[1];
 export const secondarySiteDefinitions = Object.freeze({
   ...Object.fromEntries(placeholders),
   BONE: boneDefinition,
@@ -96,6 +96,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "DECU",
   "DISC",
   "EMET",
+  "GE",
   "ENDO",
   "EPIS",
   "IC",
@@ -134,6 +135,7 @@ export {
   decuDefinition,
   discDefinition,
   emetDefinition,
+  geDefinition,
   endoDefinition,
   episDefinition,
   icDefinition,
