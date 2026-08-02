@@ -15,6 +15,7 @@ import { decuDefinition } from "./definitions/decu.js";
 import { discDefinition } from "./definitions/disc.js";
 import { emetDefinition } from "./definitions/emet.js";
 import { geDefinition } from "./definitions/ge.js";
+import { gitDefinition } from "./definitions/git.js";
 import { endoDefinition } from "./definitions/endo.js";
 import { episDefinition } from "./definitions/epis.js";
 import { icDefinition } from "./definitions/ic.js";
@@ -62,6 +63,7 @@ export const secondarySiteDefinitions = Object.freeze({
   DISC: discDefinition,
   EMET: emetDefinition,
   GE: geDefinition,
+  GIT: gitDefinition,
   ENDO: endoDefinition,
   EPIS: episDefinition,
   IC: icDefinition,
@@ -97,6 +99,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "DISC",
   "EMET",
   "GE",
+  "GIT",
   "ENDO",
   "EPIS",
   "IC",
@@ -136,6 +139,7 @@ export {
   discDefinition,
   emetDefinition,
   geDefinition,
+  gitDefinition,
   endoDefinition,
   episDefinition,
   icDefinition,
