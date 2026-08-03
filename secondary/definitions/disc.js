@@ -22,6 +22,13 @@ export const discDefinition = Object.freeze({
     Object.freeze({ id: "DISC-3b-definitive", label: "Criterion 3b — finding and definitive imaging", source: discCriterionSource, allOf: Object.freeze([discDefinitiveImaging]), groups: Object.freeze([discFindingsGroup("DISC-3b-definitive-findings")]) }),
     Object.freeze({ id: "DISC-3b-equivocal", label: "Criterion 3b — finding and clinically correlated equivocal imaging", source: discCriterionSource, allOf: Object.freeze([discEquivocalImaging, discTreatment]), groups: Object.freeze([discFindingsGroup("DISC-3b-equivocal-findings")]) })
   ]),
+  evidenceSections: Object.freeze([
+    Object.freeze({ id: "clinical", label: "Shared clinical evidence", evidenceIds: Object.freeze(discFindings.map(({ id }) => id)) }),
+    Object.freeze({ id: "microbiology", label: "Microbiology", evidenceIds: Object.freeze(["disc-site-organism", "disc-blood-organism"]) }),
+    Object.freeze({ id: "imaging", label: "Imaging", evidenceIds: Object.freeze(["disc-definitive-imaging", "disc-equivocal-imaging"]) }),
+    Object.freeze({ id: "operative-pathology", label: "Operative or pathology findings", evidenceIds: Object.freeze(["disc-gross-histopathologic-evidence"]) }),
+    Object.freeze({ id: "diagnosis-treatment", label: "Physician diagnosis and treatment", evidenceIds: Object.freeze(["disc-antimicrobial-treatment"]) })
+  ]),
   exclusions: Object.freeze([discItem("other-recognized-cause", "Another recognized cause applies to pain at the involved vertebral disc space", { type: "exclusion" })]),
   notes: Object.freeze([
     Object.freeze({ id: "DISC-note-equivocal-imaging", text: "Equivocal imaging qualifies only when supported by clinical correlation, specifically physician or physician-designee documentation of antimicrobial treatment for vertebral disc space infection.", source: discCriterionSource })

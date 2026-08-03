@@ -38,6 +38,14 @@ export const jntDefinition = Object.freeze({
       jntItem("jnt-antimicrobial-treatment", "Physician or physician-designee documentation of antimicrobial treatment for joint or bursa infection")
     ]), groups: Object.freeze([jntFindingsGroup]) })
   ]),
+  evidenceSections: Object.freeze([
+    Object.freeze({ id: "clinical", label: "Shared clinical evidence", evidenceIds: Object.freeze(["jnt-suspected-infection", ...jntFindings.map(({ id }) => id)]) }),
+    Object.freeze({ id: "microbiology", label: "Microbiology", evidenceIds: Object.freeze(["jnt-site-organism", "jnt-blood-organism", "jnt-gram-stain-organisms-wbc"]) }),
+    Object.freeze({ id: "laboratory", label: "Joint-fluid laboratory evidence", evidenceIds: Object.freeze(["jnt-elevated-joint-wbc", "jnt-positive-leukocyte-esterase"]) }),
+    Object.freeze({ id: "imaging", label: "Imaging", evidenceIds: Object.freeze(["jnt-definitive-imaging", "jnt-equivocal-imaging"]) }),
+    Object.freeze({ id: "operative-pathology", label: "Operative or pathology findings", evidenceIds: Object.freeze(["jnt-gross-histopathologic-evidence"]) }),
+    Object.freeze({ id: "diagnosis-treatment", label: "Physician diagnosis and treatment", evidenceIds: Object.freeze(["jnt-antimicrobial-treatment"]) })
+  ]),
   exclusions: Object.freeze([
     jntItem("other-recognized-cause", "Another recognized cause applies to a sign or symptom marked by NHSN with an asterisk", { type: "exclusion" }),
     jntItem("jnt-hpro-kpro-organ-space", "Use as Organ/Space SSI after HPRO or KPRO procedures", { type: "exclusion", blocksPathway: true })

@@ -48,9 +48,42 @@ function criterionRemaining(criterion, evidence) {
   const remaining = conciseSingleRequirement ? [conciseSingleRequirement] : unmetAll.map((item) => item.label);
   for (const group of criterion.groups || []) {
     const progress = getRequirementPresentation(group, evidence);
-    if (!progress.met) remaining.push(progress.grouped ? `${numberWord(progress.remaining)} additional finding group${progress.remaining === 1 ? "" : "s"}` : `${numberWord(progress.remaining)} supporting test${progress.remaining === 1 ? "" : "s"}`);
+    if (!progress.met) remaining.push(progress.grouped ? `${numberWord(progress.remaining)} additional finding group${progress.remaining === 1 ? "" : "s"}` : `${numberWord(progress.remaining)} qualifying finding${progress.remaining === 1 ? "" : "s"} from “${group.label}”`);
   }
   return remaining;
+}
+function criterionIsMet(criterion, evidence) { return criterionRemaining(criterion, evidence).length === 0; }
+function renderCriterionSummary(criterion, evidence, manuallyOpen, notes) {
+  const complete = criterionIsMet(criterion, evidence);
+  const remaining = criterionRemaining(criterion, evidence);
+  const open = manuallyOpen ? manuallyOpen === criterion.id : !complete;
+  return `<details class="secondary-criterion" data-men-criterion="${criterion.id}" ${open ? "open" : ""}><summary><span class="secondary-criterion-title">${escapeHtml(`${complete ? "✓ " : ""}${criterion.label}`)}${renderQualificationNotes(criterion, notes)}</span>${complete ? "" : "<small>Incomplete</small>"}</summary><div class="secondary-criterion-body">${complete ? `<strong>✓ ${escapeHtml(criterion.label)} met</strong>` : `<strong>Still needed:</strong><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`}</div></details>`;
+}
+function collectEvidenceItems(criteria) {
+  const items = criteria.flatMap((criterion) => [...criterion.allOf, ...(criterion.groups || []).flatMap((group) => group.anyOf.flatMap((item) => item.anyOf || [item]))]);
+  const byId = new Map();
+  for (const item of items) {
+    const existing = byId.get(item.id);
+    if (existing && (existing.label !== item.label || existing.exclusionId !== item.exclusionId)) throw new Error(`Conflicting shared evidence definition: ${item.id}`);
+    byId.set(item.id, item);
+  }
+  return byId;
+}
+function renderSharedEvidenceSections(definition, criteria, evidence) {
+  const items = collectEvidenceItems(criteria);
+  const renderedIds = new Set();
+  const sections = definition.evidenceSections.map((section) => {
+    const controls = section.evidenceIds.map((id) => {
+      if (renderedIds.has(id)) throw new Error(`Duplicate shared evidence ID: ${id}`);
+      const item = items.get(id);
+      if (!item) throw new Error(`Unknown shared evidence ID: ${id}`);
+      renderedIds.add(id);
+      return renderEvidenceCheckbox(item, evidence);
+    }).join("");
+    return `<section class="secondary-requirement secondary-shared-evidence" data-evidence-section="${escapeHtml(section.id)}"><header><h4>${escapeHtml(section.label)}</h4></header>${controls}</section>`;
+  }).join("");
+  if ([...items.keys()].some((id) => !renderedIds.has(id))) throw new Error(`Unmapped shared evidence in ${definition.siteCode}`);
+  return sections;
 }
 function renderCriterion(criterion, evidence, evaluation, manuallyOpen, notes) {
   const complete = evaluation.metCriterion === criterion.id;
@@ -68,10 +101,13 @@ export function renderCompactMenEvidence({ definition, evaluation, patientAge, e
   const closest = [...criteria].sort((a, b) => criterionScore(b, evidence) - criterionScore(a, evidence))[0];
   const remaining = evaluation.siteDefinitionMet ? [] : criterionRemaining(closest, evidence);
   const status = `<div class="secondary-site-status ${evaluation.siteDefinitionMet ? "met" : "incomplete"}" role="status" aria-live="polite"><strong>${evaluation.siteDefinitionMet ? `🟢 ${escapeHtml(definition.siteCode)} Site Definition Met` : `🟡 ${escapeHtml(definition.siteCode)} Site Definition Not Met`}</strong>${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</div>`;
-  const criterionMarkup = criteria.map((criterion) => renderCriterion(criterion, evidence, evaluation, openCriterion, definition.notes)).join("");
+  const usesSharedEvidence = definition.majorCategoryCode === "BJ" && Array.isArray(definition.evidenceSections);
+  const renderedCriteria = criteria.map((criterion) => usesSharedEvidence ? renderCriterionSummary(criterion, evidence, openCriterion, definition.notes) : renderCriterion(criterion, evidence, evaluation, openCriterion, definition.notes)).join("");
+  const criterionMarkup = usesSharedEvidence ? `<section class="secondary-criterion-pathways"><h4>Qualifying criterion pathways</h4>${renderedCriteria}</section>` : renderedCriteria;
   const exclusionSelected = definition.exclusions.some((item) => evidence[item.id] === "met") || evaluation.status === "exclusionApplies";
   const exclusion = `<details class="secondary-criterion exclusion" ${exclusionSelected ? "open" : ""}><summary>Exclusion review</summary><div class="secondary-criterion-body">${definition.exclusions.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</div></details>`;
-  return `${status}<div class="evidence-group secondary-evidence-review" data-men-renderer="compact-v3">${criterionMarkup}${exclusion}${renderReferences(definition)}</div>`;
+  const sharedEvidenceMarkup = usesSharedEvidence ? renderSharedEvidenceSections(definition, criteria, evidence) : "";
+  return `${status}<div class="evidence-group secondary-evidence-review" data-men-renderer="compact-v3">${sharedEvidenceMarkup}${criterionMarkup}${exclusion}${renderReferences(definition)}</div>`;
 }
 
 export function renderSecondaryEvidenceSafely(options) {
