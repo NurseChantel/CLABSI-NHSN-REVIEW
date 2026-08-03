@@ -493,6 +493,24 @@ function syncOrganismSelection() {
   const select = document.getElementById("organismName");
   const selected = document.getElementById("selectedOrganisms");
   const count = document.getElementById("organismSelectionCount");
+  const checklist = document.getElementById("organismChecklist");
+  const activeChecklistControl = checklist?.contains(document.activeElement)
+    ? document.activeElement
+    : null;
+  const pageScrollX = window.scrollX;
+  const pageScrollY = window.scrollY;
+  const checklistScrollTop = checklist?.scrollTop ?? 0;
+
+  const restoreOrganismBrowserPosition = () => {
+    if (checklist) checklist.scrollTop = checklistScrollTop;
+    if (
+      activeChecklistControl?.isConnected &&
+      document.activeElement !== activeChecklistControl
+    ) {
+      activeChecklistControl.focus({ preventScroll: true });
+    }
+    window.scrollTo(pageScrollX, pageScrollY);
+  };
 
   state.organismNames = Array.from(select.selectedOptions).map((option) => option.value);
   state.selectedOrganisms = state.organismNames.map((name) => organismRecords[name]).filter(Boolean);
@@ -539,6 +557,8 @@ function syncOrganismSelection() {
   renderSelectedOrganismDetails();
 
   updateAll();
+  restoreOrganismBrowserPosition();
+  requestAnimationFrame(restoreOrganismBrowserPosition);
 }
 
 function renderSelectedOrganismDetails() {
