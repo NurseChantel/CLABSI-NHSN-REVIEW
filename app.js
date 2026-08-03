@@ -1,7 +1,7 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
 import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js";
-import { createPneuState, evaluatePneuSubtype, PNEU_UI_REGISTRY } from "./protocol/pneu-ui.js";
+import { addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, setLabOrganism, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
 
 "use strict";
 
@@ -972,6 +972,7 @@ function bindPneuNavigation() {
     updateAll();
   }));
   document.querySelectorAll("[data-pneu-subtype]").forEach(button => button.addEventListener("click", () => {
+    if (!PNEU_UI_REGISTRY[button.dataset.pneuSubtype]?.implemented) return;
     state.pneu.selectedSubtype = button.dataset.pneuSubtype;
     updateAll();
   }));
@@ -989,7 +990,7 @@ function renderPneuReview() {
     button.setAttribute("aria-pressed", String(selected));
   });
   document.querySelectorAll("[data-pneu-subtype]").forEach(button => {
-    const selected = button.dataset.pneuSubtype === state.pneu.selectedSubtype;
+    const selected = PNEU_UI_REGISTRY[button.dataset.pneuSubtype]?.implemented && button.dataset.pneuSubtype === state.pneu.selectedSubtype;
     button.classList.toggle("selected", selected);
     button.setAttribute("aria-pressed", String(selected));
   });
@@ -1007,21 +1008,24 @@ function renderPneuReview() {
     return;
   }
 
-  const input = state.pneu.inputs[subtype];
-  const draft = state.pneu.drafts[subtype] || JSON.stringify(input, null, 2);
-  const result = evaluatePneuSubtype(subtype, input);
-  const output = result.ok
-    ? result.html
-    : `<div class="secondary-guidance warning" role="status"><strong>${subtype} input is incomplete or invalid.</strong><ul>${(result.errors || [result.error]).map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>`;
-  container.innerHTML = `<div class="evidence-group pneu-evidence-editor"><h4>${subtype} protocol evidence</h4><p>Enter the structured patient context, dated imaging, clinical, measurement, and laboratory records consumed directly by the completed ${subtype} evaluator.</p><label for="pneuEvidenceInput">Protocol evidence JSON</label><textarea id="pneuEvidenceInput" rows="16" spellcheck="false">${escapeHtml(draft)}</textarea><p class="guide-intro">Changes are evaluated when the JSON document is valid. PNU1 and PNU2 documents are stored separately.</p></div>${output}`;
-  container.querySelector("#pneuEvidenceInput").addEventListener("change", event => {
-    state.pneu.drafts[subtype] = event.target.value;
-    try {
-      state.pneu.inputs[subtype] = JSON.parse(event.target.value);
-      renderPneuReview();
-    } catch {
-      // Preserve the in-progress draft; evaluation resumes after valid JSON is entered.
-    }
+  container.innerHTML = renderPneuAbstraction(state.pneu, subtype);
+  container.querySelector(".pneu-form").addEventListener("change", event => {
+    const input = state.pneu.inputs[subtype]; const target = event.target;
+    if (target.dataset.clinicalFinding) toggleClinicalFinding(input, target.dataset.clinicalFinding, target.checked);
+    else if (target.dataset.imageFinding) toggleImageFinding(input, Number(target.dataset.index), target.dataset.imageFinding, target.checked);
+    else if (target.dataset.labOrganism !== undefined) setLabOrganism(input, Number(target.dataset.index), target.value);
+    else applyPneuControl(input, target);
+    renderPneuReview();
+  });
+  container.querySelector(".pneu-form").addEventListener("click", event => {
+    const button = event.target.closest("button"); if (!button) return; const input = state.pneu.inputs[subtype];
+    if (button.dataset.pneuAdd) addPneuRecord(input, button.dataset.pneuAdd);
+    else if (button.dataset.pneuRemove) removePneuRecord(input, button.dataset.pneuRemove, Number(button.dataset.index));
+    else if (button.dataset.labBranch) state.pneu.openLabBranch.PNU2 = button.dataset.labBranch;
+    else if (button.dataset.addHistopathology !== undefined) input.histopathologyResults.push({ id: `histopathology-${Date.now()}`, date: input.imagingStudies[0]?.date || "", finding: "abscess-or-consolidation-with-intense-pmn" });
+    else if (button.dataset.pneuReset !== undefined) state.pneu.inputs[subtype] = createPneuState().inputs[subtype];
+    else return;
+    renderPneuReview();
   });
 }
 
