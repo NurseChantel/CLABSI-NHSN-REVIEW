@@ -281,13 +281,32 @@
         </div>
         <span id="pathwayCount" class="pathway-count" aria-live="polite">All pathways</span>
       </div>
-      <h3 class="selection-step">1. Select a major category</h3>
-      <div id="siteButtons" class="site-button-grid"></div>
-      <h3 class="selection-step">2. Select a specific NHSN site code</h3>
+      <h3 class="selection-step">1. Select a review family</h3>
+      <div id="reviewFamilyButtons" class="site-button-grid" role="group" aria-label="Secondary source review family">
+        <button type="button" data-review-family="chapter17" class="selected" aria-pressed="true"><strong>Chapter 17</strong><span>Site-specific infection definitions</span></button>
+        <button type="button" data-review-family="pneu" aria-pressed="false"><strong>PNEU</strong><span>Pneumonia Event</span></button>
+      </div>
+
+      <div id="chapter17Pathways">
+        <h3 class="selection-step">2. Select a major category</h3>
+        <div id="siteButtons" class="site-button-grid"></div>
+        <h3 class="selection-step">3. Select a specific NHSN site code</h3>
+      </div>
 
       <div id="siteGuidance"></div>
 
-      <div class="attribution-panel">
+      <div id="pneuReview" class="site-guide" hidden>
+        <h3>PNEU / Pneumonia Event</h3>
+        <p class="guide-intro">PNEU is a separate Chapter 6 event family. It does not use Chapter 17 LRI-LUNG evidence.</p>
+        <div id="pneuSubtypeButtons" class="site-button-grid" role="group" aria-label="PNEU subtype">
+          <button type="button" data-pneu-subtype="PNU1" aria-pressed="false"><strong>PNU1</strong><span>Clinically defined pneumonia</span></button>
+          <button type="button" data-pneu-subtype="PNU2" aria-pressed="false"><strong>PNU2</strong><span>Pneumonia with specific laboratory findings</span></button>
+          <button type="button" data-pneu-subtype="PNU3" aria-pressed="false"><strong>PNU3</strong><span>Not yet implemented</span></button>
+        </div>
+        <div id="pneuProtocolReview" aria-live="polite"></div>
+      </div>
+
+      <div id="chapter17AttributionPanel" class="attribution-panel">
         <h3>
           Secondary BSI attribution check
           <button class="definition" type="button" data-tooltip="Scenario 1 uses a matching site and culture organism with culture collected during the SBAP. Scenario 2 uses the culture organism as an element of the site-specific criterion during that site's infection window." aria-label="Secondary BSI attribution definition">i</button>
