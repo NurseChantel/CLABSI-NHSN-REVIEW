@@ -1,6 +1,7 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
 import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js";
+import { createPneuState, evaluatePneuSubtype, PNEU_UI_REGISTRY } from "./protocol/pneu-ui.js";
 
 "use strict";
 
@@ -21,6 +22,8 @@ const state = {
   selectedMajorCategory: "",
   selectedSite: "",
   siteEvidence: {},
+  reviewFamily: "chapter17",
+  pneu: createPneuState(),
   openMenCriterion: "",
   organismRelationship: "",
   attributionTiming: "",
@@ -152,6 +155,7 @@ document.addEventListener("DOMContentLoaded", init);
 function init() {
   validateOrganismRecords();
   buildSiteButtons();
+  bindPneuNavigation();
   renderSymptoms();
   bindChoiceGroups();
   bindInputs();
@@ -840,12 +844,15 @@ function resetSecondarySection() {
   state.selectedMajorCategory = "";
   state.selectedSite = "";
   state.siteEvidence = {};
+  state.reviewFamily = "chapter17";
+  state.pneu = createPneuState();
   state.openMenCriterion = "";
   state.organismRelationship = "";
   state.attributionTiming = "";
   setChoiceValue("organismRelationship", "");
   setChoiceValue("attributionTiming", "");
   renderSiteGuide();
+  renderPneuReview();
   updateAll();
 }
 
@@ -957,6 +964,65 @@ function buildSiteButtons() {
  const container = document.getElementById("siteButtons");
  container.innerHTML = secondarySiteCategories.map(category => `<button type="button" data-category="${category.majorCategoryCode}" aria-pressed="false">${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</button>`).join("");
  container.querySelectorAll("[data-category]").forEach(button => button.addEventListener("click", () => { state.selectedMajorCategory = button.dataset.category; state.selectedSite = ""; state.siteEvidence = {}; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); container.querySelectorAll("button").forEach(item => { item.classList.toggle("selected", item === button); item.setAttribute("aria-pressed", String(item === button)); }); updateAll(); }));
+}
+
+function bindPneuNavigation() {
+  document.querySelectorAll("[data-review-family]").forEach(button => button.addEventListener("click", () => {
+    state.reviewFamily = button.dataset.reviewFamily;
+    updateAll();
+  }));
+  document.querySelectorAll("[data-pneu-subtype]").forEach(button => button.addEventListener("click", () => {
+    state.pneu.selectedSubtype = button.dataset.pneuSubtype;
+    updateAll();
+  }));
+}
+
+function renderPneuReview() {
+  const isPneu = state.reviewFamily === "pneu";
+  document.getElementById("chapter17Pathways").hidden = isPneu;
+  document.getElementById("siteGuidance").hidden = isPneu;
+  document.getElementById("chapter17AttributionPanel").hidden = isPneu;
+  document.getElementById("pneuReview").hidden = !isPneu;
+  document.querySelectorAll("[data-review-family]").forEach(button => {
+    const selected = button.dataset.reviewFamily === state.reviewFamily;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  document.querySelectorAll("[data-pneu-subtype]").forEach(button => {
+    const selected = button.dataset.pneuSubtype === state.pneu.selectedSubtype;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  if (!isPneu) return;
+
+  const container = document.getElementById("pneuProtocolReview");
+  const subtype = state.pneu.selectedSubtype;
+  const entry = PNEU_UI_REGISTRY[subtype];
+  if (!entry) {
+    container.innerHTML = '<div class="secondary-guidance"><strong>Select PNU1 or PNU2 to begin a PNEU review.</strong></div>';
+    return;
+  }
+  if (!entry.implemented) {
+    container.innerHTML = '<div class="secondary-guidance warning" role="status"><strong>PNU3 — Not yet implemented</strong><p>This subtype has not been integrated or validated for use in this review.</p></div>';
+    return;
+  }
+
+  const input = state.pneu.inputs[subtype];
+  const draft = state.pneu.drafts[subtype] || JSON.stringify(input, null, 2);
+  const result = evaluatePneuSubtype(subtype, input);
+  const output = result.ok
+    ? result.html
+    : `<div class="secondary-guidance warning" role="status"><strong>${subtype} input is incomplete or invalid.</strong><ul>${(result.errors || [result.error]).map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>`;
+  container.innerHTML = `<div class="evidence-group pneu-evidence-editor"><h4>${subtype} protocol evidence</h4><p>Enter the structured patient context, dated imaging, clinical, measurement, and laboratory records consumed directly by the completed ${subtype} evaluator.</p><label for="pneuEvidenceInput">Protocol evidence JSON</label><textarea id="pneuEvidenceInput" rows="16" spellcheck="false">${escapeHtml(draft)}</textarea><p class="guide-intro">Changes are evaluated when the JSON document is valid. PNU1 and PNU2 documents are stored separately.</p></div>${output}`;
+  container.querySelector("#pneuEvidenceInput").addEventListener("change", event => {
+    state.pneu.drafts[subtype] = event.target.value;
+    try {
+      state.pneu.inputs[subtype] = JSON.parse(event.target.value);
+      renderPneuReview();
+    } catch {
+      // Preserve the in-progress draft; evaluation resumes after valid JSON is entered.
+    }
+  });
 }
 
 function renderOrganismSuggestions() {
@@ -1677,6 +1743,7 @@ function updateAll() {
   renderMbiOrganismPrompt();
   renderOrganismSuggestions();
   renderSiteGuide();
+  renderPneuReview();
   renderSecondaryConclusion();
   renderExclusionFollowups();
   renderCalculatedStatuses();
