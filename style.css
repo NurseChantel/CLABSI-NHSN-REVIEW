@@ -523,9 +523,8 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
   z-index:90;
   top:148px;
   display:grid;
-  grid-template-columns:minmax(420px,534px) minmax(0,1fr);
-  gap:14px;
-  align-items:end;
+  grid-template-columns:minmax(0,1fr);
+  gap:8px;
   margin:0 0 14px;
   padding:13px 14px;
   border:1px solid #9ccfc3;
