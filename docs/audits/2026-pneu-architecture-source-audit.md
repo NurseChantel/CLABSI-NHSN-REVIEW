@@ -1,230 +1,360 @@
-# 2026 NHSN PNEU architecture and source-mapping audit
+# 2026 NHSN PNEU source and architecture audit
 
-**Status:** blocked at source audit; architecture proposal only  
-**PNEU implementation status:** not implemented, not validated  
+**Audit date:** 2026-08-03
+
+**Status:** source audit complete; implementation not started
+
 **Behavioral impact:** none
 
-## 1. Scope and audit outcome
+## 1. Repository verification
 
-This audit was requested before any PNEU qualification logic is added. It does not
-encode a pneumonia criterion, add PNEU to the registry, or change an evaluator.
-It also deliberately does not infer pneumonia rules from clinical knowledge,
-existing application behavior, or a non-repository source.
+The audit was repeated from the current checkout rather than relying on the
+previous inventory. All three requested, tracked paths exist at commit
+`44096019ed3901983954ac27d6e5497de43cff05` on branch `work`:
 
-The repository does **not** contain the required 2026 PNEU source set:
+- `NHSN HAI.pdf`
+- `NHSN pneumonia.pdf`
+- `NHSN pneumonia checklist.pdf`
 
-| Required source | Repository result | Consequence |
+The checkout has no configured Git remote or upstream. Consequently,
+`git pull --ff-only` was attempted but could not refresh the branch from
+`main`; Git reported that the current branch has no tracking information. The
+three documents were nevertheless verified in the `HEAD` tree and on disk
+before their contents were used. The repository PDF inventory at audit time
+was the three files above plus `Secondary BSI Chapter.pdf` and
+`clabsi nhsn.pdf`.
+
+## 2. Authoritative sources reviewed
+
+| Document | Scope used | Printed pages |
 | --- | --- | --- |
-| Chapter 6 — Pneumonia (PNEU) Event | Not present as a standalone file and not contained in the file named `clabsi nhsn.pdf` | PNEU criteria, branches, imaging, clinical, laboratory, microbiology, host, ventilation, and reporting rules cannot be mapped. |
-| Chapter 2 — Identifying Healthcare-associated Infections | Not present | Date of event, infection window period, and general RIT rules cannot be mapped for PNEU. |
-| Approved 2026 PNEU checklist | Not present | No checklist was available to compare with the protocol. |
-| Chapter 17 — Secondary BSI attribution | `Secondary BSI Chapter.pdf` is present | Only the general secondary-BSI source is available; it cannot supply the missing PNEU definition. |
-| `clabsi nhsn.pdf` | Present; it is a 46-PDF-page Chapter 4 Bloodstream Infection Event document, not the complete Patient Safety Component Manual | It is not authority for Chapter 2 or Chapter 6 PNEU criteria. |
+| `NHSN pneumonia.pdf` | January 2026 Chapter 6, Pneumonia (PNEU) Event: settings, definitions, criteria tables, footnotes, and reporting instructions | 6-2–6-17 |
+| `NHSN HAI.pdf` | January 2026 Chapter 2, Identifying Healthcare-associated Infections: IWP, DOE/POA/HAI, transfer rule, RIT, SBAP, and pathogen assignment | 2-1, 2-3–2-19 |
+| `NHSN pneumonia checklist.pdf` | 2026 NHSN PNEU Checklist: summary and the six displayed criterion worksheets | PDF pages 1–10 |
+| `Secondary BSI Chapter.pdf` | Chapter 17 general secondary-BSI and matching-organism relationship | 17-1–17-3 |
 
-The embedded metadata and contents of `clabsi nhsn.pdf` identify it as
-“Bloodstream Infections,” and the repository's own source mapping identifies its
-relevant content as Chapter 4. Its filename therefore must not be treated as
-proof that it contains the complete manual.
+The checklist is a review aid, not a replacement for Chapter 6: it expressly
+directs the reviewer to Chapter 6 and says the numbered footnotes must be
+incorporated in the decision. Its six paths agree with the protocol inventory:
+PNU1 any patient, PNU1 infant, PNU1 child, PNU2 common bacterial/filamentous
+fungal, PNU2 viral/Legionella/other bacterial, and PNU3 immunocompromised.
 
-**Audit decision:** no complete, source-supported list of PNEU branches can be
-produced from the approved files currently in the repository. The requested
-criterion extraction is unresolved until the approved 2026 Chapter 6 and Chapter
-2 files (and, if authorized, the 2026 checklist) are added. This is the safe
-outcome required by `AGENTS.md`; filling the gaps from remembered or general
-pneumonia rules would invent surveillance logic.
+## 3. Source-mapped PNEU rule inventory
 
-## 2. Exact sources and pages reviewed
+This section records the rule tree that a future implementation must represent.
+It is not executable surveillance logic.
 
-### Available authoritative material
+### 3.1 Event context and universal timing
 
-- `Secondary BSI Chapter.pdf`, Chapter 17, printed pages **17-1 through 17-3**
-  (PDF pages **2 through 4**), sections addressing secondary bloodstream
-  infection and matching organisms. These pages establish the general
-  attribution interface already represented by the application. They do not
-  define PNEU qualification.
-- `clabsi nhsn.pdf`, document inventory and Chapter 4 identity; the file has 46
-  PDF pages. Existing source metadata points to printed pages **4-30 through
-  4-31** (PDF pages **31 through 32**) for the NEC-specific Secondary BSI Guide
-  exception. Those pages are not a PNEU source and were not used to derive a
-  PNEU rule.
+- PNEU uses imaging plus clinical and, where applicable, laboratory criteria.
+  Physician diagnosis alone is not sufficient. Aspiration does not prevent an
+  otherwise complete event from being HAI. (`NHSN pneumonia.pdf`, Chapter 6,
+  Definitions and General Comments, pp. 6-3–6-4.)
+- The ordinary IWP is seven days, centered on the first positive diagnostic
+  test used to meet the chosen criterion (three calendar days before and
+  after). If imaging and organism identification could each create an IWP, use
+  the first diagnostic test whose IWP contains all criterion elements.
+  (`NHSN HAI.pdf`, Chapter 2, Infection Window Period and PNEU example, p. 2-3.)
+- For PNEU, the first eligible imaging test controls the Chapter 6 IWP analysis.
+  All elements must occur in the IWP except that a second image used to prove
+  persistence may occur outside the IWP, but within seven days of the first.
+  (`NHSN pneumonia.pdf`, Guidance for Determination of Eligible Imaging Test
+  Evidence, p. 6-3; Footnote 1, p. 6-12.)
+- DOE is the date on which the first element used in the completed criterion
+  first occurs within that IWP. POA is admission day, the two preceding days,
+  and the following day; HAI begins on admission calendar day 3.
+  (`NHSN HAI.pdf`, Chapter 2, Date of Event, p. 2-7.)
+- The RIT is 14 days beginning on DOE. PNEU is one of the exceptions for which
+  RIT applies at the **major** type, so PNU1, PNU2, and PNU3 do not create
+  separate overlapping RITs. Additional pathogens found during the RIT are
+  added to the original event and need not match one another.
+  (`NHSN HAI.pdf`, Chapter 2, Repeat Infection Timeframe, pp. 2-11–2-12.)
+- The Chapter 2 transfer rule and location-of-attribution calculation apply.
+  Chapter 6 also says a discovered pedVAP with DOE on discharge day or the next
+  day is attributed to the discharging location. (`NHSN HAI.pdf`, Chapter 2,
+  Location of Attribution and Transfer Rule, pp. 2-9–2-11;
+  `NHSN pneumonia.pdf`, Settings, p. 6-2.)
 
-### Required material not reviewable
+### 3.2 Imaging expression shared by PNU1, PNU2, and PNU3
 
-There are no repository pages to cite for 2026 Chapter 6, Chapter 2, or a PNEU
-checklist. Page-level PNEU source mapping is therefore pending, not silently
-substituted with Chapter 17 or Chapter 4.
+The eligible findings are a new-and-persistent or progressive-and-persistent
+infiltrate, consolidation, cavitation, or pneumatoceles in an infant no more
+than one year old. The tables normally require two or more serial chest imaging
+results. (`NHSN pneumonia.pdf`, Tables 1–4, pp. 6-6–6-9.)
 
-## 3. Requested PNEU source audit: unresolved mapping ledger
+The apparent table shortcut cannot be encoded as a simple underlying-disease
+boolean:
 
-No PNEU qualification branch was identified from an authoritative PNEU source,
-because no such source is present. This is the complete list of requested topics
-and their audit disposition; it is **not** a list of clinical rules.
+1. If only one image exists, it may satisfy a **POA** determination regardless
+   of underlying pulmonary/cardiac disease. (p. 6-3.)
+2. For an otherwise applicable event in a patient without underlying disease,
+   one definitive image can suffice only when it is the sole available image.
+   If multiple images exist, they must demonstrate persistence within seven
+   days. (Footnote 1, p. 6-12.)
+3. With underlying pulmonary/cardiac disease, serial images within seven days
+   must demonstrate persistence. (Footnote 1, p. 6-12.)
+4. Alternative descriptors such as air-space disease, focal opacification, or
+   patchy increased density may be eligible when not attributed to another
+   condition. Equivocal imaging requires a later definitive clarification or,
+   absent clarification, clinical correlation. (Footnotes 2 and 13,
+   pp. 6-12 and 6-16.)
 
-| Topic | Result | Source needed to resolve it |
+Thus the model must retain distinct image records, dates, availability,
+definitive/equivocal state, finding identity, persistence/progression, alternate
+attribution, patient disease context, and POA-versus-HAI context.
+
+### 3.3 PNU1 — clinically defined pneumonia
+
+All PNU1 alternatives also require the shared imaging expression.
+
+- **Any patient:** at least one systemic finding (fever above 38.0°C;
+  leukopenia at or below 4,000 WBC/mm³ or leukocytosis at or above 12,000
+  WBC/mm³; or, for an adult at least 70 years old, altered mental status with no
+  other recognized cause), **and** at least two separate respiratory bullets.
+  The respiratory bullets are: sputum/secretion/suctioning change; dyspnea,
+  tachypnea, or new/worsening cough; rales/crackles or bronchial breath sounds;
+  and worsening gas exchange. (`NHSN pneumonia.pdf`, Table 1, p. 6-6;
+  Footnotes 3–7, pp. 6-12–6-14.)
+- **Infant no more than 1 year old:** worsening gas exchange, **and** at least
+  three separate bullets from temperature instability; leukopenia or
+  leukocytosis with left shift; sputum/secretion/suctioning change; the grouped
+  apnea/tachypnea/nasal-flaring alternatives; wheezing/rales/rhonchi; cough;
+  and bradycardia or tachycardia. (`NHSN pneumonia.pdf`, Table 1, p. 6-6.)
+- **Child older than 1 and no more than 12 years old:** at least three separate
+  bullets from fever or hypothermia; leukopenia or leukocytosis; sputum/
+  secretion/suctioning change; the grouped dyspnea/apnea/tachypnea/cough
+  alternatives; rales or bronchial breath sounds; and worsening gas exchange.
+  (`NHSN pneumonia.pdf`, Table 1, p. 6-6.)
+
+The age-specific branches are alternatives; Chapter 6 states that infants,
+children, and immunocompromised patients may also meet any other applicable
+criterion. They must not be treated as mutually exclusive routing that prevents
+evaluation of the any-patient paths. (`NHSN pneumonia.pdf`, General Comment 2,
+p. 6-4.)
+
+### 3.4 PNU2 — common bacterial or filamentous fungal pathway
+
+This path requires the shared imaging expression, at least one systemic finding
+from the PNU1 any-patient systemic group, at least one respiratory bullet from
+the PNU1 any-patient respiratory group, and at least one of:
+
+- eligible organism identified from blood;
+- eligible organism identified from eligible pleural fluid;
+- positive quantitative or corresponding semiquantitative culture from a
+  minimally contaminated BAL, protected specimen brushing, or endotracheal
+  aspirate;
+- positive quantitative or corresponding semiquantitative lung-tissue culture;
+- at least 5% BAL-obtained cells containing intracellular bacteria on direct
+  microscopy; or
+- qualifying histopathology (abscess/foci of consolidation with intense PMN
+  accumulation, or fungal hyphae/pseudohyphae invading lung parenchyma).
+
+(`NHSN pneumonia.pdf`, Table 2, p. 6-7; Footnotes 8, 9, and 12,
+pp. 6-14–6-16.)
+
+Table 5 supplies method-specific quantitative thresholds: lung tissue at least
+10⁴ CFU/g; bronchoscopic BAL at least 10⁴ CFU/ml; bronchoscopic protected
+specimen brushing at least 10³ CFU/ml; nonbronchoscopic BAL at least 10⁴ CFU/ml;
+and endotracheal aspirate at least 10⁵ CFU/ml. It also supplies a fallback
+mapping of moderate/heavy/many/numerous or 2+/3+/4+ growth when the laboratory
+cannot supply a local quantitative correspondence. These must be modeled as
+typed method, specimen, quantity, unit, and laboratory-mapping facts—not text
+labels. (`NHSN pneumonia.pdf`, Table 5, p. 6-15.)
+
+### 3.5 PNU2 — viral, Legionella, and other bacterial pathway
+
+This second PNU2 path requires the same imaging, systemic, and respiratory
+groups, plus at least one of:
+
+- virus, Bordetella, Legionella, Chlamydia, or Mycoplasma identified from
+  respiratory secretions or tissue by a clinically performed culture or
+  non-culture method (not ASC/AST);
+- fourfold IgG rise in paired sera for a pathogen;
+- the specified Legionella pneumophila serogroup 1 paired-sera IFA result; or
+- Legionella pneumophila serogroup 1 urine antigen by RIA or EIA.
+
+(`NHSN pneumonia.pdf`, Table 3, p. 6-8.)
+
+### 3.6 PNU3 — immunocompromised patient
+
+PNU3 requires the shared imaging expression, a sourced immunocompromised host
+definition, at least one clinical finding, and at least one laboratory path.
+Its clinical alternatives include fever, qualifying altered mental status,
+sputum/secretion/suctioning change, dyspnea/tachypnea/cough, rales/bronchial
+breath sounds, worsening gas exchange, hemoptysis, or pleuritic chest pain.
+Laboratory qualification is either matching Candida species from blood and an
+eligible respiratory specimen collected within the same IWP; eligible fungal
+evidence from a minimally contaminated LRT specimen; or any PNU2 laboratory
+criterion. (`NHSN pneumonia.pdf`, Table 4, p. 6-9; Footnotes 10–12,
+pp. 6-15–6-16.)
+
+The host predicate is itself an OR expression over the exhaustive Footnote 10
+list: qualifying neutropenia; specified leukemia/lymphoma/HIV with CD4
+condition; splenectomy; solid-organ or hematopoietic stem-cell transplant;
+cytotoxic chemotherapy; or qualifying daily enteral/parenteral steroid exposure
+for more than 14 consecutive days on DOE (excluding inhaled/topical steroids).
+It cannot safely be reduced to an unexplained `immunocompromised: true` input.
+
+### 3.7 Cross-cutting specimen, organism, and symptom rules
+
+- Purulent sputum is laboratory-defined. Footnotes 3 and its instruction table
+  specify quantitative neutrophil and squamous-cell conditions, acceptable
+  semiquantitative equivalents, neutrophil-only reports, laboratory-specific
+  cutoffs, and a cytospin exception. (`NHSN pneumonia.pdf`, pp. 6-12–6-13.)
+- Tachypnea has five sourced age/gestational-age rate branches; it is not a
+  generic checkbox. (`NHSN pneumonia.pdf`, Footnote 5, p. 6-14.)
+- A lower-respiratory specimen from a ventilated patient that was not obtained
+  through an artificial airway is not minimally contaminated; sputum or
+  tracheal secretions from a non-ventilated patient are not minimally
+  contaminated. Pleural fluid is eligible only when obtained during
+  thoracentesis or within 24 hours of chest-tube placement, not after tube
+  repositioning or from a tube in place more than 24 hours.
+  (`NHSN pneumonia.pdf`, General Comments 5–6 and Footnotes 8–9,
+  pp. 6-4 and 6-14–6-15.)
+- Normal/mixed/altered oral or respiratory flora wording is excluded, while an
+  eligible organism separately identified in the same result is not discarded.
+  Candida/unspecified yeast, coagulase-negative Staphylococcus, and Enterococcus
+  are restricted to eligible lung tissue or pleural fluid, subject to the PNU3
+  Candida exception. The named community-associated fungal and vector-borne
+  organisms are excluded from all NHSN definitions.
+  (`NHSN pneumonia.pdf`, General Comments 5–7, pp. 6-4–6-5.)
+
+### 3.8 Reporting hierarchy, event-family separation, and secondary BSI
+
+- Within one IWP or RIT, report only one subtype: PNU3 outranks PNU2, and PNU2
+  outranks PNU1. Pathogens and secondary BSIs may be reported only for PNU2 and
+  PNU3. (`NHSN pneumonia.pdf`, Reporting Instructions, p. 6-5.)
+- Concurrent LUNG and PNEU is reported as PNEU, except that SSI-LUNG is reported
+  alongside PNEU. This is a reporting-resolution rule, not permission for LUNG
+  evidence to qualify PNEU. (`NHSN pneumonia.pdf`, Reporting Instructions,
+  p. 6-5.)
+- Ventilator association is a post-qualification classification requiring more
+  than two consecutive calendar days of qualifying mechanical ventilation on
+  DOE (placement day is day 1) and the ventilator present on DOE or the prior
+  day. A full calendar-day break resets the count. Non-invasive positive
+  pressure without an artificial airway is not a ventilator. In-plan reporting
+  is restricted to pedVAP in pediatric inpatient locations; the PNEU definition
+  remains available to support secondary-BSI review in ventilated and
+  non-ventilated patients of any age. (`NHSN pneumonia.pdf`, Settings and
+  Definitions, pp. 6-2–6-3.)
+- Secondary BSI requires a complete PNU2/PNU3 event plus the Chapter 2/17 timing
+  and organism relationship. Restricted blood organisms require matching
+  eligible lung tissue or pleural fluid, except matching Candida in blood and
+  the specified respiratory specimens can satisfy PNU3 when both collection
+  dates are in the same IWP. (`NHSN pneumonia.pdf`, General Comment 6 and
+  Footnotes 8, 11, 12, pp. 6-4 and 6-14–6-16; `NHSN HAI.pdf`, Chapter 2,
+  SBAP and Pathogen Assignment, pp. 2-15–2-19; `Secondary BSI Chapter.pdf`,
+  Secondary BSI and Matching Organisms, pp. 17-1–17-3.)
+
+## 4. Current implementation and discrepancies
+
+No PNEU definition, event-family registry entry, evaluator, or test exists. The
+only respiratory registry item is Chapter 17 `LRI-LUNG`, correctly named
+“Lower Respiratory System Infection, Other Than Pneumonia.” PNEU must not be
+inserted as another Chapter 17 site or inferred from LUNG.
+
+| Required PNEU capability | Current architecture | Discrepancy |
 | --- | --- | --- |
-| Every PNEU criterion and branch | Unresolved; zero branches authorized for encoding | 2026 Chapter 6 criterion tables and footnotes |
-| All age-specific branches | Unresolved | 2026 Chapter 6 age divisions and definitions |
-| Imaging requirements | Unresolved | Chapter 6 imaging criteria and footnotes |
-| One versus multiple imaging studies | Unresolved | Chapter 6 imaging instructions |
-| Signs and symptoms by age | Unresolved | Chapter 6 criterion tables |
-| Laboratory and microbiology alternatives | Unresolved | Chapter 6 criterion tables and notes |
-| Eligible lower-respiratory specimens | Unresolved | Chapter 6 specimen tables/definitions |
-| Quantitative and semiquantitative thresholds | Unresolved | Chapter 6 threshold tables and footnotes |
-| Excluded organisms and specimen results | Unresolved | Chapter 6 exclusions and footnotes |
-| Immunocompromised-patient criteria | Unresolved | Chapter 6 host definition and applicable branch |
-| Viral, bacterial, fungal, and parasitic pathways | Unresolved | Chapter 6 branch definitions |
-| Ventilator-related reporting context | Unresolved | Chapter 6 reporting instructions and any explicitly cross-referenced protocol |
-| Date of event and infection window | Unresolved | 2026 Chapters 2 and 6 |
-| Repeat Infection Timeframe | Unresolved | 2026 Chapter 2 plus any Chapter 6 exception |
-| Secondary BSI attribution and exceptions | General Chapter 17 interface is present; PNEU-specific relationships/exceptions remain unresolved | 2026 Chapter 6 plus its explicit Chapter 17 cross-references |
-| Pathogen-specific restrictions | Unresolved | Chapter 6 organism rules and footnotes |
-| Qualification-affecting reporting instructions | Unresolved | Chapter 6 reporting instructions |
+| Recursive AND/OR and branch-local counts | Criteria have flat `allOf`; groups have a shallow `anyOf` and count | Cannot express all PNU branch trees, nested bullet alternatives, or hierarchy without duplicating/incorrectly mixing evidence. |
+| Age and gestational applicability | One special `patientAge === "infant"` check; some age facts are manual booleans | Cannot enforce exact inclusive boundaries, the overlapping any-patient route, five tachypnea branches, or gestational-age condition. |
+| Dated IWP/DOE/RIT/SBAP | No dates or event timeline | Cannot derive the seven-day window, first eligible diagnostic test, DOE, HAI/POA, 14-day major-type RIT, transfer rule, or SBAP. |
+| Distinct serial imaging | Boolean evidence map only | Cannot count distinct studies, establish order/persistence/progression, distinguish one available image, or allow the second persistence image outside IWP but within seven days. |
+| Conditional/equivocal imaging | Atomic exclusion IDs only | Cannot implement underlying-disease and POA context, alternate descriptors, subsequent clarification, or clinical correlation. |
+| Typed clinical measurements | Labels plus yes/no/unknown | Cannot enforce temperatures, WBC, bands, oxygenation, pulse oximetry, heart rate, respiratory rates, age units, or threshold boundaries. |
+| Typed specimens and microbiology | No record linkage, method, specimen, collection technique, quantity, or unit | Cannot enforce minimally contaminated specimens, chest-tube timing, Table 5 thresholds, paired sera, ASC/AST exclusion, histopathology, or organism/specimen matching. |
+| Organism predicates | Generic application lookup is separate from site evaluator | Cannot enforce flora-result handling, taxonomic exclusions/restrictions, PNU3 Candida matching, mixed eligible/excluded findings, or pathogen reporting. |
+| Sourced host definition | No host expression | Cannot calculate Footnote 10 or its DOE-relative steroid duration. |
+| Subtype hierarchy and event family | Registry is Chapter 17 site-centric; evaluator returns first matching criterion | Cannot resolve PNU3 > PNU2 > PNU1, major-type RIT, PNEU/LUNG/SSI-LUNG resolution, or keep VAP separate from VAE/PedVAE. |
+| Secondary BSI | Two caller-supplied yes/no fields after site qualification | Cannot evaluate matching, blood-as-criterion cases, restricted organisms, specimen dates, SBAP, same-IWP Candida exception, or additional-pathogen assignment. |
+| Source traceability | Existing atoms have source objects | Useful primitive, but PNEU needs source metadata on expression nodes, thresholds, predicates, temporal policies, and reporting resolution—not only labels. |
 
-### Separation constraints to preserve
+### Unsupported or unsafe reuse
 
-When sources become available, PNEU must receive its own event-family namespace
-and must not reuse a positive result from `LRI-LUNG`, VAE, PedVAE, a
-noninfectious pulmonary condition, community-onset labeling, or an unsupported
-provider diagnosis. No mapping between those concepts is authorized by the
-current source inventory.
+1. Treating organism-associated site suggestions as PNEU evidence remains
+   unsupported.
+2. The current evaluator's global evidence IDs and first-matching-criterion
+   behavior would permit cross-branch mixing and would implement the wrong
+   subtype precedence unless redesigned.
+3. Encoding numeric, specimen, imaging, or organism constraints in labels would
+   display rules without enforcing them.
+4. A generic ventilator checkbox would conflate VAP association/reporting with
+   PNEU qualification and risks confusion with the separately governed VAE and
+   PedVAE event families.
+5. The checklist alone is insufficient for implementation because it points
+   back to the Chapter 6 footnotes; omitting those footnotes would materially
+   change imaging, symptom, specimen, organism, and laboratory qualification.
 
-## 4. Current pathway architecture inspected
+## 5. Smallest safe architecture direction (proposal only)
 
-The refactored secondary-site pathway has these useful primitives:
-
-- a registry entry containing source metadata, implementation status, criteria,
-  exclusions, notes, reporting instructions, and secondary-BSI requirements;
-- top-level alternative criteria (`logic: "anyOf"` with one successful criterion);
-- required atomic evidence in `criterion.allOf`;
-- one or more `groups`, each with `anyOf` and `minimumRequiredCount`;
-- a limited nested choice: a group entry may itself contain one `anyOf` array;
-- tri-state evidence (`met`, `notMet`, or unknown by absence);
-- atomic `exclusionId` relationships and definition-level hard exclusions;
-- a single infant-only applicability check (`patientAgeApplicability ===
-  "infant"` and `patientAge === "infant"`);
-- a post-qualification secondary-BSI gate with two caller-supplied yes/no
-  answers: organism relationship and attribution timing;
-- source objects that carry document, chapter, printed page, PDF page, section
-  heading, and a stable source-data identifier.
-
-These primitives are enough for simple alternatives and counted symptom groups,
-but labels currently carry much of the semantic burden. The evaluator does not
-validate dates, measurements, specimen types, organisms, host state, or event
-family.
-
-## 5. Schema-gap analysis
-
-| Requirement to assess | Current support | Precise gap / smallest reusable extension (proposal only) | Potential reuse |
-| --- | --- | --- | --- |
-| Age-dependent criteria | **Partial** | Replace the special infant equality check with a typed applicability predicate over age value/unit and explicit inclusive boundaries. Keep each branch's source. | NEC, pediatric Chapter 17 branches, future device-event protocols |
-| Multiple required imaging findings | **Partial** | Counts can represent multiple checked atoms, but cannot establish that findings belong to eligible distinct studies. Add typed `studyEvidence` plus a distinct-study count constraint. | Any pathway requiring repeated imaging or distinct diagnostic collections |
-| Progressive or persistent imaging | **No** | Add a reusable temporal comparison predicate over ordered studies (`persistent`, `progressive`, eligible interval if sourced). | Longitudinal imaging/laboratory definitions |
-| Imaging conditional on underlying disease | **No** | Add `when`/`unless` predicates to a branch or group, evaluated from typed patient context. | Host-, device-, and history-conditioned pathways |
-| Nested `allOf`/`anyOf` | **Partial** | Replace fixed criterion/group shapes with a recursive expression node: `allOf`, `anyOf`, `atLeast`, `evidence`, and `condition`. Preserve stable IDs and source on every node. | Simplifies complex ENDO-style and future site definitions |
-| Minimum counts across groups | **Partial** | Existing count works only within a single `group.anyOf` and shallow nested entries. A recursive `atLeast: { count, of, distinctBy? }` is the smallest general form. | Distinct clinical elements, cultures, imaging studies |
-| Quantitative microbiology | **No** | Add typed measurement comparison (`value`, `unit`, comparator, threshold) and an explicit semiquantitative category matcher. Never encode thresholds in labels alone. | Urine, tissue, and other quantitative culture protocols |
-| Specimen-type restrictions | **No** | Add a canonical specimen fact and allow-list/deny-list predicates, with collection method/site when the source distinguishes them. | All culture-based site definitions |
-| Organism exclusions | **Partial** | Boolean exclusions exist, but there is no organism taxonomy predicate tied to a result. Add organism/result predicates using stable organism IDs and explicit excluded-result reasons. | Chapter 17 sites and LCBI interfaces |
-| Immunocompromised-host branches | **No** | Add a sourced host-status definition evaluated from its own recursive expression and referenced by branch conditions; do not accept an unexplained boolean. | MBI-related and other host-specific protocols without coupling their evaluators |
-| Conditional secondary-BSI attribution | **No** | Replace the two opaque yes/no inputs, for pathways that need it, with a sourced attribution expression over qualifying site result, blood result, organism relationship, specimen relationship, and dates. Retain a locked gate. | All secondary-BSI pathways and exceptions |
-| Special pathogen rules | **No** | Add reusable organism/result predicates and pathogen-specific conditional branches; keep each restriction source-local. | ENDO and other pathogen-specific definitions |
-| Repeat infection timing | **No** | Add an event timeline model and sourced interval/boundary policy returning eligibility and the controlling prior event. | All HAI event families |
-| Ventilator status without VAE confusion | **No** | Add neutral device-exposure context (`mechanicalVentilation` facts) and a separate `eventFamily` discriminator. Ventilator status must not invoke or imply a VAE/PedVAE result. | PNEU reporting context and device-associated metrics |
-| Date of event / infection window | **No** | Add dated evidence, a rule for selecting the DOE-defining element, and an explicit inclusive window policy. | All HAI event families |
-| PNEU/LRI/VAE separation | **No PNEU model** | Add immutable `eventFamily` and `siteCode` identities and prohibit cross-family qualification evidence unless a source explicitly defines a relationship. | Every protocol sharing an anatomic system |
-
-### Why the schema must not be patched yet
-
-The missing protocol determines which of these general capabilities PNEU
-actually needs and their exact boundary semantics. Implementing a guessed
-extension before source mapping risks designing around remembered criteria.
-Approval should follow a page-cited audit based on the added source files.
-
-## 6. Proposed minimal modular architecture
-
-After the sources are supplied and the schema extensions are separately
-approved, use a PNEU-specific directory rather than adding PNEU to Chapter 17's
-flat files prematurely:
+Do not add PNEU to `secondary/registry.js`. Introduce an event-protocol boundary
+that can host PNEU independently of Chapter 17 sites while consuming shared,
+sourced primitives:
 
 ```text
-secondary/definitions/pneu/
-  index.js             # definition assembly; remains non-validated until audited tests pass
-  applicability.js     # sourced age and host applicability expressions
-  imaging.js           # imaging expressions and study-count/temporal policies
-  clinical.js          # sourced signs/symptoms by applicable branch
-  microbiology.js      # result, specimen, threshold, organism, and exclusion expressions
-  attribution.js       # only PNEU-specific Secondary BSI relationships/exceptions
-  timing.js            # DOE, infection-window, and RIT policies/references
-  reporting.js         # qualification-affecting reporting context and family separation
-  sources.js           # Chapter 6/2/17 page-level metadata only
+surveillance/
+  expression.js        # recursive allOf/anyOf/atLeast/evidence/condition
+  facts.js             # dated typed measurements, specimens, results, studies
+  timeline.js          # IWP, DOE, POA/HAI, RIT, SBAP, transfer calculations
+  source.js            # source metadata validation
+  protocols/pneu/
+    sources.js         # Chapter 6, Chapter 2, Chapter 17, checklist mappings
+    imaging.js         # image eligibility and persistence
+    clinical.js        # PNU1/PNU2/PNU3 clinical expressions
+    microbiology.js    # specimen, threshold, method, organism expressions
+    host.js            # Footnote 10 expression
+    attribution.js     # PNEU-specific secondary-BSI conditions
+    reporting.js       # subtype hierarchy, LUNG resolution, VAP association
+    index.js
 ```
 
-A more general location outside `secondary/` may ultimately be preferable
-because PNEU is an event protocol rather than a Chapter 17 LRI-LUNG definition.
-That repository-level placement decision should be made after inspecting how the
-application will expose non-Chapter-17 event families. In either placement:
+Each fact must carry a record identity and date; every executable node must
+carry its exact document, criterion/table/footnote or section, printed page,
+PDF page, and stable source ID. Evaluation should return a tri-state result plus
+the exact qualifying records, rejected records and reasons, chosen IWP/DOE,
+matched branch, and source trace. PNEU should remain non-qualifying until its
+source-derived test matrix passes and the integration is separately approved.
 
-1. keep `PNEU` distinct from the existing `LRI` major category and `LUNG` site;
-2. keep VAE and PedVAE as distinct event families;
-3. export no registry entry until the source audit establishes the correct
-   integration boundary;
-4. initially set `implementationStatus` to a non-qualifying value such as
-   `sourceMapped` (only after that status is formally supported), never
-   `validated`;
-5. attach page-level source metadata to every expression and policy.
+## 6. Source-derived test obligations for a future implementation
 
-## 7. Proposed test matrix (design only)
+- One minimal positive and one-missing-element negative for every PNU1 age
+  route, both PNU2 laboratory tables, PNU3's native laboratory routes, and PNU3
+  using every PNU2 laboratory alternative.
+- Exact age, temperature, WBC, band, heart-rate, respiratory-rate, oxygenation,
+  Table 5, cell-percentage, chest-tube-hour, ventilation-day, IWP, seven-day
+  persistence, 14-day RIT, steroid-duration, and CD4/ANC boundaries, including
+  one unit on either side.
+- One-image POA cases with and without underlying disease; one-image HAI cases;
+  two-image persistence/progression; rapid resolution; same-study duplication;
+  second image inside/outside IWP and on/after the seven-day boundary;
+  equivocal-later-definitive, equivocal-later-negative, and clinical-correlation
+  cases.
+- Every purulent-secretion reporting format; every minimally contaminated and
+  ineligible specimen route; locally mapped and fallback semiquantitative
+  results; paired-sera and Legionella alternatives; clinical versus ASC/AST
+  methods.
+- Each excluded flora wording and organism group, an eligible organism alongside
+  flora, eligible/ineligible lung tissue and pleural fluid, mixed organisms, the
+  PNU3 Candida exception, and every named community-associated exclusion.
+- Cross-branch mixing negatives, the PNU3/PNU2/PNU1 precedence permutations,
+  major-type PNEU RIT, concurrent LUNG and SSI-LUNG reporting, and proofs that
+  PNEU neither implies nor is implied by LUNG, VAE, or PedVAE.
+- Secondary-BSI positives and negatives for site completeness, matching,
+  blood-as-criterion, SBAP endpoints, same-IWP Candida dates, restricted blood
+  organisms, and additional pathogens during RIT/SBAP.
+- Regression coverage proving no changes to existing LCBI, central-line,
+  MBI-LCBI, organism lookup, or Chapter 17 site results.
 
-Exact case values and expectations must be filled from cited Chapter 6/2/17
-language. No test below authorizes a clinical threshold or age boundary.
+## 7. Audit conclusion and approval gate
 
-| Area | Planned cases |
-| --- | --- |
-| Source metadata | Every node has document, chapter, printed/PDF page, heading/table/criterion, and stable ID; reject missing or non-2026 sources. |
-| Each age group | Positive, negative, boundary-on-each-side, missing age, and wrong-unit cases for every source-defined age branch. |
-| Each criterion branch | One minimal positive; each required element absent in turn; every alternative positive; cross-branch mixing negative. |
-| Imaging | Required study count, same-study duplication negative, distinct-study boundary, persistent/progressive positive and negative, underlying-condition conditional paths, missing dates. |
-| Clinical findings | Minimum-minus-one, exact minimum, alternative findings, wrong-age finding, undocumented finding. |
-| Microbiology | Each eligible method/specimen/result path; threshold below/at/above boundary; unit conversion if authorized; semiquantitative categories; ineligible method. |
-| Organisms/results | Each exclusion; mixed eligible/excluded results; no identification; each source-defined special pathogen restriction. |
-| Host status | Each immunocompromised definition path, one missing element at a time, non-immunocompromised branch separation, unknown status. |
-| Ventilation | Otherwise identical ventilated/non-ventilated PNEU cases; status affects only source-authorized context; neither case creates VAE/PedVAE qualification. |
-| Event-family separation | PNEU evidence cannot satisfy LRI-LUNG; LRI-LUNG evidence cannot satisfy PNEU; PNEU does not imply VAE/PedVAE; provider diagnosis and community/noninfectious labels do not substitute for criteria. |
-| DOE/window | Earliest/latest inclusive boundaries, one day outside, evidence without dates, DOE element selection, admission-context boundaries exactly as sourced. |
-| RIT | First event, same-type event within RIT, exact last day, first day after, different event family, unresolved prior event. |
-| Secondary BSI | Complete site plus matching relationship and timing; mismatch; timing outside; incomplete site; each PNEU exception; mixed organisms; blood used/not used as a criterion if source permits. |
-| Reporting instructions | Each instruction that changes qualification or event assignment, plus a case proving descriptive instructions do not alter qualification. |
-| Incomplete/excluded | Unknown required fact, explicit negative fact, excluded specimen, excluded organism, contradictory facts, no evidence. |
-| Regression | Snapshot/current tests prove no existing Chapter 17 pathway result, LCBI/central-line/MBI result, or organism lookup changes. |
+The source blocker reported by the earlier audit is resolved: the repository
+now contains the January 2026 Chapter 6, Chapter 2, and PNEU checklist. The
+current application, however, has **no PNEU implementation**, and its flat,
+site-centric secondary-BSI evaluator cannot faithfully enforce the sourced
+PNEU definition. The missing capabilities are structural rather than a short
+list of new checkboxes.
 
-## 8. Discrepancy report and next approval gate
-
-### Unsupported or missing
-
-- The entire 2026 Chapter 6 PNEU definition and all requested subrules are absent.
-- Chapter 2 timing foundations are absent.
-- No authorized PNEU checklist is present.
-- The evaluator has no typed dates, measurements, specimens, organisms,
-  longitudinal studies, host definition, or event-family discriminator.
-- Existing secondary-BSI inputs are manually asserted booleans rather than an
-  evaluable conditional relationship.
-
-### Simplified or incorrectly combinable if reused unchanged
-
-- `patientAgeApplicability` supports only one special infant token, not arbitrary
-  sourced age branches.
-- `groups` provide shallow counted alternatives, not general nested logic or
-  distinct-record counting.
-- A label can describe a threshold or specimen restriction, but the evaluator
-  cannot enforce it.
-- Global evidence IDs could accidentally allow cross-branch or cross-event reuse
-  unless event family and record linkage are made explicit.
-- A generic ventilator boolean without an event-family boundary could wrongly
-  conflate PNEU reporting context with VAE/PedVAE.
-
-### Required next step
-
-Add the approved 2026 Chapter 6 and Chapter 2 PDFs (and explicitly authorize any
-checklist). Then repeat this audit with exact page/table/criterion citations and
-a complete branch tree. Only after review and approval should a minimal schema
-extension or PNEU definition be implemented.
+No application logic was changed during this audit. Before implementation,
+approve an event-protocol boundary and the typed recursive/timeline primitives.
+Then implement and review one criterion group at a time in this order: shared
+imaging and timing, PNU1, the two PNU2 paths, PNU3/host status, organism and
+specimen restrictions, secondary-BSI attribution, and reporting resolution.
