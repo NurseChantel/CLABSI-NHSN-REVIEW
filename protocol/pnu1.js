@@ -58,7 +58,7 @@ function findingMet(input, kinds, window) {
   return input.clinicalFindings.some(item => kinds.includes(item.kind) && dateInWindow(item.date, window).value);
 }
 
-function tachypneaThreshold(patientContext, eventDate) {
+export function pnuTachypneaThreshold(patientContext, eventDate) {
   const years = evaluateAgeApplicability(patientContext, eventDate, { unit: "years", operator: "gt", value: 5 });
   if (years.ok && years.value.met) return 30;
   const olderThanOne = evaluateAgeApplicability(patientContext, eventDate, { unit: "years", operator: "gt", value: 1 });
@@ -78,7 +78,7 @@ function clinicalGroups(input, window, branch, eventDate) {
   const leftShift = measurementMet(input, "bands", window, [{ comparator: "gte", value: 10, unit: "percent" }]);
   const sputum = findingMet(input, ["sputum-change", "secretions-change", "increased-suctioning"], window);
   const gas = findingMet(input, ["worsening-gas-exchange"], window);
-  const tachypnea = measurementMet(input, "respiratory-rate", window, [{ comparator: "gt", value: tachypneaThreshold(input.patientContext, eventDate), unit: "breaths/min" }]);
+  const tachypnea = measurementMet(input, "respiratory-rate", window, [{ comparator: "gt", value: pnuTachypneaThreshold(input.patientContext, eventDate), unit: "breaths/min" }]);
   if (branch === "PNU1-any-patient") {
     const age70 = evaluateAgeApplicability(input.patientContext, eventDate, { unit: "years", operator: "gte", value: 70 }).value.met;
     return {
@@ -115,7 +115,7 @@ function resolvedImage(study, studies) {
   return studies.some(later => later.date >= study.date && later.interpretation === "definitive" && later.clarifiesStudyId === study.id && later.clarification === "positive");
 }
 
-function imagingMet(input, first, infant, poa) {
+export function evaluatePnuImaging(input, first, infant, poa) {
   if (!eligibleImageFinding(first, infant) || !resolvedImage(first, input.imagingStudies)) return { met: false, studyIds: [] };
   if (input.imagingStudies.length === 1) {
     const met = poa || (input.soleAvailableImage === true && input.underlyingPulmonaryOrCardiacDisease === false);
@@ -140,7 +140,7 @@ function branchApplicable(input, branch, eventDate) {
   return older && atMost12;
 }
 
-function validateInput(input) {
+export function validatePnuBaseInput(input) {
   const errors = [];
   if (!isPlainObject(input)) return ["PNU1 input must be an object"];
   errors.push(...validateDate(input.admissionDate, "admissionDate"));
@@ -168,7 +168,7 @@ function validateInput(input) {
 }
 
 export function evaluatePnu1(input) {
-  const errors = validateInput(input);
+  const errors = validatePnuBaseInput(input);
   if (errors.length) return validationError(errors);
   const studies = [...input.imagingStudies].sort((a, b) => day(a.date) - day(b.date));
   const attempts = [];
@@ -178,7 +178,7 @@ export function evaluatePnu1(input) {
     const infant = evaluateAgeApplicability(input.patientContext, eventDate, { unit: "years", operator: "lte", value: 1 });
     if (!infant.ok) return infant;
     const poa = day(first.date) <= day(input.admissionDate) + 86400000;
-    const imaging = imagingMet(input, first, infant.value.met, poa);
+    const imaging = evaluatePnuImaging(input, first, infant.value.met, poa);
     for (const branch of PNU1_PROTOCOL.branches) {
       if (!branchApplicable(input, branch, eventDate)) continue;
       const clinical = clinicalGroups(input, iwp, branch, eventDate);
