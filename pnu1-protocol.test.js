@@ -122,9 +122,9 @@ test("compact renderer loads every requested section and reports only remaining 
   assert.match(renderPnu1Safely({}), /could not be loaded/);
 });
 
-test("PNU1 remains separate from every Chapter 17 pathway and adds no PNU3/VAE definition", () => {
+test("PNU1 remains separate from every Chapter 17 pathway and adds no VAE/LUNG definition", () => {
   assert.deepEqual(PNU1_PROTOCOL.branches, ["PNU1-any-patient", "PNU1-infant", "PNU1-child"]);
   for (const code of implementedSecondaryPathways) assert.notEqual(evaluateSecondarySite({ siteCode: code }).siteCode, "PNU1");
   const files = fs.readdirSync(new URL("./protocol/", import.meta.url));
-  assert.equal(files.some(name => /pnu3|vae|lung/i.test(name)), false);
+  assert.equal(files.some(name => /vae|lung/i.test(name)), false);
 });

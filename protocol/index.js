@@ -9,5 +9,7 @@ export * from "./pnu1.js";
 export * from "./pnu1-renderer.js";
 export * from "./pnu2.js";
 export * from "./pnu2-renderer.js";
+export * from "./pnu3.js";
+export * from "./pnu3-renderer.js";
 export * from "./timeline.js";
 export * from "./validation.js";
