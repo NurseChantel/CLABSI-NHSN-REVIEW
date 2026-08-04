@@ -62,7 +62,7 @@ test("the actual infant MEN render excludes MEN-2 and uses styled compact DOM cl
     assert.equal(container.innerHTML.includes(selector.slice(1)), true);
     assert.equal(stylesheet.includes(selector), true);
   }
-  assert.equal(COMPACT_MEN_RENDERER_VERSION, "Rendering compact MEN evidence UI v4");
+  assert.equal(COMPACT_MEN_RENDERER_VERSION, "Rendering compact MEN evidence UI v5");
 });
 
 
