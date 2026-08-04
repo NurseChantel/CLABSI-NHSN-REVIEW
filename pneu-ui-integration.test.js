@@ -12,7 +12,11 @@ const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
 const normalUi = rendered => rendered.split("<details><summary>Developer diagnostics</summary>")[0];
 function dateContext(input, dob = "1980-01-01") { input.patientContext.dateOfBirth = dob; input.admissionDate = "2026-01-01"; input.imagingStudies[0].date = "2026-01-10"; }
 
- test("PNEU navigation exposes PNU1, PNU2, and disabled PNU3", () => {
+ test("PNEU navigation is grouped with the secondary BSI categories and exposes each subtype", () => {
+  assert.match(html, /1\. Secondary BSI categories/);
+  assert.match(html, /id="siteButtons"[^>]*aria-label="Secondary BSI categories"/);
+  assert.match(app, /data-review-family="pneu"/);
+  assert.doesNotMatch(html, /Site-specific infection definitions/);
   assert.match(html, /data-pneu-subtype="PNU1"/); assert.match(html, /data-pneu-subtype="PNU2"/);
   assert.match(html, /data-pneu-subtype="PNU3" aria-disabled="true" disabled/);
   assert.equal(PNEU_UI_REGISTRY.PNU3.implemented, false);

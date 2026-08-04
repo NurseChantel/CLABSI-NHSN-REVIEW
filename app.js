@@ -985,8 +985,8 @@ function renderSymptoms() {
 
 function buildSiteButtons() {
  const container = document.getElementById("siteButtons");
- container.innerHTML = secondarySiteCategories.map(category => `<button type="button" data-category="${category.majorCategoryCode}" aria-pressed="false">${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</button>`).join("");
- container.querySelectorAll("[data-category]").forEach(button => button.addEventListener("click", () => { state.selectedMajorCategory = button.dataset.category; state.selectedSite = ""; state.siteEvidence = {}; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); container.querySelectorAll("button").forEach(item => { item.classList.toggle("selected", item === button); item.setAttribute("aria-pressed", String(item === button)); }); updateAll(); }));
+ container.innerHTML = `${secondarySiteCategories.map(category => `<button type="button" data-category="${category.majorCategoryCode}" aria-pressed="false">${escapeHtml(category.majorCategoryCode)} / ${escapeHtml(category.majorCategoryName)}</button>`).join("")}<button type="button" data-review-family="pneu" aria-pressed="false"><strong>PNEU</strong><span>Pneumonia Event</span></button>`;
+ container.querySelectorAll("[data-category]").forEach(button => button.addEventListener("click", () => { state.reviewFamily = "chapter17"; state.selectedMajorCategory = button.dataset.category; state.selectedSite = ""; state.siteEvidence = {}; state.organismRelationship = ""; state.attributionTiming = ""; setChoiceValue("organismRelationship", ""); setChoiceValue("attributionTiming", ""); updateAll(); }));
 }
 
 function bindPneuNavigation() {
@@ -1009,6 +1009,11 @@ function renderPneuReview() {
   document.getElementById("pneuReview").hidden = !isPneu;
   document.querySelectorAll("[data-review-family]").forEach(button => {
     const selected = button.dataset.reviewFamily === state.reviewFamily;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  document.querySelectorAll("[data-category]").forEach(button => {
+    const selected = !isPneu && button.dataset.category === state.selectedMajorCategory;
     button.classList.toggle("selected", selected);
     button.setAttribute("aria-pressed", String(selected));
   });
