@@ -64,9 +64,9 @@ function renderCriterion(criterion, evidence, evaluation, manuallyOpen, notes, {
   const status = criterionCentered ? `<section class="secondary-criterion-status"><h5>Status</h5><strong>${complete ? "✓ Criterion met" : "Incomplete"}</strong>${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</section>` : "";
   return `<details class="secondary-criterion" data-men-criterion="${criterion.id}" ${open ? "open" : ""}><summary><span class="secondary-criterion-title">${escapeHtml(title)}${renderQualificationNotes(criterion, notes)}</span><small>${complete ? "Met" : "Incomplete"}</small></summary><div class="secondary-criterion-body">${criterion.allOf.length ? `<section class="secondary-requirement"><header><h5>Required evidence</h5></header>${criterion.allOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>` : ""}${(criterion.groups || []).map((group) => renderRequirement(group, evidence)).join("")}${status}</div></details>`;
 }
-function renderBoneCriterionGroup(criteria, evidence, evaluation, openCriteria, defaultOpenCriterion) {
-  const criterionNumber = criteria[0].id.match(/^BONE-(3[ab])-/)?.[1];
-  const groupId = `BONE-${criterionNumber}`;
+function renderImagingCriterionGroup(criteria, evidence, evaluation, openCriteria, defaultOpenCriterion) {
+  const [siteCode, criterionNumber] = criteria[0].id.match(/^([A-Z]+)-(3[a-d])-/)?.slice(1) || [];
+  const groupId = `${siteCode}-${criterionNumber}`;
   const completeCriterion = criteria.find((criterion) => evaluation.metCriterion === criterion.id);
   const open = openCriteria === undefined ? criteria.some((criterion) => criterion.id === defaultOpenCriterion) : openCriteria.includes(groupId);
   const branches = criteria.map((criterion) => {
@@ -89,14 +89,15 @@ export function renderCompactMenEvidence({ definition, evaluation, patientAge, e
   const remaining = evaluation.siteDefinitionMet ? [] : criterionRemaining(closest, evidence);
   const status = `<div class="secondary-site-status ${evaluation.siteDefinitionMet ? "met" : "incomplete"}" role="status" aria-live="polite"><strong>${evaluation.siteDefinitionMet ? `🟢 ${escapeHtml(definition.siteCode)} Site Definition Met` : `🟡 ${escapeHtml(definition.siteCode)} Site Definition Not Met`}</strong>${criterionCentered && !evaluation.siteDefinitionMet ? `<span>Closest pathway: ${escapeHtml(closest.label)}</span>` : ""}${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</div>`;
   const defaultOpenCriterion = evaluation.metCriterion || closest.id;
-  const criterionMarkup = definition.siteCode === "BONE"
+  const groupedImagingCriteria = Object.freeze({ BONE: /^BONE-(3[ab])-/, DISC: /^DISC-(3b)-/, JNT: /^JNT-(3d)-/ });
+  const criterionMarkup = groupedImagingCriteria[definition.siteCode]
     ? [...criteria.reduce((groups, criterion) => {
-      const groupedId = criterion.id.match(/^BONE-(3[ab])-/)?.[1];
+      const groupedId = criterion.id.match(groupedImagingCriteria[definition.siteCode])?.[1];
       const key = groupedId || criterion.id;
       groups.set(key, [...(groups.get(key) || []), criterion]);
       return groups;
     }, new Map()).values()].map((group) => group.length > 1
-      ? renderBoneCriterionGroup(group, evidence, evaluation, openCriteria, defaultOpenCriterion)
+      ? renderImagingCriterionGroup(group, evidence, evaluation, openCriteria, defaultOpenCriterion)
       : renderCriterion(group[0], evidence, evaluation, openCriteria === undefined ? openCriterion : openCriteria.includes(group[0].id) ? group[0].id : "__closed__", definition.notes, { criterionCentered, defaultOpen: group[0].id === defaultOpenCriterion })).join("")
     : criteria.map((criterion) => renderCriterion(criterion, evidence, evaluation, openCriteria === undefined ? openCriterion : openCriteria.includes(criterion.id) ? criterion.id : "__closed__", definition.notes, { criterionCentered, defaultOpen: criterion.id === defaultOpenCriterion })).join("");
   const exclusionSelected = definition.exclusions.some((item) => evidence[item.id] === "met") || evaluation.status === "exclusionApplies";

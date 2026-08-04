@@ -22,7 +22,10 @@ function render(siteCode, evidence = {}, openCriterion = "", openCriteria) {
   return renderCompactMenEvidence({ definition, evaluation: evaluateSecondarySite({ siteCode, evidence }), evidence, openCriterion, openCriteria });
 }
 function criterionHtml(html, criterionId) {
-  const presentationId = criterionId.replace(/^(BONE-3[ab])-.+$/, "$1");
+  const presentationId = criterionId
+    .replace(/^(BONE-3[ab])-.+$/, "$1")
+    .replace(/^(DISC-3b)-.+$/, "$1")
+    .replace(/^(JNT-3d)-.+$/, "$1");
   const start = html.indexOf(`data-men-criterion="${presentationId}"`);
   assert.notEqual(start, -1, criterionId);
   const end = html.indexOf("</details>", start);
@@ -75,6 +78,16 @@ test("BONE presents criterion 3a and 3b once with explicit imaging alternatives"
   assert.equal((html.match(/>Criterion 3b —/g) || []).length, 1);
   for (const branch of ["BONE-3a-definitive", "BONE-3a-equivocal", "BONE-3b-definitive", "BONE-3b-equivocal"]) assert.match(html, new RegExp(`data-criterion-branch="${branch}"`));
   assert.match(html, /Meet either imaging pathway below\./);
+});
+
+test("DISC 3b and JNT 3d each render once with explicit imaging alternatives", () => {
+  for (const [siteCode, criterionNumber] of [["DISC", "3b"], ["JNT", "3d"]]) {
+    const html = render(siteCode);
+    assert.equal((html.match(new RegExp(`data-men-criterion="${siteCode}-${criterionNumber}"`, "g")) || []).length, 1);
+    assert.equal((html.match(new RegExp(`>Criterion ${criterionNumber} —`, "g")) || []).length, 1);
+    for (const branch of ["definitive", "equivocal"]) assert.match(html, new RegExp(`data-criterion-branch="${siteCode}-${criterionNumber}-${branch}"`));
+    assert.match(html, /Meet either imaging pathway below\./);
+  }
 });
 
 test("shared facts render in each criterion and synchronize through one evidence ID", () => {
