@@ -1,7 +1,7 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
 import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js";
-import { addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, setLabOrganism, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
+import { addLabAlternative, addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectLabAlternative, setLabOrganism, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
 
 "use strict";
 
@@ -1033,7 +1033,10 @@ function renderPneuReview() {
     const input = state.pneu.inputs[subtype]; const target = event.target;
     if (target.dataset.clinicalFinding) toggleClinicalFinding(input, target.dataset.clinicalFinding, target.checked);
     else if (target.dataset.imageFinding) toggleImageFinding(input, Number(target.dataset.index), target.dataset.imageFinding, target.checked);
+    else if (target.dataset.imageSelect !== undefined) toggleImageFinding(input, Number(target.dataset.index), target.value, Boolean(target.value));
+    else if (target.dataset.labAlternative) selectLabAlternative(state.pneu, input, target.dataset.algorithm, target.dataset.labAlternative);
     else if (target.dataset.labOrganism !== undefined) setLabOrganism(input, Number(target.dataset.index), target.value);
+    else if (target.dataset.uiOnly !== undefined || target.dataset.measurementConfirm !== undefined) return;
     else applyPneuControl(input, target);
     renderPneuReview();
   });
@@ -1041,8 +1044,8 @@ function renderPneuReview() {
     const button = event.target.closest("button"); if (!button) return; const input = state.pneu.inputs[subtype];
     if (button.dataset.pneuAdd) addPneuRecord(input, button.dataset.pneuAdd);
     else if (button.dataset.pneuRemove) removePneuRecord(input, button.dataset.pneuRemove, Number(button.dataset.index));
-    else if (button.dataset.labBranch) state.pneu.openLabBranch.PNU2 = button.dataset.labBranch;
-    else if (button.dataset.addHistopathology !== undefined) input.histopathologyResults.push({ id: `histopathology-${Date.now()}`, date: input.imagingStudies[0]?.date || "", finding: "abscess-or-consolidation-with-intense-pmn" });
+    else if (button.dataset.addLabAlternative) addLabAlternative(input, button.dataset.addLabAlternative);
+    else if (button.dataset.addHistopathology !== undefined) input.histopathologyResults.push({ id: `histopathology-${Date.now()}`, date: "", finding: "abscess-or-consolidation-with-intense-pmn" });
     else if (button.dataset.pneuReset !== undefined) state.pneu.inputs[subtype] = createPneuState().inputs[subtype];
     else return;
     renderPneuReview();
