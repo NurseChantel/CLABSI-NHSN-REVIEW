@@ -1,7 +1,7 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
 import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js?v=5";
-import { addLabAlternative, addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectLabAlternative, setLabOrganism, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
+import { addLabAlternative, addPnu3CandidaPair, addPnu3Fungus, addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectHostAlternative, selectLabAlternative, setLabOrganism, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
 
 "use strict";
 
@@ -1028,14 +1028,9 @@ function renderPneuReview() {
   const subtype = state.pneu.selectedSubtype;
   const entry = PNEU_UI_REGISTRY[subtype];
   if (!entry) {
-    container.innerHTML = '<div class="secondary-guidance"><strong>Select PNU1 or PNU2 to begin a PNEU review.</strong></div>';
+    container.innerHTML = '<div class="secondary-guidance"><strong>Select PNU1, PNU2, or PNU3 to begin a PNEU review.</strong></div>';
     return;
   }
-  if (!entry.implemented) {
-    container.innerHTML = '<div class="secondary-guidance warning" role="status"><strong>PNU3 — Not yet implemented</strong><p>This subtype has not been integrated or validated for use in this review.</p></div>';
-    return;
-  }
-
   container.innerHTML = renderPneuAbstraction(state.pneu, subtype);
   container.querySelector(".pneu-form").addEventListener("change", event => {
     const input = state.pneu.inputs[subtype]; const target = event.target;
@@ -1043,6 +1038,7 @@ function renderPneuReview() {
     else if (target.dataset.imageFinding) toggleImageFinding(input, Number(target.dataset.index), target.dataset.imageFinding, target.checked);
     else if (target.dataset.imageSelect !== undefined) toggleImageFinding(input, Number(target.dataset.index), target.value, Boolean(target.value));
     else if (target.dataset.labAlternative) selectLabAlternative(state.pneu, input, target.dataset.algorithm, target.dataset.labAlternative);
+    else if (target.dataset.hostAlternative) selectHostAlternative(state.pneu, input, target.dataset.hostAlternative);
     else if (target.dataset.labOrganism !== undefined) setLabOrganism(input, Number(target.dataset.index), target.value);
     else if (target.dataset.uiOnly !== undefined || target.dataset.measurementConfirm !== undefined) return;
     else applyPneuControl(input, target);
@@ -1054,6 +1050,8 @@ function renderPneuReview() {
     else if (button.dataset.pneuRemove) removePneuRecord(input, button.dataset.pneuRemove, Number(button.dataset.index));
     else if (button.dataset.addLabAlternative) addLabAlternative(input, button.dataset.addLabAlternative);
     else if (button.dataset.addHistopathology !== undefined) input.histopathologyResults.push({ id: `histopathology-${Date.now()}`, date: "", finding: "abscess-or-consolidation-with-intense-pmn" });
+    else if (button.dataset.addPnu3Candida !== undefined) addPnu3CandidaPair(input);
+    else if (button.dataset.addPnu3Fungus !== undefined) addPnu3Fungus(input);
     else if (button.dataset.pneuReset !== undefined) state.pneu.inputs[subtype] = createPneuState().inputs[subtype];
     else return;
     renderPneuReview();

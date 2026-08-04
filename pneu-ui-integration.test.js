@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { addLabAlternative, addPneuRecord, createPneuState, evaluatePneuSubtype, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectLabAlternative, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
+import { addLabAlternative, addPnu3CandidaPair, addPneuRecord, createPneuState, evaluatePneuSubtype, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectHostAlternative, selectLabAlternative, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
 import { evaluatePnu1 } from "./protocol/pnu1.js";
 import { evaluatePnu2 } from "./protocol/pnu2.js";
 import { secondarySiteDefinitions } from "./secondary/registry.js";
@@ -18,8 +18,8 @@ function dateContext(input, dob = "1980-01-01") { input.patientContext.dateOfBir
   assert.match(app, /data-review-family="pneu"/);
   assert.doesNotMatch(html, /Site-specific infection definitions/);
   assert.match(html, /data-pneu-subtype="PNU1"/); assert.match(html, /data-pneu-subtype="PNU2"/);
-  assert.match(html, /data-pneu-subtype="PNU3" aria-disabled="true" disabled/);
-  assert.equal(PNEU_UI_REGISTRY.PNU3.implemented, false);
+  assert.match(html, /data-pneu-subtype="PNU3" aria-pressed="false"/);
+  assert.equal(PNEU_UI_REGISTRY.PNU3.implemented, true);
 });
 
 test("PNU1 renders any-patient and only the applicable age-specific OR criterion", () => {
@@ -57,15 +57,15 @@ test("guided imaging distinguishes sole available study from one entered study",
 test("PNU2 renders exactly two coherent top-level OR algorithms", () => {
   const state = createPneuState(); dateContext(state.inputs.PNU2); const rendered = renderPneuAbstraction(state, "PNU2");
   assert.equal((rendered.match(/class="pneu-main-criterion"/g) || []).length, 2);
-  assert.match(rendered, /Common bacterial or filamentous fungal pathogens/); assert.match(rendered, /Viral, Legionella, and other bacterial pneumonias/);
-  assert.match(rendered, /Meeting either complete PNU2 algorithm qualifies PNU2/);
-  assert.equal((rendered.match(/class="pneu-main-criterion"[^>]* open/g) || []).length, 1);
+  assert.match(rendered, /Common bacterial or filamentous fungal pathogens/); assert.match(rendered, /Viral, Legionella, and other bacterial pathogens/);
+  assert.match(rendered, /Meeting either complete PNU2 row qualifies PNU2/);
+  assert.equal((rendered.match(/class="pneu-manual-table pnu2"/g) || []).length, 2);
 });
 
 test("each PNU2 algorithm visibly requires imaging AND systemic AND respiratory AND laboratory", () => {
   const state = createPneuState(); dateContext(state.inputs.PNU2); const rendered = renderPneuAbstraction(state, "PNU2");
   for (const phrase of ["Imaging — required", "Systemic findings — select at least ONE", "Respiratory findings — select at least ONE", "qualifying laboratory pathway", "qualifying definitive laboratory finding"]) assert.match(rendered, new RegExp(phrase));
-  assert.ok((rendered.match(/class="pneu-and"/g) || []).length >= 6);
+  assert.equal((rendered.match(/class="pneu-table-and"/g) || []).length, 4);
 });
 
 test("laboratory alternatives reveal only fields relevant to the selected algorithm", () => {
@@ -87,7 +87,7 @@ test("normal UI uses field-level human validation and hides technical paths", ()
 test("status reports the closest viable criterion without emphasizing all alternatives", () => {
   const state = createPneuState(); const input = state.inputs.PNU1; dateContext(input); const rendered = renderPneuAbstraction(state, "PNU1");
   assert.match(rendered, /PNU1 Not Met/); assert.match(rendered, /Closest viable criterion/); assert.match(rendered, /Still needed/);
-  assert.equal((rendered.match(/class="pneu-main-criterion"[^>]* open/g) || []).length, 1);
+  assert.equal((rendered.match(/class="pneu-manual-table pnu1"/g) || []).length, 1);
 });
 
 test("no raw JSON is in normal UI and no evidence dates are preloaded or invented", () => {
@@ -95,7 +95,8 @@ test("no raw JSON is in normal UI and no evidence dates are preloaded or invente
     const input = state.inputs[subtype]; assert.equal(input.admissionDate, ""); assert.equal(input.imagingStudies[0].date, "");
     assert.doesNotMatch(normalUi(renderPneuAbstraction(state, subtype)), /Evaluator input|\{\s*&quot;/);
   }
-  toggleClinicalFinding(state.inputs.PNU1, "cough", true); assert.equal(state.inputs.PNU1.clinicalFindings[0].date, "");
+  toggleClinicalFinding(state.inputs.PNU1, "new-or-worsening-cough", true); assert.equal(state.inputs.PNU1.clinicalFindings[0].date, "");
+  assert.match(renderPneuAbstraction(state, "PNU1"), /clinicalFinding\.new-or-worsening-cough\.date/);
   addPneuRecord(state.inputs.PNU2, "microbiologyResults"); assert.equal(state.inputs.PNU2.microbiologyResults[0].collectionDate, "");
 });
 
@@ -110,10 +111,27 @@ test("PNU1 has only its compact no-laboratory note", () => {
   assert.match(rendered, /does not independently report a pathogen/); assert.doesNotMatch(rendered, /data-add-lab-alternative/);
 });
 
-test("PNEU remains isolated from Chapter 17 LRI-LUNG and PNU3 stays unavailable", () => {
+test("PNEU remains isolated from Chapter 17 LRI-LUNG", () => {
   assert.equal(secondarySiteDefinitions.LUNG.siteCode, "LUNG"); assert.doesNotMatch(app, /secondarySiteDefinitions[^\n]*PNU[12]/);
   assert.match(app, /if \(!PNEU_UI_REGISTRY\[button\.dataset\.pneuSubtype\]\?\.implemented\) return/);
   assert.match(html, /id="chapter17Pathways"/); assert.match(html, /id="chapter17AttributionPanel"/);
+});
+
+test("PNU3 renders the manual host, imaging, clinical, and laboratory columns", () => {
+  const state = createPneuState(); const input = state.inputs.PNU3; dateContext(input);
+  const rendered = renderPneuAbstraction(state, "PNU3");
+  assert.match(rendered, /pneu-manual-table pnu3/); assert.match(rendered, /Immunocompromised host eligibility/);
+  assert.match(rendered, /Clinical findings — select at least ONE/); assert.match(rendered, /Laboratory evidence — select at least ONE pathway/);
+  assert.doesNotMatch(rendered, /Not yet implemented/);
+});
+
+test("PNU3 host alternatives and Candida pair use typed, dated evidence", () => {
+  const state = createPneuState(); const input = state.inputs.PNU3; dateContext(input);
+  selectHostAlternative(state, input, "systemic-steroids");
+  assert.deepEqual(input.hostEvidence[0], { id: "host-systemic-steroids", type: "systemic-steroids", route: "enteral", daily: true, startDate: "", endDate: "" });
+  addPnu3CandidaPair(input); assert.equal(input.microbiologyResults.length, 2);
+  assert.deepEqual(input.microbiologyResults.map(item => item.specimenType), ["blood", "sputum"]);
+  assert.ok(input.microbiologyResults.every(item => item.collectionDate === "" && item.organism.tags.includes("candida")));
 });
 
 test("repeatable records remain isolated by subtype", () => {
