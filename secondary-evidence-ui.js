@@ -1,4 +1,4 @@
-export const COMPACT_MEN_RENDERER_VERSION = "Rendering compact MEN evidence UI v3";
+export const COMPACT_MEN_RENDERER_VERSION = "Rendering compact MEN evidence UI v4";
 
 const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
 const numberWord = (value) => ({ 1: "One", 2: "Two", 3: "Three" })[value] || String(value);
@@ -62,8 +62,7 @@ function renderCriterion(criterion, evidence, evaluation, manuallyOpen, notes, {
   const title = `${complete ? "✓ " : ""}${criterion.label}`;
   const remaining = criterionCentered && !complete ? criterionRemaining(criterion, evidence) : [];
   const status = criterionCentered ? `<section class="secondary-criterion-status"><h5>Status</h5><strong>${complete ? "✓ Criterion met" : "Incomplete"}</strong>${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</section>` : "";
-  const source = criterionCentered ? `<section class="secondary-criterion-source"><h5>Source</h5><span>${escapeHtml(criterion.source.document)}, ${escapeHtml(criterion.source.sectionHeading)}, printed page(s) ${escapeHtml(criterion.source.printedPage)} (PDF page(s) ${escapeHtml(criterion.source.pdfPage)})</span></section>` : "";
-  return `<details class="secondary-criterion" data-men-criterion="${criterion.id}" ${open ? "open" : ""}><summary><span class="secondary-criterion-title">${escapeHtml(title)}${renderQualificationNotes(criterion, notes)}</span><small>${complete ? "Met" : "Incomplete"}</small></summary><div class="secondary-criterion-body">${criterion.allOf.length ? `<section class="secondary-requirement"><header><h5>Required evidence</h5></header>${criterion.allOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>` : ""}${(criterion.groups || []).map((group) => renderRequirement(group, evidence)).join("")}${status}${source}</div></details>`;
+  return `<details class="secondary-criterion" data-men-criterion="${criterion.id}" ${open ? "open" : ""}><summary><span class="secondary-criterion-title">${escapeHtml(title)}${renderQualificationNotes(criterion, notes)}</span><small>${complete ? "Met" : "Incomplete"}</small></summary><div class="secondary-criterion-body">${criterion.allOf.length ? `<section class="secondary-requirement"><header><h5>Required evidence</h5></header>${criterion.allOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>` : ""}${(criterion.groups || []).map((group) => renderRequirement(group, evidence)).join("")}${status}</div></details>`;
 }
 function renderReferences(definition) {
   const sources = [definition.source, ...definition.notes.map((note) => note.source)];

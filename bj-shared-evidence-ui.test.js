@@ -38,7 +38,19 @@ test("BJ restores criterion-owned controls without detached evidence or pathway 
         assert.match(section, new RegExp(`data-evidence-id="${item.id}"`), `${criterion.id}: ${item.id}`);
       }
       assert.match(section, /Status/);
-      assert.match(section, /Source/);
+      assert.doesNotMatch(section, /<h5>Source<\/h5>/);
+    }
+  }
+});
+
+test("every BJ criterion body contains evidence controls and only criterion review content", () => {
+  for (const siteCode of sites) {
+    const html = render(siteCode);
+    for (const criterion of secondarySiteDefinitions[siteCode].criteria) {
+      const section = criterionHtml(html, criterion.id);
+      assert.match(section, /data-evidence-id=/, `${criterion.id} has no evidence controls`);
+      assert.match(section, /secondary-criterion-status/, `${criterion.id} has no current status`);
+      assert.doesNotMatch(section, /NHSN Reference|Shared clinical evidence|data-evidence-section=/);
     }
   }
 });

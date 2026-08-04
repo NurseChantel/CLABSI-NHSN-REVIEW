@@ -1,6 +1,6 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
-import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js";
+import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js?v=4";
 import { addLabAlternative, addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectLabAlternative, setLabOrganism, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
 
 "use strict";
