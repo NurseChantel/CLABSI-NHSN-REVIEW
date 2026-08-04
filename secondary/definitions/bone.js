@@ -27,13 +27,6 @@ export const boneDefinition = Object.freeze({
     Object.freeze({ id: "BONE-3b-equivocal", label: "Criterion 3b — localized findings and clinically correlated equivocal imaging", source: boneCriterionSource, allOf: Object.freeze([boneEquivocalImaging, boneDiagnosis, boneTreatment]), groups: Object.freeze([boneFindingsGroup("BONE-3b-equivocal-findings")]) }),
     Object.freeze({ id: "BONE-3c", label: "Criterion 3c — localized findings, physician diagnosis, and treatment", source: boneCriterionSource, allOf: Object.freeze([boneDiagnosis, boneTreatment]), groups: Object.freeze([boneFindingsGroup("BONE-3c-findings")]) })
   ]),
-  evidenceSections: Object.freeze([
-    Object.freeze({ id: "clinical", label: "Shared clinical evidence", evidenceIds: Object.freeze(boneFindings.map(({ id }) => id)) }),
-    Object.freeze({ id: "microbiology", label: "Microbiology", evidenceIds: Object.freeze(["bone-site-organism", "bone-blood-organism"]) }),
-    Object.freeze({ id: "imaging", label: "Imaging", evidenceIds: Object.freeze(["bone-definitive-imaging", "bone-equivocal-imaging"]) }),
-    Object.freeze({ id: "operative-pathology", label: "Operative or pathology findings", evidenceIds: Object.freeze(["bone-gross-histopathologic-evidence"]) }),
-    Object.freeze({ id: "diagnosis-treatment", label: "Physician diagnosis and treatment", evidenceIds: Object.freeze(["bone-physician-diagnosis", "bone-antimicrobial-treatment"]) })
-  ]),
   exclusions: Object.freeze([boneItem("other-recognized-cause", "Another recognized cause applies to an asterisked localized sign or symptom", { type: "exclusion" })]),
   notes: Object.freeze([
     Object.freeze({ id: "BONE-note-window", text: "The BONE infection window period is 21 days: the date the first positive diagnostic test used as a criterion element was obtained, the 10 calendar days before, and the 10 calendar days after.", source: boneTimingSource }),

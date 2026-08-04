@@ -30,13 +30,6 @@ export const pjiDefinition = Object.freeze({
       Object.freeze({ id: "PJI-3-minor", label: "At least three minor criteria", minimumRequiredCount: 3, anyOf: pjiMinorCriteria })
     ]) })
   ]),
-  evidenceSections: Object.freeze([
-    Object.freeze({ id: "applicability", label: "Pathway applicability", evidenceIds: Object.freeze(["pji-organ-space-after-hpro-kpro"]) }),
-    Object.freeze({ id: "microbiology", label: "Microbiology", evidenceIds: Object.freeze(["pji-two-positive-specimens", "pji-single-specimen-organism"]) }),
-    Object.freeze({ id: "operative-pathology", label: "Operative or pathology findings", evidenceIds: Object.freeze(["pji-sinus-tract", "pji-purulence", "pji-other-gross-evidence", "pji-positive-histology"]) }),
-    Object.freeze({ id: "laboratory", label: "Laboratory evidence", evidenceIds: Object.freeze(["pji-elevated-crp-and-esr", "pji-leukocyte-esterase", "pji-elevated-synovial-pmn", "pji-alpha-defensin"]) }),
-    Object.freeze({ id: "diagnosis-treatment", label: "Physician diagnosis and treatment", evidenceIds: Object.freeze(["pji-physician-diagnosis"]) })
-  ]),
   exclusions: Object.freeze([]),
   notes: Object.freeze([
     Object.freeze({ id: "PJI-note-sinus", text: "A sinus tract is a narrow opening or passageway that can extend in any direction through soft tissue and results in dead space with potential for abscess formation.", source: pjiCriterionSource }),
