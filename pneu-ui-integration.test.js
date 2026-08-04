@@ -22,14 +22,14 @@ function dateContext(input, dob = "1980-01-01") { input.patientContext.dateOfBir
   assert.equal(PNEU_UI_REGISTRY.PNU3.implemented, true);
 });
 
-test("PNU1 renders any-patient and only the applicable age-specific OR criterion", () => {
+test("PNU1 renders a single active age-pathway criteria table", () => {
   const state = createPneuState(); dateContext(state.inputs.PNU1, "2025-06-01");
   let rendered = renderPneuAbstraction(state, "PNU1");
-  assert.match(rendered, /Criterion: PNU1 — Any patient/); assert.match(rendered, /Criterion: PNU1 — Infant ≤1 year/); assert.doesNotMatch(rendered, /Child &gt;1/);
+  assert.match(rendered, /pneu-criteria-table pnu1/); assert.match(rendered, /PNU1 — Infant ≤1 year/); assert.doesNotMatch(rendered, /Child &gt;1/);
   dateContext(state.inputs.PNU1, "2020-01-01"); rendered = renderPneuAbstraction(state, "PNU1");
   assert.match(rendered, /Child >1 through ≤12 years/); assert.doesNotMatch(rendered, /Infant ≤1 year/);
   dateContext(state.inputs.PNU1, "1980-01-01"); rendered = renderPneuAbstraction(state, "PNU1");
-  assert.equal((rendered.match(/data-pneu-criterion=/g) || []).length, 1);
+  assert.doesNotMatch(rendered, /data-pneu-criterion=/); assert.match(rendered, /Imaging Test Evidence/); assert.match(rendered, /Signs \/ Symptoms/);
 });
 
 test("PNU1 respiratory alternatives are visibly grouped and count once per bullet", () => {
@@ -49,23 +49,23 @@ test("infant and child criteria present their exact group minima", () => {
 test("guided imaging distinguishes sole available study from one entered study", () => {
   const state = createPneuState(); const input = state.inputs.PNU1; dateContext(input);
   assert.equal(input.soleAvailableImage, false); let rendered = renderPneuAbstraction(state, "PNU1");
-  assert.match(rendered, /This is the only available chest imaging study/); assert.match(rendered, /One additional serial imaging study/);
+  assert.match(rendered, /Qualifying one-study exception/);
   addPneuRecord(input, "imagingStudies"); rendered = renderPneuAbstraction(state, "PNU1");
-  assert.doesNotMatch(rendered, /This is the only available chest imaging study/); assert.match(rendered, /Persistence\/progression/);
+  assert.match(rendered, /Pattern/);
 });
 
-test("PNU2 renders exactly two coherent top-level OR algorithms", () => {
+test("PNU2 renders a three-column criteria table without main accordions", () => {
   const state = createPneuState(); dateContext(state.inputs.PNU2); const rendered = renderPneuAbstraction(state, "PNU2");
-  assert.equal((rendered.match(/class="pneu-main-criterion"/g) || []).length, 2);
-  assert.match(rendered, /Common bacterial or filamentous fungal pathogens/); assert.match(rendered, /Viral, Legionella, and other bacterial pneumonias/);
+  assert.match(rendered, /pneu-criteria-table pnu2/); assert.doesNotMatch(rendered, /class="pneu-main-criterion"/);
+  assert.match(rendered, /Common bacterial or filamentous fungal pathogens/);
   assert.match(rendered, /Meeting either complete PNU2 algorithm qualifies PNU2/);
-  assert.equal((rendered.match(/class="pneu-main-criterion"[^>]* open/g) || []).length, 1);
+  for (const heading of ["Imaging Test Evidence", "Signs / Symptoms", "Laboratory"]) assert.match(rendered, new RegExp(heading));
 });
 
 test("each PNU2 algorithm visibly requires imaging AND systemic AND respiratory AND laboratory", () => {
   const state = createPneuState(); dateContext(state.inputs.PNU2); const rendered = renderPneuAbstraction(state, "PNU2");
-  for (const phrase of ["Imaging — required", "Systemic findings — select at least ONE", "Respiratory findings — select at least ONE", "qualifying laboratory pathway", "qualifying definitive laboratory finding"]) assert.match(rendered, new RegExp(phrase));
-  assert.ok((rendered.match(/class="pneu-and"/g) || []).length >= 6);
+  for (const phrase of ["Required study pattern", "Systemic findings — select at least ONE", "Respiratory findings — select at least ONE", "qualifying laboratory pathway"]) assert.match(rendered, new RegExp(phrase));
+  assert.ok((rendered.match(/class="pneu-and"/g) || []).length >= 1);
 });
 
 test("laboratory alternatives reveal only fields relevant to the selected algorithm", () => {
@@ -86,8 +86,8 @@ test("normal UI uses field-level human validation and hides technical paths", ()
 
 test("status reports the closest viable criterion without emphasizing all alternatives", () => {
   const state = createPneuState(); const input = state.inputs.PNU1; dateContext(input); const rendered = renderPneuAbstraction(state, "PNU1");
-  assert.match(rendered, /PNU1 Not Met/); assert.match(rendered, /Closest viable criterion/); assert.match(rendered, /Still needed/);
-  assert.equal((rendered.match(/class="pneu-main-criterion"[^>]* open/g) || []).length, 1);
+  assert.match(rendered, /PNU1 — NOT MET/); assert.match(rendered, /Still needed/);
+  assert.doesNotMatch(rendered, /class="pneu-main-criterion"/);
 });
 
 test("no raw JSON is in normal UI and no evidence dates are preloaded or invented", () => {
@@ -120,7 +120,7 @@ test("PNEU remains isolated from Chapter 17 LRI-LUNG", () => {
 test("PNU3 renders the manual host, imaging, clinical, and laboratory columns", () => {
   const state = createPneuState(); const input = state.inputs.PNU3; dateContext(input);
   const rendered = renderPneuAbstraction(state, "PNU3");
-  assert.match(rendered, /pneu-manual-grid pnu3/); assert.match(rendered, /Immunocompromised host eligibility/);
+  assert.match(rendered, /pneu-criteria-table pnu3/); assert.match(rendered, /Immunocompromised host eligibility/);
   assert.match(rendered, /Clinical findings — select at least ONE/); assert.match(rendered, /Laboratory evidence — select at least ONE pathway/);
   assert.doesNotMatch(rendered, /Not yet implemented/);
 });
