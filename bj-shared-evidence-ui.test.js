@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { renderCompactMenEvidence } from "./secondary-evidence-ui.js";
 import { evaluateSecondarySite, selectSecondarySite } from "./secondary/evaluator.js";
 import { secondarySiteDefinitions } from "./secondary/registry.js";
@@ -16,65 +17,85 @@ const expectedSnapshots = Object.freeze({
 function atoms(definition) {
   return definition.criteria.flatMap((criterion) => [...criterion.allOf, ...(criterion.groups || []).flatMap((group) => group.anyOf.flatMap((entry) => entry.anyOf || [entry]))]);
 }
-function render(siteCode, evidence = {}) {
+function render(siteCode, evidence = {}, openCriterion = "") {
   const definition = secondarySiteDefinitions[siteCode];
-  return renderCompactMenEvidence({ definition, evaluation: evaluateSecondarySite({ siteCode, evidence }), evidence });
+  return renderCompactMenEvidence({ definition, evaluation: evaluateSecondarySite({ siteCode, evidence }), evidence, openCriterion });
 }
-function checkboxIds(html) { return [...html.matchAll(/<input\b[^>]*data-evidence-id="([^"]+)"[^>]*>/g)].map((match) => match[1]); }
+function criterionHtml(html, criterionId) {
+  const start = html.indexOf(`data-men-criterion="${criterionId}"`);
+  assert.notEqual(start, -1, criterionId);
+  const end = html.indexOf("</details>", start);
+  return html.slice(start, end);
+}
 
-test("every BJ evidence fact renders exactly once and no rendered IDs are duplicated", () => {
+test("BJ restores criterion-owned controls without detached evidence or pathway blocks", () => {
   for (const siteCode of sites) {
-    const definition = secondarySiteDefinitions[siteCode];
-    const expected = new Set([...atoms(definition).map(({ id }) => id), ...definition.exclusions.map(({ id }) => id)]);
-    const ids = checkboxIds(render(siteCode));
-    assert.equal(ids.length, expected.size, siteCode);
-    assert.deepEqual(new Set(ids), expected, siteCode);
+    const html = render(siteCode);
+    assert.doesNotMatch(html, /data-evidence-section=|secondary-shared-evidence|secondary-criterion-pathways|Qualifying criterion pathways/);
+    for (const criterion of secondarySiteDefinitions[siteCode].criteria) {
+      const section = criterionHtml(html, criterion.id);
+      for (const item of [...criterion.allOf, ...(criterion.groups || []).flatMap((group) => group.anyOf.flatMap((entry) => entry.anyOf || [entry]))]) {
+        assert.match(section, new RegExp(`data-evidence-id="${item.id}"`), `${criterion.id}: ${item.id}`);
+      }
+      assert.match(section, /Status/);
+      assert.match(section, /Source/);
+    }
   }
 });
 
-test("shared evidence IDs explicitly map to every legitimate criterion reference", () => {
-  const expected = {
-    "bone-fever": ["BONE-3a-definitive", "BONE-3a-equivocal", "BONE-3b-definitive", "BONE-3b-equivocal", "BONE-3c"],
-    "disc-fever": ["DISC-3a-definitive", "DISC-3a-equivocal", "DISC-3b-definitive", "DISC-3b-equivocal"],
-    "jnt-suspected-infection": ["JNT-3a", "JNT-3c", "JNT-3d-definitive", "JNT-3d-equivocal"],
-    "pji-organ-space-after-hpro-kpro": ["PJI-1", "PJI-2", "PJI-3"]
-  };
-  for (const [id, criterionIds] of Object.entries(expected)) {
-    const definition = Object.values(secondarySiteDefinitions).find((entry) => atoms(entry).some((atom) => atom.id === id));
-    const actual = definition.criteria.filter((criterion) => atoms({ criteria: [criterion] }).some((atom) => atom.id === id)).map(({ id: criterionId }) => criterionId);
-    assert.deepEqual(actual, criterionIds, id);
-    assert.equal(checkboxIds(render(definition.siteCode)).filter((renderedId) => renderedId === id).length, 1);
-  }
+test("exactly one BJ criterion accordion is open and an explicit choice wins", () => {
+  for (const siteCode of sites) assert.equal((render(siteCode).match(/data-men-criterion="[^"]+" open/g) || []).length, 1, siteCode);
+  const html = render("BONE", {}, "BONE-3b-definitive");
+  assert.match(html, /data-men-criterion="BONE-3b-definitive" open/);
+  assert.equal((html.match(/data-men-criterion="[^"]+" open/g) || []).length, 1);
+  const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
+  assert.match(app, /if \(usesCriterionCenteredBjReview\).*if \(other !== details\) other\.open = false/);
 });
 
-test("one finding is shared across branches but cannot satisfy a two-finding group twice", () => {
+test("shared facts render in each criterion and synchronize through one evidence ID", () => {
+  const unchecked = render("BONE");
+  const checked = render("BONE", { "bone-fever": "met" });
+  assert.equal((unchecked.match(/data-evidence-id="bone-fever"/g) || []).length, 5);
+  assert.equal((checked.match(/data-evidence-id="bone-fever" checked/g) || []).length, 5);
+  assert.match(readFileSync(new URL("./app.js", import.meta.url), "utf8"), /state\.siteEvidence\[input\.dataset\.evidenceId\]/);
+});
+
+test("one shared finding cannot count twice inside a two-finding criterion", () => {
   const oneFinding = { "bone-fever": "met", "bone-definitive-imaging": "met" };
   assert.equal(evaluateSecondarySite({ siteCode: "BONE", evidence: oneFinding }).siteDefinitionMet, false);
-  assert.match(render("BONE", oneFinding), /One qualifying finding from/);
-  const twoFindings = { ...oneFinding, "bone-swelling": "met" };
-  assert.equal(evaluateSecondarySite({ siteCode: "BONE", evidence: twoFindings }).metCriterion, "BONE-3b-definitive");
+  assert.match(criterionHtml(render("BONE", oneFinding), "BONE-3b-definitive"), /One still needed/);
+  assert.equal(evaluateSecondarySite({ siteCode: "BONE", evidence: { ...oneFinding, "bone-swelling": "met" } }).metCriterion, "BONE-3b-definitive");
 });
 
-test("branch-specific imaging, diagnosis, and treatment evidence remains separate", () => {
-  const boneIds = checkboxIds(render("BONE"));
-  for (const id of ["bone-definitive-imaging", "bone-equivocal-imaging", "bone-physician-diagnosis", "bone-antimicrobial-treatment"]) assert.equal(boneIds.filter((entry) => entry === id).length, 1);
-  assert.equal(evaluateSecondarySite({ siteCode: "BONE", evidence: { "bone-fever": "met", "bone-swelling": "met", "bone-equivocal-imaging": "met" } }).siteDefinitionMet, false);
+test("branch-specific evidence remains separate", () => {
+  const evidence = { "bone-equivocal-imaging": "met", "bone-physician-diagnosis": "met", "bone-gross-histopathologic-evidence": "met" };
+  const html = render("BONE", evidence);
+  assert.doesNotMatch(html, /data-evidence-id="bone-definitive-imaging" checked/);
+  assert.doesNotMatch(html, /data-evidence-id="bone-antimicrobial-treatment" checked/);
+  assert.doesNotMatch(html, /data-evidence-id="bone-site-organism" checked|data-evidence-id="bone-blood-organism" checked/);
+  assert.match(html, /data-evidence-id="bone-gross-histopathologic-evidence" checked/);
 });
 
-test("completed BJ criteria collapse and expose compact logic summaries", () => {
-  const html = render("BONE", { "bone-site-organism": "met" });
-  assert.match(html, /✓ Criterion 1 — organism identified from bone met/);
-  assert.doesNotMatch(html, /data-men-criterion="BONE-1" open/);
-  assert.match(html, /Still needed:/);
-  assert.equal((html.match(/bone-fever/g) || []).length, 1);
+test("BJ status uses the closest incomplete pathway and stops listing alternatives once met", () => {
+  const incomplete = render("BONE", { "bone-definitive-imaging": "met", "bone-fever": "met" });
+  assert.match(incomplete, /Closest pathway: Criterion 3b — localized findings and definitive imaging/);
+  assert.match(incomplete, /One qualifying finding/);
+  const met = render("BONE", { "bone-site-organism": "met" });
+  assert.match(met, /BONE Site Definition Met/);
+  assert.doesNotMatch(met.slice(0, met.indexOf('data-men-renderer')), /Closest pathway:|Still needed:/);
 });
 
-test("site switching clears BJ evidence and does not retain stale selections", () => {
+test("two-finding groups use accurate copy", () => {
+  assert.match(render("BONE"), /Select TWO qualifying findings\./);
+  assert.doesNotMatch(criterionHtml(render("BONE"), "BONE-3b-definitive"), /Select ONE qualifying supporting test/);
+});
+
+test("site switching clears evidence and prevents stale synchronized selections", () => {
   const state = { siteCode: "BONE", evidence: { "bone-fever": "met" }, organismRelationship: "yes", attributionTiming: "yes" };
   assert.deepEqual(selectSecondarySite(state, "DISC"), { ...state, siteCode: "DISC", evidence: {}, organismRelationship: "", attributionTiming: "" });
 });
 
-test("exhaustive before-and-after evaluator snapshots remain identical", () => {
+test("exhaustive evaluator snapshots are unchanged for every BJ pathway", () => {
   for (const siteCode of sites) {
     const definition = secondarySiteDefinitions[siteCode];
     const ids = [...new Set([...atoms(definition).map(({ id }) => id), ...definition.exclusions.map(({ id }) => id)])];
@@ -88,9 +109,18 @@ test("exhaustive before-and-after evaluator snapshots remain identical", () => {
   }
 });
 
-test("non-BJ rendering retains criterion-local evidence presentation", () => {
+test("non-BJ rendering retains its prior multi-open presentation", () => {
   const html = render("MEN");
-  assert.doesNotMatch(html, /data-evidence-section=/);
+  assert.equal((html.match(/data-men-criterion="MEN-[^"]+" open/g) || []).length, 2);
   assert.match(html, /Select findings from TWO different groups/);
   assert.match(html, /Select ONE qualifying supporting test/);
+  assert.doesNotMatch(html, /Closest pathway:/);
+});
+
+test("safe BJ renders produce no console errors", () => {
+  const original = console.error;
+  const errors = [];
+  console.error = (...args) => errors.push(args);
+  try { for (const siteCode of sites) render(siteCode); } finally { console.error = original; }
+  assert.deepEqual(errors, []);
 });

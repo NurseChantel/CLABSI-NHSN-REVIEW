@@ -1,5 +1,25 @@
 # BJ shared-evidence presentation audit
 
+## Rollback finding (2026-08-04)
+
+Git history identifies commit `56a86df16280d035541cac8d3c0c791bdfa5ad07`
+as the last known-good criterion-centered presentation. It is the direct parent
+of `b464b61` (`Refactor BJ evidence review presentation`), which introduced the
+detached renderer in `secondary-evidence-ui.js`, global `evidenceSections` in
+the four BJ definitions, the pathway-summary renderer, and its presentation
+tests. The repair therefore restores only `secondary-evidence-ui.js` and
+`secondary/definitions/{bone,disc,jnt,pji}.js` behavior rather than reverting
+the repository. `app.js` needs only accordion coordination and evidence-ID
+state synchronization; no evaluator file is involved.
+
+The post-refactor discrepancy is presentation-only: evidence was detached from
+the criteria it supports, criterion accordions became missing-requirement cards,
+and repeated facts disappeared from their criterion context. The definitions
+already give exact repeated statements the same evidence ID, so no schema or
+surveillance-rule change is needed. The repaired renderer repeats those controls
+inside each applicable criterion while each instance reads and writes the same
+state key.
+
 ## Scope and source review
 
 This presentation-only audit covers BONE, DISC, JNT, and PJI. The applicable
