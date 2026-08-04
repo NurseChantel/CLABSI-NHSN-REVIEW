@@ -607,6 +607,7 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 
 .result-details{margin-top:12px}
 .result-details ul{margin:0;padding-left:18px;color:var(--muted)}
+.secondary-criterion-alternatives{display:grid;gap:10px;padding:10px}.secondary-criterion-branch{border:1px solid var(--line);border-radius:8px;overflow:hidden}.secondary-criterion-branch>h4{margin:0;padding:9px 11px;background:#f4f7fa}.secondary-criterion-branch>.secondary-criterion-body{padding:10px}
 .result-actions{display:flex;gap:7px;margin-top:15px}
 .small-action{
   min-height:34px;
