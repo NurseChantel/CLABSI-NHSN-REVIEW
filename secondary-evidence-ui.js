@@ -1,8 +1,9 @@
-export const COMPACT_MEN_RENDERER_VERSION = "Rendering compact MEN evidence UI v5";
+export const COMPACT_MEN_RENDERER_VERSION = "Rendering compact MEN evidence UI v4";
 
 const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
 const numberWord = (value) => ({ 1: "One", 2: "Two", 3: "Three" })[value] || String(value);
 const qualificationNoteIdsByCriterion = Object.freeze({ "MEN-1": ["MEN-note-shunt"], "MEN-2": ["MEN-note-group-i", "MEN-note-seizures"], "MEN-3": ["MEN-note-group-i", "MEN-note-seizures"] });
+const criterionBranchId = (criterion, alternative) => alternative ? `${criterion.id}:${alternative.id}` : criterion.id;
 
 export function getVisibleMenCriteria(criteria, patientAge) {
   return criteria.filter((criterion) => criterion.ageApplicability === "infant" ? patientAge === "infant" : criterion.id === "MEN-2" ? patientAge !== "infant" : criterion.id === "MEN-3" ? patientAge === "infant" : true);
@@ -42,19 +43,35 @@ function renderRequirement(group, evidence) {
     : group.anyOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("");
   return `<section class="secondary-requirement ${progress.met ? "satisfied" : ""}"><header><h5>${escapeHtml(group.label)}</h5><span>Requirement: ${progress.required}${progress.grouped ? " groups" : ""}</span></header><p class="secondary-instruction">${instruction}</p>${content}<strong class="secondary-requirement-status">${progress.met ? "✓ Requirement satisfied" : `${numberWord(progress.remaining)} still needed`}</strong></section>`;
 }
+function branchAtoms(branch) {
+  return [...branch.allOf, ...(branch.groups || []).flatMap((group) => group.anyOf.flatMap((item) => item.anyOf || [item]))];
+}
 function criterionScore(criterion, evidence) {
-  const atoms = [...criterion.allOf, ...(criterion.groups || []).flatMap((group) => group.anyOf.flatMap((item) => item.anyOf || [item]))];
+  const ownAtoms = branchAtoms(criterion);
+  const alternativeAtoms = (criterion.alternatives || []).flatMap(branchAtoms);
+  const atoms = [...ownAtoms, ...alternativeAtoms];
   return atoms.length ? atoms.filter((item) => evidenceMet(item, evidence)).length / atoms.length : 0;
 }
-function criterionRemaining(criterion, evidence) {
-  const unmetAll = criterion.allOf.filter((item) => !evidenceMet(item, evidence));
-  const conciseSingleRequirement = !criterion.groups?.length && unmetAll.length === 1 ? criterion.label.split(" — ").slice(1).join(" — ") : "";
+function branchRemaining(branch, evidence) {
+  const unmetAll = branch.allOf.filter((item) => !evidenceMet(item, evidence));
+  const conciseSingleRequirement = !branch.groups?.length && unmetAll.length === 1 ? branch.label.split(" — ").slice(1).join(" — ") : "";
   const remaining = conciseSingleRequirement ? [conciseSingleRequirement] : unmetAll.map((item) => item.label);
-  for (const group of criterion.groups || []) {
+  for (const group of branch.groups || []) {
     const progress = getRequirementPresentation(group, evidence);
     if (!progress.met) remaining.push(progress.grouped ? `${numberWord(progress.remaining)} additional finding group${progress.remaining === 1 ? "" : "s"}` : `${numberWord(progress.remaining)} qualifying finding${progress.remaining === 1 ? "" : "s"} from “${group.label}”`);
   }
   return remaining;
+}
+function criterionRemaining(criterion, evidence) {
+  const base = branchRemaining(criterion, evidence);
+  if (!criterion.alternatives?.length) return base;
+  if (base.length) return base;
+  return criterion.alternatives.map((alternative) => branchRemaining(alternative, evidence)).sort((a, b) => a.length - b.length)[0] || [];
+}
+function renderAlternativeBranch(criterion, alternative, evidence, completeCriterion) {
+  const complete = completeCriterion && branchRemaining(criterion, evidence).length === 0 && branchRemaining(alternative, evidence).length === 0;
+  const remaining = complete ? [] : branchRemaining(alternative, evidence);
+  return `<section class="secondary-criterion-branch" data-criterion-branch="${escapeHtml(criterionBranchId(criterion, alternative))}"><h4>${complete ? "✓ " : ""}${escapeHtml(alternative.label)}</h4><div class="secondary-criterion-body">${alternative.allOf.length ? `<section class="secondary-requirement"><header><h5>Required evidence</h5></header>${alternative.allOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>` : ""}${(alternative.groups || []).map((group) => renderRequirement(group, evidence)).join("")}<section class="secondary-criterion-status"><h5>Status</h5><strong>${complete ? "✓ Criterion met" : "Incomplete"}</strong>${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</section></div></section>`;
 }
 function renderCriterion(criterion, evidence, evaluation, manuallyOpen, notes, { criterionCentered = false, defaultOpen = false } = {}) {
   const complete = evaluation.metCriterion === criterion.id;
@@ -62,7 +79,8 @@ function renderCriterion(criterion, evidence, evaluation, manuallyOpen, notes, {
   const title = `${complete ? "✓ " : ""}${criterion.label}`;
   const remaining = criterionCentered && !complete ? criterionRemaining(criterion, evidence) : [];
   const status = criterionCentered ? `<section class="secondary-criterion-status"><h5>Status</h5><strong>${complete ? "✓ Criterion met" : "Incomplete"}</strong>${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</section>` : "";
-  return `<details class="secondary-criterion" data-men-criterion="${criterion.id}" ${open ? "open" : ""}><summary><span class="secondary-criterion-title">${escapeHtml(title)}${renderQualificationNotes(criterion, notes)}</span><small>${complete ? "Met" : "Incomplete"}</small></summary><div class="secondary-criterion-body">${criterion.allOf.length ? `<section class="secondary-requirement"><header><h5>Required evidence</h5></header>${criterion.allOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>` : ""}${(criterion.groups || []).map((group) => renderRequirement(group, evidence)).join("")}${status}</div></details>`;
+  const alternatives = criterion.alternatives?.length ? `<div class="secondary-criterion-alternatives"><p class="secondary-instruction">Meet either imaging pathway below.</p>${criterion.alternatives.map((alternative) => renderAlternativeBranch(criterion, alternative, evidence, complete)).join("")}</div>` : "";
+  return `<details class="secondary-criterion" data-men-criterion="${criterion.id}" ${open ? "open" : ""}><summary><span class="secondary-criterion-title">${escapeHtml(title)}${renderQualificationNotes(criterion, notes)}</span><small>${complete ? "Met" : "Incomplete"}</small></summary><div class="secondary-criterion-body">${criterion.allOf.length ? `<section class="secondary-requirement"><header><h5>Required evidence</h5></header>${criterion.allOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>` : ""}${(criterion.groups || []).map((group) => renderRequirement(group, evidence)).join("")}${alternatives}${status}</div></details>`;
 }
 function renderImagingCriterionGroup(criteria, evidence, evaluation, openCriteria, defaultOpenCriterion) {
   const [siteCode, criterionNumber] = criteria[0].id.match(/^([A-Z]+)-(3[a-d])-/)?.slice(1) || [];
@@ -89,7 +107,7 @@ export function renderCompactMenEvidence({ definition, evaluation, patientAge, e
   const remaining = evaluation.siteDefinitionMet ? [] : criterionRemaining(closest, evidence);
   const status = `<div class="secondary-site-status ${evaluation.siteDefinitionMet ? "met" : "incomplete"}" role="status" aria-live="polite"><strong>${evaluation.siteDefinitionMet ? `🟢 ${escapeHtml(definition.siteCode)} Site Definition Met` : `🟡 ${escapeHtml(definition.siteCode)} Site Definition Not Met`}</strong>${criterionCentered && !evaluation.siteDefinitionMet ? `<span>Closest pathway: ${escapeHtml(closest.label)}</span>` : ""}${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</div>`;
   const defaultOpenCriterion = evaluation.metCriterion || closest.id;
-  const groupedImagingCriteria = Object.freeze({ BONE: /^BONE-(3[ab])-/, DISC: /^DISC-(3b)-/, JNT: /^JNT-(3d)-/ });
+  const groupedImagingCriteria = Object.freeze({ BONE: /^BONE-(3[ab])-/ });
   const criterionMarkup = groupedImagingCriteria[definition.siteCode]
     ? [...criteria.reduce((groups, criterion) => {
       const groupedId = criterion.id.match(groupedImagingCriteria[definition.siteCode])?.[1];

@@ -205,10 +205,12 @@ test("malformed protocol data returns controlled validation errors", () => {
 function collectEvidence(definition) {
   const ids = new Set();
   for (const criterion of definition.criteria) {
-    for (const atom of criterion.allOf) ids.add(atom.id);
-    for (const group of criterion.groups || []) for (const entry of group.anyOf) {
-      if (entry.anyOf) for (const atom of entry.anyOf) ids.add(atom.id);
-      else ids.add(entry.id);
+    for (const branch of [criterion, ...(criterion.alternatives || [])]) {
+      for (const atom of branch.allOf) ids.add(atom.id);
+      for (const group of branch.groups || []) for (const entry of group.anyOf) {
+        if (entry.anyOf) for (const atom of entry.anyOf) ids.add(atom.id);
+        else ids.add(entry.id);
+      }
     }
   }
   return Object.fromEntries([...ids].map(id => [id, "met"]));

@@ -22,8 +22,8 @@ test("JNT 3 preserves suspected infection AND two findings AND one supporting al
 
 test("JNT blood and imaging alternatives preserve their distinct requirements", () => {
   assert.equal(evaluate({ ...suspected, "jnt-blood-organism": "met" }).metCriterion, "JNT-3c");
-  assert.equal(evaluate({ ...suspected, "jnt-definitive-imaging": "met" }).metCriterion, "JNT-3d-definitive");
-  assert.equal(evaluate({ ...suspected, "jnt-equivocal-imaging": "met", "jnt-antimicrobial-treatment": "met" }).metCriterion, "JNT-3d-equivocal");
+  assert.equal(evaluate({ ...suspected, "jnt-definitive-imaging": "met" }).metCriterion, "JNT-3d");
+  assert.equal(evaluate({ ...suspected, "jnt-equivocal-imaging": "met", "jnt-antimicrobial-treatment": "met" }).metCriterion, "JNT-3d");
   assert.equal(evaluate({ ...suspected, "jnt-equivocal-imaging": "met" }).siteDefinitionMet, false);
 });
 
