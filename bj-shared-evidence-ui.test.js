@@ -17,12 +17,13 @@ const expectedSnapshots = Object.freeze({
 function atoms(definition) {
   return definition.criteria.flatMap((criterion) => [...criterion.allOf, ...(criterion.groups || []).flatMap((group) => group.anyOf.flatMap((entry) => entry.anyOf || [entry]))]);
 }
-function render(siteCode, evidence = {}, openCriterion = "") {
+function render(siteCode, evidence = {}, openCriterion = "", openCriteria) {
   const definition = secondarySiteDefinitions[siteCode];
-  return renderCompactMenEvidence({ definition, evaluation: evaluateSecondarySite({ siteCode, evidence }), evidence, openCriterion });
+  return renderCompactMenEvidence({ definition, evaluation: evaluateSecondarySite({ siteCode, evidence }), evidence, openCriterion, openCriteria });
 }
 function criterionHtml(html, criterionId) {
-  const start = html.indexOf(`data-men-criterion="${criterionId}"`);
+  const presentationId = criterionId.replace(/^(BONE-3[ab])-.+$/, "$1");
+  const start = html.indexOf(`data-men-criterion="${presentationId}"`);
   assert.notEqual(start, -1, criterionId);
   const end = html.indexOf("</details>", start);
   return html.slice(start, end);
@@ -55,13 +56,25 @@ test("every BJ criterion body contains evidence controls and only criterion revi
   }
 });
 
-test("exactly one BJ criterion accordion is open and an explicit choice wins", () => {
+test("BJ criteria do not auto-collapse and preserve multiple explicit open sections", () => {
   for (const siteCode of sites) assert.equal((render(siteCode).match(/data-men-criterion="[^"]+" open/g) || []).length, 1, siteCode);
-  const html = render("BONE", {}, "BONE-3b-definitive");
-  assert.match(html, /data-men-criterion="BONE-3b-definitive" open/);
-  assert.equal((html.match(/data-men-criterion="[^"]+" open/g) || []).length, 1);
+  const html = render("BONE", {}, "", ["BONE-3a", "BONE-3b"]);
+  assert.match(html, /data-men-criterion="BONE-3a" open/);
+  assert.match(html, /data-men-criterion="BONE-3b" open/);
+  assert.equal((html.match(/data-men-criterion="[^"]+" open/g) || []).length, 2);
   const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
-  assert.match(app, /if \(usesCriterionCenteredBjReview\).*if \(other !== details\) other\.open = false/);
+  assert.doesNotMatch(app, /other\.open = false/);
+  assert.match(app, /state\.openBjCriteria = \[\.\.\.open\]/);
+});
+
+test("BONE presents criterion 3a and 3b once with explicit imaging alternatives", () => {
+  const html = render("BONE");
+  assert.equal((html.match(/data-men-criterion="BONE-3a"/g) || []).length, 1);
+  assert.equal((html.match(/data-men-criterion="BONE-3b"/g) || []).length, 1);
+  assert.equal((html.match(/>Criterion 3a —/g) || []).length, 1);
+  assert.equal((html.match(/>Criterion 3b —/g) || []).length, 1);
+  for (const branch of ["BONE-3a-definitive", "BONE-3a-equivocal", "BONE-3b-definitive", "BONE-3b-equivocal"]) assert.match(html, new RegExp(`data-criterion-branch="${branch}"`));
+  assert.match(html, /Meet either imaging pathway below\./);
 });
 
 test("shared facts render in each criterion and synchronize through one evidence ID", () => {
