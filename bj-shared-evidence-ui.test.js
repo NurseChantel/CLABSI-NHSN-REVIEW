@@ -9,8 +9,8 @@ import { secondarySiteDefinitions } from "./secondary/registry.js";
 const sites = ["BONE", "DISC", "JNT", "PJI"];
 const expectedSnapshots = Object.freeze({
   BONE: "320d2d86a461c504fadffa8c343a4705d0ddda61b847b6a30b575b9c742e0952",
-  DISC: "7f89ef3e3f6b690c87938bf6621fee7854d11cb3e09359995d43592921b9be2a",
-  JNT: "31b19ae5bce89bf0c55b5d4d18d2ae42aa6cfb301dd5417f96d1d14e4726fb8c",
+  DISC: "94d2cb6ad525edd8c9d0c4e575af9ef40a07bdd0fd82bba5f3cb2c4300eea885",
+  JNT: "aff126d3eea09702da7632a17638ba62fd5732b455fd63cfb7b5347e5686cb84",
   PJI: "801be8b46886a40cf0318d861db70f16c4ebc5699afa2a3b096f8064cdd1555f"
 });
 
@@ -24,8 +24,8 @@ function render(siteCode, evidence = {}, openCriterion = "", openCriteria) {
 function criterionHtml(html, criterionId) {
   const presentationId = criterionId
     .replace(/^(BONE-3[ab])-.+$/, "$1")
-    .replace(/^(DISC-3b)-.+$/, "$1")
-    .replace(/^(JNT-3d)-.+$/, "$1");
+    .replace(/^(DISC-3b):.+$/, "$1")
+    .replace(/^(JNT-3d):.+$/, "$1");
   const start = html.indexOf(`data-men-criterion="${presentationId}"`);
   assert.notEqual(start, -1, criterionId);
   const end = html.indexOf("</details>", start);
@@ -85,7 +85,7 @@ test("DISC 3b and JNT 3d each render once with explicit imaging alternatives", (
     const html = render(siteCode);
     assert.equal((html.match(new RegExp(`data-men-criterion="${siteCode}-${criterionNumber}"`, "g")) || []).length, 1);
     assert.equal((html.match(new RegExp(`>Criterion ${criterionNumber} —`, "g")) || []).length, 1);
-    for (const branch of ["definitive", "equivocal"]) assert.match(html, new RegExp(`data-criterion-branch="${siteCode}-${criterionNumber}-${branch}"`));
+    for (const branch of ["definitive-imaging", "equivocal-imaging"]) assert.match(html, new RegExp(`data-criterion-branch="${siteCode}-${criterionNumber}:${branch}"`));
     assert.match(html, /Meet either imaging pathway below\./);
   }
 });

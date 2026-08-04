@@ -28,15 +28,17 @@ export const jntDefinition = Object.freeze({
       jntItem("jnt-suspected-infection", "Suspected joint or bursa infection"),
       jntItem("jnt-blood-organism", "Organism(s) identified from blood by culture or non-culture based microbiologic testing performed for purposes of clinical diagnosis and treatment (not ASC/AST)")
     ]), groups: Object.freeze([jntFindingsGroup]) }),
-    Object.freeze({ id: "JNT-3d-definitive", label: "Criterion 3d — suspected infection, findings, and definitive imaging", source: jntCriterionSource, allOf: Object.freeze([
-      jntItem("jnt-suspected-infection", "Suspected joint or bursa infection"),
-      jntItem("jnt-definitive-imaging", "Imaging test evidence definitive for infection (for example, x-ray, CT scan, MRI, or radiolabel scan [gallium, technetium, etc.])")
-    ]), groups: Object.freeze([jntFindingsGroup]) }),
-    Object.freeze({ id: "JNT-3d-equivocal", label: "Criterion 3d — suspected infection, findings, and clinically correlated equivocal imaging", source: jntCriterionSource, allOf: Object.freeze([
-      jntItem("jnt-suspected-infection", "Suspected joint or bursa infection"),
-      jntItem("jnt-equivocal-imaging", "Imaging test evidence for infection is equivocal"),
-      jntItem("jnt-antimicrobial-treatment", "Physician or physician-designee documentation of antimicrobial treatment for joint or bursa infection")
-    ]), groups: Object.freeze([jntFindingsGroup]) })
+    Object.freeze({ id: "JNT-3d", label: "Criterion 3d — suspected infection, findings, and imaging", source: jntCriterionSource, allOf: Object.freeze([
+      jntItem("jnt-suspected-infection", "Suspected joint or bursa infection")
+    ]), groups: Object.freeze([jntFindingsGroup]), alternatives: Object.freeze([
+      Object.freeze({ id: "definitive-imaging", label: "Definitive imaging pathway", source: jntCriterionSource, allOf: Object.freeze([
+        jntItem("jnt-definitive-imaging", "Imaging test evidence definitive for infection (for example, x-ray, CT scan, MRI, or radiolabel scan [gallium, technetium, etc.])")
+      ]), groups: Object.freeze([]) }),
+      Object.freeze({ id: "equivocal-imaging", label: "Equivocal imaging pathway", source: jntCriterionSource, allOf: Object.freeze([
+        jntItem("jnt-equivocal-imaging", "Imaging test evidence for infection is equivocal"),
+        jntItem("jnt-antimicrobial-treatment", "Physician or physician-designee documentation of antimicrobial treatment for joint or bursa infection")
+      ]), groups: Object.freeze([]) })
+    ]) })
   ]),
   exclusions: Object.freeze([
     jntItem("other-recognized-cause", "Another recognized cause applies to a sign or symptom marked by NHSN with an asterisk", { type: "exclusion" }),
