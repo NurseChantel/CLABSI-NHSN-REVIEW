@@ -76,7 +76,7 @@ test("the canonical compact renderer handles incomplete and met CONJ states", ()
   const incomplete = renderCompactMenEvidence({ definition: conjDefinition, evaluation: evaluate(partial), patientAge: "adult", evidence: partial });
   assert.match(incomplete, /🟡 CONJ Site Definition Not Met/);
   assert.match(incomplete, /Still needed:/);
-  assert.match(incomplete, /supporting test/);
+  assert.match(incomplete, /qualifying microbiologic, laboratory, or exudate finding/);
   const complete = { ...partial, "conj-purulent-exudate": "met" };
   const met = renderCompactMenEvidence({ definition: conjDefinition, evaluation: evaluate(complete), patientAge: "adult", evidence: complete });
   assert.match(met, /🟢 CONJ Site Definition Met/);

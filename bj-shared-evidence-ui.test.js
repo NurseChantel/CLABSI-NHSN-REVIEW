@@ -92,7 +92,7 @@ test("DISC 3b and JNT 3d each render once with explicit imaging alternatives", (
     assert.equal((html.match(new RegExp(`data-men-criterion="${siteCode}-${criterionNumber}"`, "g")) || []).length, 1);
     assert.equal((html.match(new RegExp(`>Criterion ${criterionNumber} —`, "g")) || []).length, 1);
     for (const branch of ["definitive-imaging", "equivocal-imaging"]) assert.match(html, new RegExp(`data-criterion-branch="${siteCode}-${criterionNumber}:${branch}"`));
-    assert.match(html, /Meet either imaging pathway below\./);
+    assert.match(html, /Meet ONE complete pathway below\./);
   }
 });
 
@@ -129,9 +129,14 @@ test("BJ status uses the closest incomplete pathway and stops listing alternativ
   assert.doesNotMatch(met.slice(0, met.indexOf('data-men-renderer')), /Closest pathway:|Still needed:/);
 });
 
-test("two-finding groups use accurate copy", () => {
-  assert.match(render("BONE"), /Select TWO qualifying findings\./);
-  assert.doesNotMatch(criterionHtml(render("BONE"), "BONE-3b-definitive"), /Select ONE qualifying supporting test/);
+// The requirement instruction is derived from the requirement itself. It must not name a
+// specific kind of evidence, because these groups hold signs, symptoms, laboratory
+// results, imaging findings or minor criteria depending on the site.
+test("requirement instructions state the count without mislabelling the evidence type", () => {
+  assert.match(render("BONE"), /Select TWO of the following, from separate options\./);
+  assert.doesNotMatch(render("BONE"), /qualifying supporting test/);
+  assert.doesNotMatch(render("USI"), /qualifying supporting test/);
+  assert.match(render("USI"), /Select ONE of the following\./);
 });
 
 test("site switching clears evidence and prevents stale synchronized selections", () => {
@@ -157,7 +162,7 @@ test("non-BJ rendering retains its prior multi-open presentation", () => {
   const html = render("MEN");
   assert.equal((html.match(/data-men-criterion="MEN-[^"]+" open/g) || []).length, 2);
   assert.match(html, /Select findings from TWO different groups/);
-  assert.match(html, /Select ONE qualifying supporting test/);
+  assert.match(html, /Select ONE of the following\./);
   assert.doesNotMatch(html, /Closest pathway:/);
 });
 

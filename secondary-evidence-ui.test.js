@@ -79,11 +79,13 @@ test("routine MEN abstraction shows one consolidated reference and only qualific
 });
 
 
-test("live requirement presentation derives group and supporting-test progress from structured criteria", () => {
+test("live requirement presentation derives group and single-select progress from structured criteria", () => {
   const evidence = { suspected: "met", fever: "met", "meningeal-signs": "met", "csf-gram-stain": "met" };
   const container = renderMen("adult", evidence);
   assert.equal(container.textContent.includes("Select findings from TWO different groups."), true);
-  assert.equal(container.textContent.includes("Select ONE qualifying supporting test."), true);
+  assert.equal(container.textContent.includes("Select ONE of the following."), true);
+  // The MEN group header still names the evidence type; the instruction must not.
+  assert.equal(container.textContent.includes("At least one supporting test"), true);
   assert.equal(container.textContent.includes("✓ Group I"), true);
   assert.equal(container.textContent.includes("✓ Group II"), true);
   assert.equal(container.textContent.includes("☐ Group III"), true);

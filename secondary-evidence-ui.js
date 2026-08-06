@@ -33,11 +33,14 @@ function renderQualificationNotes(criterion, notes) {
 }
 function renderRequirement(group, evidence) {
   const progress = getRequirementPresentation(group, evidence);
+  // The instruction is derived from the requirement, not hardcoded: these groups hold
+  // signs, symptoms, laboratory results, imaging findings and minor criteria depending on
+  // the site, so naming any one of them here mislabels every other site's group.
   const instruction = progress.grouped
     ? `Select findings from ${numberWord(progress.required).toUpperCase()} different groups.`
     : progress.required === 1
-      ? "Select ONE qualifying supporting test."
-      : `Select ${numberWord(progress.required).toUpperCase()} qualifying findings.`;
+      ? "Select ONE of the following."
+      : `Select ${numberWord(progress.required).toUpperCase()} of the following, from separate options.`;
   const content = progress.grouped
     ? group.anyOf.map((branch, index) => `<section class="secondary-logic-group ${alternativeMet(branch, evidence) ? "satisfied" : ""}"><h6>${alternativeMet(branch, evidence) ? "✓" : "☐"} Group ${["I", "II", "III", "IV"][index] || index + 1}</h6><p>${escapeHtml(branch.label)}</p>${branch.anyOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>`).join("")
     : group.anyOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("");
@@ -79,7 +82,9 @@ function renderCriterion(criterion, evidence, evaluation, manuallyOpen, notes, {
   const title = `${complete ? "✓ " : ""}${criterion.label}`;
   const remaining = criterionCentered && !complete ? criterionRemaining(criterion, evidence) : [];
   const status = criterionCentered ? `<section class="secondary-criterion-status"><h5>Status</h5><strong>${complete ? "✓ Criterion met" : "Incomplete"}</strong>${remaining.length ? `<span>Still needed:</span><ul>${remaining.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}</section>` : "";
-  const alternatives = criterion.alternatives?.length ? `<div class="secondary-criterion-alternatives"><p class="secondary-instruction">Meet either imaging pathway below.</p>${criterion.alternatives.map((alternative) => renderAlternativeBranch(criterion, alternative, evidence, complete)).join("")}</div>` : "";
+  // Alternatives are not always imaging pathways — USI 3 offers purulent drainage as well
+  // — and there can be more than two, so the instruction counts them instead.
+  const alternatives = criterion.alternatives?.length ? `<div class="secondary-criterion-alternatives"><p class="secondary-instruction">Meet ONE complete pathway below.</p>${criterion.alternatives.map((alternative) => renderAlternativeBranch(criterion, alternative, evidence, complete)).join("")}</div>` : "";
   return `<details class="secondary-criterion" data-men-criterion="${criterion.id}" ${open ? "open" : ""}><summary><span class="secondary-criterion-title">${escapeHtml(title)}${renderQualificationNotes(criterion, notes)}</span><small>${complete ? "Met" : "Incomplete"}</small></summary><div class="secondary-criterion-body">${criterion.allOf.length ? `<section class="secondary-requirement"><header><h5>Required evidence</h5></header>${criterion.allOf.map((item) => renderEvidenceCheckbox(item, evidence)).join("")}</section>` : ""}${(criterion.groups || []).map((group) => renderRequirement(group, evidence)).join("")}${alternatives}${status}</div></details>`;
 }
 function renderImagingCriterionGroup(criteria, evidence, evaluation, openCriteria, defaultOpenCriterion) {
