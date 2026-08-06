@@ -896,3 +896,33 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 
 /* Long option text must not force a select wider than its column. */
 .pneu-manual-td select{text-overflow:ellipsis}
+
+/* ---------------------------------------------------------------------------
+   Organism eligibility — three states derived from the NHSN organism rules.
+   eligible: no organism restriction. conditional: the organism decides which
+   criterion is usable. not-eligible: the organism cannot meet the site at all.
+   --------------------------------------------------------------------------- */
+.site-button-grid button.eligible{border-color:var(--green);background:var(--green-soft);color:var(--green-dark)}
+.site-button-grid button.eligible::after{content:"Eligible";display:block;margin-top:2px;color:var(--green-dark);font-size:.6rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.site-button-grid button.conditional{border-color:#c99a2e;background:#fdf6e6;color:#6f5410}
+.site-button-grid button.conditional::after{content:"Check condition";display:block;margin-top:2px;color:#8a6a15;font-size:.6rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.site-button-grid button.not-eligible{border-color:#c9ced3;background:#f4f6f7;color:#78838c;opacity:.72}
+.site-button-grid button.not-eligible::after{content:"Not eligible";display:block;margin-top:2px;color:#8a949c;font-size:.6rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.site-button-grid button.eligible.selected{border-color:var(--green-dark);background:var(--green-dark);color:#fff}
+.site-button-grid button.eligible.selected::after,.site-button-grid button.conditional.selected::after{color:#fff}
+.site-button-grid button.conditional.selected{border-color:#8a6a15;background:#8a6a15;color:#fff}
+
+.eligibility-counts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.eligibility-chip{padding:2px 9px;border-radius:999px;font-size:.7rem;font-weight:800}
+.eligibility-chip.eligible{background:var(--green-soft);color:var(--green-dark)}
+.eligibility-chip.conditional{background:#fdf6e6;color:#6f5410}
+.eligibility-chip.not-eligible{background:#eef1f3;color:#68737c}
+.eligibility-list{display:grid;gap:7px;margin:7px 0 0;padding-left:18px;font-size:.8rem}
+.eligibility-list.plain{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:2px}
+.eligibility-list ul{margin:3px 0 0;padding-left:16px}
+.eligibility-list li{overflow-wrap:break-word}
+.eligibility-cite{display:inline-block;color:#66727b;font-size:.7rem;font-style:italic}
+#organismSuggestions details{margin-top:7px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fbfcfd}
+#organismSuggestions summary{font-weight:800;font-size:.8rem;cursor:pointer}
+.eligibility-organism-notes{display:grid;gap:5px;margin:7px 0;padding:8px 9px 8px 26px;border-left:3px solid #c99a2e;background:#fdf6e6;font-size:.79rem}
+.eligibility-organism-notes li{overflow-wrap:break-word}
