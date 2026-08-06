@@ -1,6 +1,7 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
 import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js?v=5";
+import { evaluateOrganismEligibility, summariseByCategory } from "./secondary/organism-eligibility.js";
 import { addLabAlternative, addPnu3CandidaPair, addPnu3Fungus, addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectBulletVariant as setBulletVariant, selectHostAlternative, selectLabAlternative, setLabOrganism, toggleClinicalFinding, toggleImageFinding, toggleManualBullet } from "./protocol/pneu-ui.js";
 
 "use strict";
@@ -24,6 +25,7 @@ const state = {
   siteEvidence: {},
   reviewFamily: "chapter17",
   pneu: createPneuState(),
+  organismEligibility: null,
   openMenCriterion: "",
   openBjCriteria: undefined,
   organismRelationship: "",
@@ -1060,79 +1062,96 @@ function renderPneuReview() {
   });
 }
 
+// Combines the per-site eligibility verdicts for every selected organism. A site is open
+// if ANY selected organism may be reviewed against it; it is only closed when every
+// selected organism is ineligible for it.
+function combineEligibility(records) {
+  const evaluations = records.map((record) => evaluateOrganismEligibility(record));
+  if (!evaluations.length) return null;
+  const byCode = {};
+  for (const code of evaluations[0].siteCodes) {
+    const verdicts = evaluations.map((evaluation) => evaluation.byCode[code]).filter(Boolean);
+    const open = verdicts.filter((verdict) => verdict.status !== "notEligible");
+    byCode[code] = {
+      status: open.length === 0 ? "notEligible" : open.some((verdict) => verdict.status === "conditional") ? "conditional" : "eligible",
+      reasons: verdicts.flatMap((verdict) => verdict.reasons)
+    };
+  }
+  return { byCode, siteCodes: evaluations[0].siteCodes, organismNotes: evaluations.flatMap((evaluation) => evaluation.organismNotes) };
+}
+
 function renderOrganismSuggestions() {
   const box = document.getElementById("organismSuggestions");
-  const organisms = state.organismNames;
-  const records = organisms.map((name) => organismRecords[name]).filter(Boolean);
-  const suggestedSiteKeys = new Set(records.flatMap((entry) => entry.priorityPathways).map(key => suggestionCategoryMap[key]).filter(Boolean));
+  const records = state.organismNames.map((name) => organismRecords[name]).filter(Boolean);
+  const eligibility = combineEligibility(records);
+  state.organismEligibility = eligibility;
 
-  renderSuggestedSiteButtons(suggestedSiteKeys);
+  renderSuggestedSiteButtons(eligibility);
 
-  if (!organisms.length) {
-    box.textContent =
-      "Enter a culture organism above to see suggested body systems to review.";
-
+  if (!records.length) {
+    box.textContent = "Enter a culture organism above to see which NHSN infection sites it is eligible for.";
     return;
   }
 
-  if (!suggestedSiteKeys.size) {
-    box.innerHTML = `
-      <strong>Source review:</strong>
-      No targeted suggestion is available for the selected organism(s).
-      Review the chart for any NHSN-defined site-specific infection.
-    `;
+  const entries = eligibility.siteCodes.map((code) => [code, eligibility.byCode[code]]);
+  const organismNotes = [...new Map(eligibility.organismNotes.map((item) => [item.text, item])).values()];
+  const eligible = entries.filter(([, verdict]) => verdict.status === "eligible");
+  const conditional = entries.filter(([, verdict]) => verdict.status === "conditional");
+  const notEligible = entries.filter(([, verdict]) => verdict.status === "notEligible");
 
-    return;
-  }
-
-  const labels = Array.from(suggestedSiteKeys).map(
-    (key) => siteLibrary[key].label
-  );
-
-  const notes = [...new Set(records.map((entry) => entry.guidance))];
+  const siteName = (code) => code === "PNEU" ? "PNEU / Pneumonia Event" : `${code} / ${secondarySiteDefinitions[code]?.siteName || code}`;
+  const list = (rows) => rows.map(([code, verdict]) => {
+    const unique = [...new Map(verdict.reasons.map((item) => [item.text, item])).values()];
+    const detail = unique.length ? `<ul>${unique.map((item) => `<li>${escapeHtml(item.text)} <span class="eligibility-cite">${escapeHtml(item.source.document)} ${escapeHtml(item.source.printedPage)}</span></li>`).join("")}</ul>` : "";
+    return `<li><strong>${escapeHtml(siteName(code))}</strong>${detail}</li>`;
+  }).join("");
 
   box.innerHTML = `
-    <strong>
-      Suggested chart-review starting points for selected organism(s):
-    </strong>
-
-    <ul>
-      ${labels
-        .map((label) => `<li>${escapeHtml(label)}</li>`)
-        .join("")}
-    </ul>
-
-    <p class="suggestion-rationale">
-      ${notes.map((note) => escapeHtml(note)).join(" ")}
-    </p>
-
+    <strong>NHSN site eligibility for the selected organism(s)</strong>
+    <p class="suggestion-rationale">A site definition is met by the specimen source, not by the organism alone, so most sites stay open. The entries below are the points where NHSN restricts this organism. Eligibility is a chart-review starting point and is never proof that a definition is met.</p>
+    ${organismNotes.length ? `<ul class="eligibility-organism-notes">${organismNotes.map((item) => `<li>${escapeHtml(item.text)} <span class="eligibility-cite">${escapeHtml(item.source.document)} ${escapeHtml(item.source.printedPage)}</span></li>`).join("")}</ul>` : ""}
+    <p class="eligibility-counts"><span class="eligibility-chip eligible">${eligible.length} eligible</span><span class="eligibility-chip conditional">${conditional.length} with organism conditions</span><span class="eligibility-chip not-eligible">${notEligible.length} not eligible</span></p>
+    ${conditional.length ? `<details open><summary>Sites with an organism condition (${conditional.length})</summary><ul class="eligibility-list">${list(conditional)}</ul></details>` : ""}
+    ${notEligible.length ? `<details><summary>Sites this organism cannot meet (${notEligible.length})</summary><ul class="eligibility-list">${list(notEligible)}</ul></details>` : ""}
+    ${eligible.length ? `<details><summary>Sites with no organism restriction (${eligible.length})</summary><ul class="eligibility-list plain">${eligible.map(([code]) => `<li>${escapeHtml(siteName(code))}</li>`).join("")}</ul></details>` : ""}
   `;
 }
 
-function renderSuggestedSiteButtons(suggestedSiteKeys) {
+function renderSuggestedSiteButtons(eligibility) {
   const buttons = document.querySelectorAll("#siteButtons button");
   const count = document.getElementById("pathwayCount");
   const help = document.getElementById("sourceReviewHelp");
-  const hasSelection = state.organismNames.length > 0;
-  const hasSuggestions = suggestedSiteKeys.size > 0;
+
+  if (!eligibility) {
+    buttons.forEach((button) => {
+      button.classList.remove("eligible", "conditional", "not-eligible", "suggested", "not-suggested");
+      button.removeAttribute("data-eligibility");
+    });
+    count.textContent = "All pathways";
+    help.textContent = "Select an organism to see which NHSN infection sites it is eligible for.";
+    return;
+  }
+
+  const categorySummary = summariseByCategory(eligibility, secondarySiteCategories);
+  const pneu = eligibility.byCode.PNEU;
 
   buttons.forEach((button) => {
-    const isSuggested = hasSuggestions && suggestedSiteKeys.has(button.dataset.category);
-    button.classList.toggle("suggested", isSuggested);
-    button.classList.toggle("not-suggested", hasSuggestions && !isSuggested);
-    button.setAttribute("data-suggested", String(isSuggested));
+    const summary = button.dataset.reviewFamily === "pneu" ? pneu && { status: pneu.status } : categorySummary[button.dataset.category];
+    const status = summary?.status || "eligible";
+    button.classList.remove("suggested", "not-suggested");
+    button.classList.toggle("eligible", status === "eligible");
+    button.classList.toggle("conditional", status === "conditional");
+    button.classList.toggle("not-eligible", status === "notEligible");
+    button.setAttribute("data-eligibility", status);
   });
 
-  if (!hasSelection) {
-    count.textContent = "All pathways";
-    help.textContent = "Select an organism to highlight the body-system pathways worth checking first.";
-  } else if (hasSuggestions) {
-    count.textContent = `${suggestedSiteKeys.size} suggested`;
-    help.textContent = "Highlighted pathways are organism-informed starting points. You can still review any clinically plausible source.";
-  } else {
-    count.textContent = "No targeted pathway";
-    help.textContent = "No organism-specific starting point is available; review every clinically plausible NHSN-defined site.";
-  }
+  const entries = eligibility.siteCodes.map((code) => eligibility.byCode[code]);
+  const open = entries.filter((verdict) => verdict.status !== "notEligible").length;
+  const conditional = entries.filter((verdict) => verdict.status === "conditional").length;
+  count.textContent = `${open} of ${entries.length} eligible`;
+  help.textContent = open === 0
+    ? "This organism is excluded from every NHSN definition, so no site can be met."
+    : `${conditional} site${conditional === 1 ? " has" : "s have"} an organism-specific condition. Eligibility reflects the NHSN organism rules only; a site is met by the specimen source and its full criterion.`;
 }
 
 function renderSiteGuide() {
@@ -1236,7 +1255,20 @@ function determineLcbi() {
 
 function getSecondaryEvaluation() { return evaluateSecondarySite({ siteCode: state.selectedSite, evidence: state.siteEvidence, organismRelationship: state.organismRelationship, attributionTiming: state.attributionTiming, patientAge: state.patientAge }); }
 function getSiteSpecificDefinitionStatus() { const evaluation = getSecondaryEvaluation(); if (evaluation.status === "siteNotSelected") return { status: "incomplete", met: false, label: "Site-specific definition incomplete", reason: state.selectedMajorCategory ? "Select a specific NHSN site code; the major category cannot qualify." : "Select a major category and then a specific NHSN site code." }; if (evaluation.status === "siteNotValidated") return { status: "incomplete", met: false, label: "Source validation required", reason: placeholderWarning }; if (evaluation.siteDefinitionMet) return { status: "met", met: true, label: `${state.selectedSite} site definition met`, reason: `${evaluation.metCriterion} is completely satisfied.` }; return { status: "incomplete", met: false, label: evaluation.status === "exclusionApplies" ? "Cannot qualify because an exclusion applies" : evaluation.status === "notStarted" ? "Not started" : "Incomplete", reason: evaluation.status === "exclusionApplies" ? "A documented other recognized cause prevents an asterisked finding from qualifying." : ["BONE", "DISC", "PJI", "SA", "USI"].includes(state.selectedSite) ? `Complete one ${state.selectedSite} criterion branch without combining NHSN branches.` : "Complete one MEN criterion branch without combining incompatible finding groups." }; }
-function determineSecondaryStatus() { const evaluation = getSecondaryEvaluation(); return { met: evaluation.secondaryAttributionMet, status: evaluation.secondaryAttributionMet ? "met" : evaluation.siteDefinitionMet && evaluation.attributionMissing?.some(item => item.includes("not met")) ? "notMet" : "incomplete", architectureStatus: evaluation.status, label: evaluation.secondaryAttributionMet ? "Secondary BSI attribution met" : "Secondary BSI review incomplete", reason: evaluation.secondaryAttributionMet ? `${state.selectedSite} and both authorized attribution requirements are met.` : evaluation.siteDefinitionMet ? evaluation.attributionMissing.join("; ") : getSiteSpecificDefinitionStatus().reason }; }
+// NHSN Secondary BSI Guide, Table B1 (clabsi nhsn.pdf 4-34) and the reporting instructions
+// on 4-35: some sites carry no secondary BSI at all, and for the rest only specific
+// criteria qualify. Both outcomes are reported as "not met" rather than "incomplete",
+// because no additional evidence can unlock them.
+function determineSecondaryStatus() {
+  const evaluation = getSecondaryEvaluation();
+  if (evaluation.status === "secondaryAttributionNotPermitted") {
+    return { met: false, status: "notMet", architectureStatus: evaluation.status, label: `${state.selectedSite} cannot carry a secondary BSI`, reason: evaluation.message };
+  }
+  if (evaluation.status === "secondaryAttributionCriterionNotEligible") {
+    return { met: false, status: "notMet", architectureStatus: evaluation.status, label: "Criterion not eligible for secondary BSI attribution", reason: evaluation.message };
+  }
+  return { met: evaluation.secondaryAttributionMet, status: evaluation.secondaryAttributionMet ? "met" : evaluation.siteDefinitionMet && evaluation.attributionMissing?.some(item => item.includes("not met")) ? "notMet" : "incomplete", architectureStatus: evaluation.status, label: evaluation.secondaryAttributionMet ? `Secondary BSI attribution met (Table B1 Scenario ${evaluation.secondaryBsiGuide?.scenarios.join(" or ") || "—"})` : "Secondary BSI review incomplete", reason: evaluation.secondaryAttributionMet ? `${state.selectedSite} ${evaluation.metCriterion} is admitted by Table B1 and both authorized attribution requirements are met.` : evaluation.siteDefinitionMet ? evaluation.attributionMissing.join("; ") : getSiteSpecificDefinitionStatus().reason };
+}
 
 function determineCentralLineStatus() {
   const values = [

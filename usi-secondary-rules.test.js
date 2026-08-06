@@ -56,8 +56,12 @@ test("Chapter 7 UTI evidence never qualifies USI and explicitly blocks an otherw
 });
 
 test("meeting USI unlocks but does not infer secondary BSI attribution", () => {
-  assert.equal(evaluate(criterion3).secondaryAttributionMet, false);
-  assert.equal(evaluate(criterion3, { organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, true);
+  // Table B1 (clabsi nhsn.pdf 4-34) admits USI criterion 1 under Scenario 1 and USI 3b or
+  // 4b under Scenario 2. USI 3 met through purulent drainage (3a) carries no secondary BSI.
+  const usi1 = { "usi-site-organism": "met" };
+  assert.equal(evaluate(usi1).secondaryAttributionMet, false);
+  assert.equal(evaluate(usi1, { organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, true);
+  assert.equal(evaluate(criterion3, { organismRelationship: "yes", attributionTiming: "yes" }).status, "secondaryAttributionCriterionNotEligible");
 });
 
 test("USI source metadata remains attached to every criterion and evidence atom", () => {

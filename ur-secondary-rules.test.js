@@ -59,7 +59,8 @@ test("unchecked or explicitly unmet UR evidence does not count", () => {
 });
 
 test("meeting UR unlocks but does not automatically establish Secondary BSI attribution", () => {
-  const complete = { "ur-2-imaging-abscess": "met" };
+  // Table B1 (clabsi nhsn.pdf 4-34) admits UR criteria 1a or 3a for a secondary BSI.
+  const complete = { "ur-1-fever": "met", "ur-1-cough": "met", "ur-1-support-upper-respiratory-organism": "met" };
   assert.equal(evaluate(complete).secondaryAttributionMet, false);
   assert.equal(evaluate(complete, { organismRelationship: "yes" }).secondaryAttributionMet, false);
   assert.equal(evaluate(complete, { organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, true);

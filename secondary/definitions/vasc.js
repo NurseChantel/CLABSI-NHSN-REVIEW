@@ -1,4 +1,4 @@
-import { vascCriterionSource, vascInstructionSource, vascAttributionSource } from "../source.js";
+import { vascCriterionSource, vascInstructionSource, vascSecondaryBsiProhibitionSource } from "../source.js";
 
 const vascRestrictionId = "vasc-access-device-blood-organism";
 const vascItem = (id, label, options = {}) => Object.freeze({ id, label, source: vascCriterionSource, ...options });
@@ -39,11 +39,20 @@ export const vascDefinition = Object.freeze({
   reportingInstructions: Object.freeze([
     Object.freeze({ id: "VASC-report-device-no-blood", text: "Report infection of an arteriovenous graft, shunt, fistula, or intravascular cannulation site without organism(s) identified from blood as CVS-VASC.", source: vascInstructionSource }),
     Object.freeze({ id: "VASC-report-ssi", text: "Report an Organ/Space VASC infection as an SSI, not an LCBI, when an SSI has a secondary BSI.", source: vascInstructionSource }),
-    Object.freeze({ id: "VASC-report-lcbi", text: "Report intravascular infection with organism(s) identified from blood that meets LCBI criteria as BSI-LCBI.", source: vascInstructionSource })
+    Object.freeze({ id: "VASC-report-lcbi", text: "Report intravascular infection with organism(s) identified from blood that meets LCBI criteria as BSI-LCBI.", source: vascInstructionSource }),
+    Object.freeze({ id: "VASC-report-no-secondary-bsi", text: "Do not report a secondary bloodstream infection for a vascular (VASC) infection. Table B1 admits VASC only as an organ/space surgical site infection, criterion 1.", source: vascSecondaryBsiProhibitionSource })
   ]),
-  secondaryBsi: Object.freeze({ lockedUntilSiteDefinitionMet: true, source: vascAttributionSource, requirements: Object.freeze([
-    Object.freeze({ id: "site-definition", label: "A complete VASC definition is met", source: vascAttributionSource }),
-    Object.freeze({ id: "organism-relationship", label: "The blood organism is an eligible matching organism from the site specimen, or the blood organism is used as an element of the VASC criterion", source: vascAttributionSource }),
-    Object.freeze({ id: "attribution-timing", label: "The blood specimen is collected in the VASC secondary BSI attribution period (or in the infection window when used as a criterion element)", source: vascAttributionSource })
-  ]) })
+  // clabsi nhsn.pdf, Chapter 4, Appendix: Secondary BSI Guide, printed page 4-35:
+  // "Do not report secondary bloodstream infection for vascular (VASC) infections,
+  // ventilator-associated conditions (VAC), infection-related ventilator-associated
+  // complications (IVAC), or pneumonia 1 (PNU1)." Table B1 (4-34) admits VASC only as an
+  // organ/space SSI, criterion 1.
+  secondaryBsi: Object.freeze({
+    reportable: false,
+    lockedUntilSiteDefinitionMet: true,
+    source: vascSecondaryBsiProhibitionSource,
+    message: "Do not report a secondary bloodstream infection for a vascular (VASC) infection. Table B1 admits VASC only as an organ/space surgical site infection, criterion 1. Where organism(s) identified from blood meet LCBI criteria, report the event as an LCBI rather than as a VASC with a secondary BSI.",
+    exception: Object.freeze({ id: "vasc-organ-space-ssi", label: "The VASC is reported as an organ/space surgical site infection meeting criterion 1", source: vascSecondaryBsiProhibitionSource }),
+    requirements: Object.freeze([])
+  })
 });

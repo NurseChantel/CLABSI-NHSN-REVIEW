@@ -51,7 +51,8 @@ test("unchecked and explicitly unmet evidence do not count", () => {
 });
 
 test("meeting GE does not automatically establish Secondary BSI attribution", () => {
-  const evidence = { ...symptoms, "ge-enteric-pathogen-stool-microscopy": "met" };
+  // Table B1 (clabsi nhsn.pdf 4-34) admits GE criterion 2a only for a secondary BSI.
+  const evidence = { ...symptoms, "ge-enteric-pathogen-stool-or-rectal-swab": "met" };
   assert.equal(evaluate(evidence).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes", attributionTiming: "no" }).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "no", attributionTiming: "yes" }).secondaryAttributionMet, false);

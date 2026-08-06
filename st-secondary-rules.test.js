@@ -49,7 +49,8 @@ test("unchecked, negative, and unknown evidence never count", () => {
 });
 
 test("meeting ST unlocks but does not automatically establish Secondary BSI attribution", () => {
-  const complete = { "st-purulent-drainage": "met" };
+  // Table B1 (clabsi nhsn.pdf 4-34) admits ST criterion 1 only for a secondary BSI.
+  const complete = { "st-site-organism": "met" };
   assert.equal(evaluate(complete).secondaryAttributionMet, false);
   assert.equal(evaluate(complete, { organismRelationship: "yes" }).secondaryAttributionMet, false);
   assert.equal(evaluate(complete, { attributionTiming: "yes" }).secondaryAttributionMet, false);
