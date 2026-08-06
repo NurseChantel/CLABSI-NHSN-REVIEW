@@ -5,7 +5,9 @@ import { renderCompactMenEvidence } from "./secondary-evidence-ui.js";
 import { evaluateSecondarySite, usiDefinition } from "./secondary-rules.js";
 
 const evaluate = (evidence, extra = {}) => evaluateSecondarySite({ siteCode: "USI", evidence, ...extra });
-const criterion3 = { "usi-fever": "met", "usi-purulent-drainage": "met", "usi-definitive-imaging": "met" };
+// Manual 17-28: criterion 3 sub-criterion "a" is purulent drainage alone; imaging is
+// required only by sub-criterion "b" (organism identified from blood AND imaging).
+const criterion3 = { "usi-fever": "met", "usi-purulent-drainage": "met" };
 const criterion4 = { "usi-age-under-one": "met", "usi-hypothermia": "met", "usi-blood-organism": "met", "usi-definitive-imaging": "met" };
 
 test("every USI criterion branch qualifies independently", () => {
@@ -18,11 +20,31 @@ test("every USI criterion branch qualifies independently", () => {
 test("USI 3 and USI 4 require every nested element", () => {
   for (const id of Object.keys(criterion3)) assert.equal(evaluate({ ...criterion3, [id]: "notMet" }).siteDefinitionMet, false, `USI-3 requires ${id}`);
   for (const id of Object.keys(criterion4)) assert.equal(evaluate({ ...criterion4, [id]: "notMet" }).siteDefinitionMet, false, `USI-4 requires ${id}`);
-  assert.equal(evaluate({ ...criterion3, "usi-purulent-drainage": "notMet", "usi-blood-organism": "met" }).metCriterion, "USI-3");
+});
+
+test("USI 3a is met by purulent drainage without any imaging test", () => {
+  const drainageOnly = evaluate({ "usi-fever": "met", "usi-purulent-drainage": "met" });
+  assert.equal(drainageOnly.siteDefinitionMet, true);
+  assert.equal(drainageOnly.metCriterion, "USI-3");
+  assert.equal(evaluate({ "usi-localized-pain-tenderness": "met", "usi-purulent-drainage": "met" }).metCriterion, "USI-3");
+});
+
+test("USI 3b requires imaging alongside the blood organism", () => {
+  assert.equal(evaluate({ "usi-fever": "met", "usi-blood-organism": "met" }).siteDefinitionMet, false);
+  assert.equal(evaluate({ "usi-fever": "met", "usi-blood-organism": "met", "usi-definitive-imaging": "met" }).metCriterion, "USI-3");
+});
+
+test("equivocal USI imaging qualifies only with documented antimicrobial treatment", () => {
+  assert.equal(evaluate({ "usi-fever": "met", "usi-blood-organism": "met", "usi-equivocal-imaging": "met" }).siteDefinitionMet, false);
+  assert.equal(evaluate({ "usi-fever": "met", "usi-blood-organism": "met", "usi-equivocal-imaging": "met", "usi-antimicrobial-treatment": "met" }).metCriterion, "USI-3");
+});
+
+test("USI 4 purulent drainage pathway also stands alone without imaging", () => {
+  assert.equal(evaluate({ "usi-age-under-one": "met", "usi-lethargy": "met", "usi-purulent-drainage": "met" }).metCriterion, "USI-4");
 });
 
 test("asterisked findings are excluded only when another recognized cause applies", () => {
-  assert.equal(evaluate({ "usi-localized-pain-tenderness": "met", "usi-purulent-drainage": "met", "usi-definitive-imaging": "met", "usi-other-recognized-cause": "met" }).siteDefinitionMet, false);
+  assert.equal(evaluate({ "usi-localized-pain-tenderness": "met", "usi-purulent-drainage": "met", "usi-other-recognized-cause": "met" }).siteDefinitionMet, false);
   assert.equal(evaluate({ ...criterion3, "usi-other-recognized-cause": "met" }).metCriterion, "USI-3");
 });
 

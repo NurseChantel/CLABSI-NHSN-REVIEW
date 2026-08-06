@@ -21,6 +21,7 @@ import { endoDefinition } from "./definitions/endo.js";
 import { episDefinition } from "./definitions/epis.js";
 import { icDefinition } from "./definitions/ic.js";
 import { jntDefinition } from "./definitions/jnt.js";
+import { lungDefinition } from "./definitions/lung.js";
 import { medDefinition } from "./definitions/med.js";
 import { menDefinition } from "./definitions/men.js";
 import { necDefinition } from "./definitions/nec.js";
@@ -70,6 +71,7 @@ export const secondarySiteDefinitions = Object.freeze({
   EPIS: episDefinition,
   IC: icDefinition,
   JNT: jntDefinition,
+  LUNG: lungDefinition,
   MED: medDefinition,
   MEN: menDefinition,
   NEC: necDefinition,
@@ -107,6 +109,7 @@ export const implementedSecondaryPathways = Object.freeze([
   "EPIS",
   "IC",
   "JNT",
+  "LUNG",
   "MED",
   "MEN",
   "NEC",
@@ -148,6 +151,7 @@ export {
   episDefinition,
   icDefinition,
   jntDefinition,
+  lungDefinition,
   medDefinition,
   menDefinition,
   necDefinition,

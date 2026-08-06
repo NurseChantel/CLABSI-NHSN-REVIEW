@@ -786,3 +786,113 @@ input[type="text"]:focus,input[type="date"]:focus,select:focus{border-color:var(
 .pneu-status-strip{display:flex;align-items:center;gap:12px;min-height:42px;margin:10px 0 8px;padding:7px 10px;border:1px solid #d7b66c;background:#fffaf0;font-size:.82rem}.pneu-status-strip.met{border-color:#7bb897;background:#f0faf4}.pneu-status-strip strong{font-size:.9rem;white-space:nowrap}.pneu-context-compact{display:flex;align-items:end;gap:10px;margin:8px 0;padding:7px 9px}.pneu-context-compact strong{align-self:center}.pneu-context-compact .pneu-field{max-width:190px}.pneu-context-compact h4{display:none}.pneu-pathway-banner{margin:6px 0;padding:6px 9px}.pneu-table-scroll{overflow-x:auto;margin-top:6px}.pneu-criteria-table{display:grid;align-items:start;min-width:780px;border:1px solid #8fa4b4;background:#fff}.pneu-criteria-table.pnu1{grid-template-columns:minmax(260px,.8fr) minmax(500px,2fr)}.pneu-criteria-table.pnu2,.pneu-criteria-table.pnu3{grid-template-columns:minmax(240px,.9fr) minmax(320px,1.15fr) minmax(340px,1.25fr)}.pneu-table-header{padding:6px 8px;border-right:1px solid #8fa4b4;border-bottom:1px solid #8fa4b4;background:#eaf1f6;font-weight:850;font-size:.78rem;text-transform:uppercase;letter-spacing:.02em}.pneu-table-header:last-of-type{border-right:0}.pneu-table-cell{min-width:0;padding:8px;border-right:1px solid #8fa4b4;font-size:.79rem}.pneu-table-cell:last-child{border-right:0}.pneu-cell-title{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:4px 0 6px;font-weight:850;color:#243f53}.pneu-compact-section{display:grid;gap:6px}.pneu-compact-checks{display:grid;gap:4px}.pneu-study-row{display:grid;grid-template-columns:repeat(3,minmax(88px,1fr));gap:5px;align-items:end;padding:5px 0;border-top:1px solid #e0e7ed}.pneu-study-row .link-button,.pneu-study-row>label:not(.pneu-field){align-self:center;font-size:.72rem}.pneu-table-cell .pneu-field{gap:2px;font-size:.69rem}.pneu-table-cell .pneu-field input,.pneu-table-cell .pneu-field select{min-height:30px;padding:4px 6px;border-radius:4px}.pneu-table-cell .pneu-choice{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0;padding:5px 6px;border-radius:3px}.pneu-table-cell .pneu-choice legend{font-size:.72rem}.pneu-table-cell .pneu-checklist-block{gap:4px}.pneu-table-cell .pneu-checklist-block h5{margin:3px 0;font-size:.78rem}.pneu-table-cell .pneu-evidence-item,.pneu-table-cell .pneu-required-item{padding:5px 6px;border-radius:3px}.pneu-table-cell .pneu-inline-fields,.pneu-inline-evidence{display:grid;grid-template-columns:minmax(90px,1fr) minmax(105px,1fr);gap:4px;margin:3px 0 0 18px}.pneu-table-cell .pneu-finding-option{grid-template-columns:minmax(0,1fr) minmax(96px,130px);gap:4px;min-height:28px}.pneu-bullet-group{display:grid;gap:3px;margin:0;padding:5px 2px 6px;border:0;border-top:1px solid #d9e2ea;border-radius:0}.pneu-bullet-group.selected{background:#f3faf5}.pneu-bullet-group legend{padding:0 4px;font-weight:850;font-size:.72rem;color:#35586f}.pneu-table-cell .pneu-and{justify-self:stretch;margin:4px 0;padding:1px 0;border-top:1px solid #cfd9e1;border-bottom:1px solid #cfd9e1;border-radius:0;background:transparent;text-align:center}.pneu-table-cell .pneu-lab-options{gap:4px;padding:4px;border:0;background:transparent}.pneu-table-cell .pneu-nested-evidence{gap:5px;margin:4px 0 5px 18px;padding:6px;border-left:2px solid #75a6c7}.pneu-table-cell .pneu-grid{grid-template-columns:repeat(2,minmax(105px,1fr));gap:5px}.pneu-table-cell .pneu-guidance{margin-top:4px;padding:4px!important}.pneu-table-cell button{min-height:28px;padding:4px 8px}.pneu-note .pneu-guidance{display:inline-block;margin-left:6px}
 @media(max-width:999px){.pneu-criteria-table{min-width:960px}.pneu-criteria-table.pnu1{min-width:820px}}
 @media(max-width:620px){.pneu-status-strip,.pneu-context-compact{display:grid;align-items:stretch}.pneu-context-compact .pneu-field{max-width:none}.pneu-table-scroll{overflow-x:visible}.pneu-criteria-table,.pneu-criteria-table.pnu1,.pneu-criteria-table.pnu2,.pneu-criteria-table.pnu3{display:block;min-width:0}.pneu-table-header{border-right:0}.pneu-table-cell{border-right:0;border-bottom:1px solid #8fa4b4}.pneu-study-row{grid-template-columns:1fr}.pneu-table-cell .pneu-finding-option,.pneu-table-cell .pneu-inline-fields{grid-template-columns:1fr}}
+
+/* ---------------------------------------------------------------------------
+   PNEU manual view — presents NHSN pneumonia.pdf Tables 1-4 as the printed page
+   (bordered grid, stacked ALTERNATE CRITERIA bands, bulleted criteria) with a
+   checkbox on every bullet and a live outstanding-requirements panel.
+   --------------------------------------------------------------------------- */
+.pneu-requirements{margin:12px 0;border:1px solid #d7b66c;border-radius:10px;background:#fffaf0;overflow:hidden}
+.pneu-requirements.met{border-color:#7bb897;background:#f2faf5}
+.pneu-requirements-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.55)}
+.pneu-requirements-head strong{font-size:.95rem;letter-spacing:.01em}
+.pneu-requirements-head span{font-size:.82rem;color:#4a5560}
+.pneu-requirements-list{display:grid;gap:2px;margin:0;padding:8px 12px;list-style:none}
+.pneu-requirements-list li{display:grid;grid-template-columns:18px minmax(150px,auto) minmax(0,1fr);gap:8px;align-items:baseline;padding:3px 0;font-size:.81rem}
+.pneu-requirements-list li+li{border-top:1px solid rgba(0,0,0,.05)}
+.pneu-req-mark{font-weight:900;text-align:center}
+.pneu-requirements-list li.met .pneu-req-mark{color:#1f7a45}
+.pneu-requirements-list li.pending .pneu-req-mark{color:#a8791b}
+.pneu-req-label{font-weight:750;color:#2b3b47}
+.pneu-req-detail{color:#55636e}
+.pneu-requirements-list li.met .pneu-req-detail{color:#5c7a68}
+.pneu-req-timing{margin:0;padding:7px 12px;border-top:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.5);font-size:.8rem}
+
+.pneu-manual-table{margin:14px 0;padding:0}
+.pneu-manual-table>figcaption{margin-bottom:6px;font-size:.9rem;font-weight:850;color:#1f3444}
+.pneu-table-note{margin:0 0 6px;padding:7px 9px;border:1px solid #8fa4b4;background:#fff;font-size:.72rem;line-height:1.35}
+.pneu-manual-grid{display:grid;border:1px solid #8fa4b4;border-bottom:0;background:#fff}
+.pneu-manual-grid.cols-2{grid-template-columns:minmax(230px,.85fr) minmax(340px,2fr)}
+.pneu-manual-grid.cols-3{grid-template-columns:minmax(200px,.8fr) minmax(280px,1.2fr) minmax(280px,1.25fr)}
+.pneu-manual-th{padding:7px 9px;border-right:1px solid #8fa4b4;border-bottom:1px solid #8fa4b4;background:#eaf1f6;font-size:.78rem;font-weight:850}
+.pneu-manual-th:last-of-type{border-right:0}
+.pneu-manual-td{min-width:0;padding:9px;border-right:1px solid #8fa4b4;border-bottom:1px solid #8fa4b4;font-size:.79rem;line-height:1.4}
+.pneu-manual-td:last-child{border-right:0}
+
+.pneu-pathway+.pneu-pathway{margin-top:10px}
+.pneu-pathway.inapplicable{opacity:.55}
+.pneu-pathway.inapplicable input{pointer-events:none}
+.pneu-alternate-band{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 -9px 8px;padding:5px 9px;background:#e6ecf1;border-top:1px solid #8fa4b4;border-bottom:1px solid #8fa4b4;font-weight:850;font-size:.76rem;text-transform:uppercase;letter-spacing:.02em}
+.pneu-active-chip,.pneu-inactive-chip{padding:1px 7px;border-radius:999px;font-size:.66rem;font-weight:800;text-transform:none;letter-spacing:0}
+.pneu-active-chip{background:#d7f1df;color:#1f6637}
+.pneu-inactive-chip{background:#e4e9ed;color:#5b6874}
+
+.pneu-block+.pneu-block{margin-top:8px}
+.pneu-block-lead{display:block;margin:0 0 5px;font-weight:700}
+.pneu-lead-text{display:inline}
+.pneu-block-lead:has(.pneu-lead-text:empty){margin-bottom:2px}
+.pneu-block-counter{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#e4e9ed;color:#42525e;font-size:.68rem;font-weight:800;white-space:nowrap}
+.pneu-block-counter.met{background:#d7f1df;color:#1f6637}
+.pneu-bullets{display:grid;gap:3px;margin:0;padding:0;list-style:none}
+.pneu-bullet{padding:4px 6px 4px 4px;border:1px solid transparent;border-radius:6px}
+.pneu-bullet>label{display:grid;grid-template-columns:16px minmax(0,1fr);gap:7px;align-items:start;cursor:pointer}
+.pneu-bullet input[type=checkbox],.pneu-bullet input[type=radio]{margin-top:3px}
+.pneu-bullet-text{display:block;min-width:0}
+.pneu-bullet-text:before{content:"• ";font-weight:900;color:#5d7286}
+.pneu-bullet.selected{border-color:#79aa8b;background:#f3faf5}
+.pneu-bullet.inapplicable{opacity:.55}
+.pneu-bullet.static,.pneu-bullets.plain .pneu-bullet{padding-left:4px}
+.pneu-bullet-note{display:block;font-size:.7rem;font-style:italic;color:#6a7681}
+.pneu-bullet-detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:5px;margin:5px 0 2px 23px;padding:6px;border-left:2px solid #75a6c7;background:#f5f9fc}
+.pneu-threshold-hint{align-self:end;padding-bottom:6px;font-size:.7rem;color:#41637d}
+
+.pneu-and-rule,.pneu-or-rule{display:flex;align-items:center;gap:8px;margin:8px 0}
+.pneu-and-rule:before,.pneu-and-rule:after,.pneu-or-rule:before,.pneu-or-rule:after{content:"";flex:1;height:1px;background:#cfd9e1}
+.pneu-and-rule>span,.pneu-or-rule>span{padding:1px 9px;border-radius:999px;font-size:.68rem;font-weight:900;letter-spacing:.08em}
+.pneu-and-rule>span{background:#f0f1f2;color:#46535d}
+.pneu-or-rule>span{background:#edf4f9;color:#285c82}
+.pneu-or-word{font-weight:800;color:#46535d}
+.pneu-lab-crossref{margin:6px 0;padding:6px 8px;background:#eef4f9;font-size:.76rem}
+
+.pneu-imaging-manual .pneu-block-lead{display:block}
+.pneu-imaging-pattern{margin:0 0 6px;font-weight:750}
+.pneu-imaging-note{margin:8px 0;padding:7px;background:#f6f8fa;font-size:.74rem;line-height:1.4}
+.pneu-cell-subtitle{margin:9px 0 4px;font-weight:850;color:#243f53}
+.pneu-inline-check{display:block;margin:4px 0;font-size:.76rem}
+.pneu-footnotes{margin:6px 0 14px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fbfcfd;font-size:.75rem}
+.pneu-footnotes dl{display:grid;grid-template-columns:24px minmax(0,1fr);gap:3px 8px;margin:7px 0 0}
+.pneu-footnotes dt{font-weight:900;text-align:right}
+.pneu-footnotes dd{margin:0;line-height:1.4}
+.pneu-source-line{margin:9px 0 0;font-style:italic;color:#55636e}
+
+@media (max-width:900px){
+  .pneu-manual-grid.cols-2,.pneu-manual-grid.cols-3{grid-template-columns:1fr}
+  .pneu-manual-th{border-right:0}
+  .pneu-manual-td{border-right:0}
+  .pneu-requirements-list li{grid-template-columns:18px minmax(0,1fr)}
+  .pneu-req-detail{grid-column:2}
+}
+
+/* PNEU manual view — overflow containment. Every cell is a grid item in a fixed-column
+   grid, so each level needs min-width:0 or long labels and selects push past the rule. */
+.pneu-manual-grid>*{min-width:0;max-width:100%}
+.pneu-manual-td,.pneu-manual-th{overflow-wrap:break-word;word-break:normal}
+.pneu-manual-td *{min-width:0;max-width:100%;box-sizing:border-box}
+.pneu-manual-td .pneu-field,.pneu-manual-td .pneu-field input,.pneu-manual-td .pneu-field select{width:100%}
+.pneu-manual-td .pneu-study-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:5px;align-items:end;padding:6px 0;border-top:1px solid #e0e7ed}
+.pneu-manual-td .pneu-study-row>label:not(.pneu-field),.pneu-manual-td .pneu-study-row>button{grid-column:1/-1;align-self:start}
+.pneu-manual-td .pneu-inline-check{display:flex;gap:6px;align-items:flex-start;line-height:1.35}
+.pneu-manual-td .pneu-inline-check input{flex:0 0 auto;margin-top:2px}
+.pneu-manual-td .pneu-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.pneu-manual-td .pneu-choice{flex-wrap:wrap}
+.pneu-manual-td button{white-space:normal}
+.pneu-bullet>label{overflow-wrap:break-word}
+.pneu-bullet-detail>*{min-width:0}
+.pneu-block-hint{margin:5px 0 0;padding:4px 7px;border-left:3px solid #d7b66c;background:#fffaf0;font-size:.73rem;color:#6b5a2e;overflow-wrap:break-word}
+.pneu-block.met .pneu-block-hint{display:none}
+.pneu-alternate-band{overflow-wrap:break-word}
+.pneu-requirements-list li{overflow-wrap:break-word}
+.pneu-footnotes dd{overflow-wrap:break-word}
+
+/* Long option text must not force a select wider than its column. */
+.pneu-manual-td select{text-overflow:ellipsis}

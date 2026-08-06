@@ -13,6 +13,7 @@ export {
   iabDefinition,
   icDefinition,
   jntDefinition,
+  lungDefinition,
   medDefinition,
   menDefinition,
   necDefinition,

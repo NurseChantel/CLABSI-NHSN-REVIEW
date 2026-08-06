@@ -2,16 +2,22 @@ import { pjiCriterionSource, pjiInstructionSource, pjiAttributionSource } from "
 
 const pjiItem = (id, label, options = {}) => Object.freeze({ id, label, source: pjiCriterionSource, ...options });
 const pjiRestriction = () => pjiItem("pji-organ-space-after-hpro-kpro", "PJI is for use as Organ/Space SSI following HPRO and KPRO only");
+// Manual 17-9–17-10 lists seven minor criteria (a–g). Each is one element of the
+// "three of the following minor criteria" count. Minor criterion b is itself an
+// either/or, so it is a sub-group: satisfying both halves still counts once.
 const pjiMinorCriteria = Object.freeze([
-  Object.freeze({ id: "PJI-3-ab", label: "Minor criterion a or b (counts as one minor criterion)", anyOf: Object.freeze([
-    pjiItem("pji-elevated-crp-and-esr", "Elevated serum C-reactive protein (CRP; >100 mg/L) and erythrocyte sedimentation rate (ESR; >30 mm/hr.)"),
+  Object.freeze({ id: "PJI-3a", label: "Minor criterion a — elevated CRP and ESR", anyOf: Object.freeze([
+    pjiItem("pji-elevated-crp-and-esr", "Elevated serum C-reactive protein (CRP; >100 mg/L) and erythrocyte sedimentation rate (ESR; >30 mm/hr.)")
+  ]) }),
+  Object.freeze({ id: "PJI-3b", label: "Minor criterion b — elevated synovial fluid white blood cell count or leukocyte esterase", anyOf: Object.freeze([
+    pjiItem("pji-elevated-synovial-wbc", "Elevated synovial fluid white blood cell (WBC; >10,000 cells/μL) count"),
     pjiItem("pji-leukocyte-esterase", "\"++\" (or greater) change on leukocyte esterase test strip of synovial fluid")
   ]) }),
-  Object.freeze({ id: "pji-elevated-synovial-pmn-group", label: "Minor criterion", anyOf: Object.freeze([pjiItem("pji-elevated-synovial-pmn", "Elevated synovial fluid polymorphonuclear neutrophil percentage (PMN% >90%)")]) }),
-  Object.freeze({ id: "pji-positive-histology-group", label: "Minor criterion", anyOf: Object.freeze([pjiItem("pji-positive-histology", "Positive histological analysis of periprosthetic tissue (>5 neutrophils (PMNs) per high power field)")]) }),
-  Object.freeze({ id: "pji-single-specimen-organism-group", label: "Minor criterion", anyOf: Object.freeze([pjiItem("pji-single-specimen-organism", "Organism(s) identified from a single positive periprosthetic specimen (tissue or fluid) by culture or non-culture based microbiologic testing performed for clinical diagnosis and treatment (not ASC/AST)")]) }),
-  Object.freeze({ id: "pji-alpha-defensin-group", label: "Minor criterion", anyOf: Object.freeze([pjiItem("pji-alpha-defensin", "Synovial fluid alpha-defensin positive")]) }),
-  Object.freeze({ id: "pji-physician-diagnosis-group", label: "Minor criterion", anyOf: Object.freeze([pjiItem("pji-physician-diagnosis", "Physician diagnosis of periprosthetic joint infection")]) }),
+  Object.freeze({ id: "PJI-3c", label: "Minor criterion c — elevated synovial fluid PMN percentage", anyOf: Object.freeze([pjiItem("pji-elevated-synovial-pmn", "Elevated synovial fluid polymorphonuclear neutrophil percentage (PMN% >90%)")]) }),
+  Object.freeze({ id: "PJI-3d", label: "Minor criterion d — positive histological analysis", anyOf: Object.freeze([pjiItem("pji-positive-histology", "Positive histological analysis of periprosthetic tissue (>5 neutrophils (PMNs) per high power field)")]) }),
+  Object.freeze({ id: "PJI-3e", label: "Minor criterion e — organism from a single periprosthetic specimen", anyOf: Object.freeze([pjiItem("pji-single-specimen-organism", "Organism(s) identified from a single positive periprosthetic specimen (tissue or fluid) by culture or non-culture based microbiologic testing performed for clinical diagnosis and treatment (not ASC/AST)")]) }),
+  Object.freeze({ id: "PJI-3f", label: "Minor criterion f — synovial fluid alpha-defensin", anyOf: Object.freeze([pjiItem("pji-alpha-defensin", "Synovial fluid alpha-defensin positive")]) }),
+  Object.freeze({ id: "PJI-3g", label: "Minor criterion g — physician diagnosis", anyOf: Object.freeze([pjiItem("pji-physician-diagnosis", "Physician diagnosis of periprosthetic joint infection")]) })
 ]);
 
 export const pjiDefinition = Object.freeze({

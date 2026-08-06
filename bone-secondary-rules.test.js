@@ -23,10 +23,23 @@ test("BONE 3a requires the blood organism in addition to imaging", () => {
   assert.equal(evaluate({ ...evidence, "bone-definitive-imaging": "notMet" }).siteDefinitionMet, false);
 });
 
-test("equivocal BONE imaging enforces the distinct clinical-correlation requirements", () => {
+// Manual 17-7–17-8, criteria 3a and 3b: imaging "which if equivocal is supported by
+// clinical correlation, specifically, physician or physician designee documentation of
+// antimicrobial treatment for osteomyelitis". Neither sub-criterion names a physician
+// diagnosis — that element belongs to criterion 3c.
+test("equivocal BONE imaging is supported by documented antimicrobial treatment alone", () => {
   assert.equal(evaluate({ ...findings, "bone-blood-organism": "met", "bone-equivocal-imaging": "met", "bone-antimicrobial-treatment": "met" }).metCriterion, "BONE-3a-equivocal");
-  assert.equal(evaluate({ ...findings, "bone-equivocal-imaging": "met", "bone-physician-diagnosis": "met", "bone-antimicrobial-treatment": "met" }).metCriterion, "BONE-3b-equivocal");
-  assert.equal(evaluate({ ...findings, "bone-equivocal-imaging": "met", "bone-antimicrobial-treatment": "met" }).siteDefinitionMet, false);
+  assert.equal(evaluate({ ...findings, "bone-equivocal-imaging": "met", "bone-antimicrobial-treatment": "met" }).metCriterion, "BONE-3b-equivocal");
+});
+
+test("BONE 3b equivocal imaging still requires the documented antimicrobial treatment", () => {
+  assert.equal(evaluate({ ...findings, "bone-equivocal-imaging": "met" }).siteDefinitionMet, false);
+});
+
+test("BONE 3b does not require a physician diagnosis", () => {
+  const withoutDiagnosis = evaluate({ ...findings, "bone-equivocal-imaging": "met", "bone-antimicrobial-treatment": "met", "bone-physician-diagnosis": "notMet" });
+  assert.equal(withoutDiagnosis.siteDefinitionMet, true);
+  assert.equal(withoutDiagnosis.metCriterion, "BONE-3b-equivocal");
 });
 
 test("BONE 3c requires both physician diagnosis and documented treatment", () => {

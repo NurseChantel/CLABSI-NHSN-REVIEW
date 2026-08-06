@@ -17,8 +17,8 @@ test("missing and explicitly unmet VCUF elements prevent qualification and repor
   const result = evaluate({ "vcuf-purulent-drainage": "notMet" });
   assert.equal(result.status, "siteDefinitionIncomplete");
   assert.deepEqual(result.branches, [
-    { id: "VCUF-1", missing: ["Purulent drainage from the vaginal cuff: not met"] },
-    { id: "VCUF-2", missing: ["Abscess or other evidence of infection at the vaginal cuff on gross anatomic examination or invasive procedure: unknown or not documented"] },
+    { id: "VCUF-1", missing: ["Purulent drainage from the vaginal cuff on gross anatomic exam: not met"] },
+    { id: "VCUF-2", missing: ["Abscess or other evidence of infection at the vaginal cuff on gross anatomic exam: unknown or not documented"] },
     { id: "VCUF-3", missing: ["Organism(s) identified from fluid or tissue from the vaginal cuff by an eligible culture or non-culture based microbiologic testing method performed for clinical diagnosis or treatment (not ASC/AST): unknown or not documented"] }
   ]);
 });

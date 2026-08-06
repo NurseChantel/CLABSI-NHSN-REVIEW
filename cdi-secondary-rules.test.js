@@ -4,39 +4,41 @@ import { readFileSync } from "node:fs";
 import { renderCompactMenEvidence } from "./secondary-evidence-ui.js";
 import { cdiDefinition, evaluateSecondarySite, implementedSecondaryPathways, secondarySiteDefinitions } from "./secondary-rules.js";
 
-const rit = { "cdi-new-event-rit-eligible": "met" };
 const evaluate = (evidence, extra = {}) => evaluateSecondarySite({ siteCode: "CDI", evidence, ...extra });
 
 test("each NHSN CDI branch qualifies independently", () => {
-  assert.equal(evaluate({ ...rit, "cdi-positive-toxin-producing-test": "met", "cdi-unformed-stool-specimen": "met" }).metCriterion, "CDI-1");
-  assert.equal(evaluate({ ...rit, "cdi-pseudomembranous-colitis-gross": "met" }).metCriterion, "CDI-2");
-  assert.equal(evaluate({ ...rit, "cdi-pseudomembranous-colitis-histopathology": "met" }).metCriterion, "CDI-2");
+  assert.equal(evaluate({ "cdi-positive-toxin-producing-test": "met", "cdi-unformed-stool-specimen": "met" }).metCriterion, "CDI-1");
+  assert.equal(evaluate({ "cdi-pseudomembranous-colitis-gross": "met" }).metCriterion, "CDI-2");
+  assert.equal(evaluate({ "cdi-pseudomembranous-colitis-histopathology": "met" }).metCriterion, "CDI-2");
 });
 
 test("CDI 1 requires both a toxin-producing test and an unformed stool specimen", () => {
-  assert.equal(evaluate({ ...rit, "cdi-positive-toxin-producing-test": "met" }).siteDefinitionMet, false);
-  assert.equal(evaluate({ ...rit, "cdi-unformed-stool-specimen": "met" }).siteDefinitionMet, false);
-  assert.equal(evaluate({ ...rit, "cdi-positive-toxin-producing-test": "notMet", "cdi-unformed-stool-specimen": "met" }).siteDefinitionMet, false);
+  assert.equal(evaluate({ "cdi-positive-toxin-producing-test": "met" }).siteDefinitionMet, false);
+  assert.equal(evaluate({ "cdi-unformed-stool-specimen": "met" }).siteDefinitionMet, false);
+  assert.equal(evaluate({ "cdi-positive-toxin-producing-test": "notMet", "cdi-unformed-stool-specimen": "met" }).siteDefinitionMet, false);
 });
 
-test("the new-event RIT restriction is enforced for both CDI branches", () => {
+// Manual 17-18 lists exactly two CDI criteria. The Repeat Infection Timeframe appears
+// under "Reporting Instructions" ("Report each new GI-CDI according to the Repeat
+// Infection Timeframe (RIT) rule for HAIs"), not as an element of either criterion, so
+// it must not gate qualification.
+test("the RIT rule is carried as a reporting instruction, not a criterion element", () => {
   const criterion1 = { "cdi-positive-toxin-producing-test": "met", "cdi-unformed-stool-specimen": "met" };
   const criterion2 = { "cdi-pseudomembranous-colitis-gross": "met" };
-  for (const evidence of [criterion1, criterion2]) {
-    assert.equal(evaluate(evidence).siteDefinitionMet, false);
-    assert.equal(evaluate({ ...evidence, "cdi-new-event-rit-eligible": "notMet" }).siteDefinitionMet, false);
-    assert.equal(evaluate({ ...evidence, ...rit }).siteDefinitionMet, true);
-  }
+  for (const evidence of [criterion1, criterion2]) assert.equal(evaluate(evidence).siteDefinitionMet, true);
+  const elementIds = cdiDefinition.criteria.flatMap(criterion => [...criterion.allOf, ...(criterion.groups ?? []).flatMap(group => group.anyOf)]).map(item => item.id);
+  assert.equal(elementIds.includes("cdi-new-event-rit-eligible"), false);
+  assert.ok(cdiDefinition.reportingInstructions.some(instruction => /Repeat Infection Timeframe/.test(instruction.text)));
 });
 
 test("GE evidence cannot qualify or be combined into an incomplete CDI branch", () => {
   const geEvidence = { "ge-acute-diarrhea": "met", "ge-vomiting": "met", "ge-enteric-pathogen": "met" };
   assert.equal(evaluate(geEvidence).siteDefinitionMet, false);
-  assert.equal(evaluate({ ...geEvidence, ...rit, "cdi-positive-toxin-producing-test": "met" }).siteDefinitionMet, false);
+  assert.equal(evaluate({ ...geEvidence, "cdi-positive-toxin-producing-test": "met" }).siteDefinitionMet, false);
 });
 
 test("meeting CDI never automatically establishes Secondary BSI attribution", () => {
-  const evidence = { ...rit, "cdi-positive-toxin-producing-test": "met", "cdi-unformed-stool-specimen": "met" };
+  const evidence = { "cdi-positive-toxin-producing-test": "met", "cdi-unformed-stool-specimen": "met" };
   assert.equal(evaluate(evidence).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes" }).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { attributionTiming: "yes" }).secondaryAttributionMet, false);
@@ -54,7 +56,7 @@ test("CDI source metadata covers criteria, instructions, timing, and attribution
 });
 
 test("CDI and all previously implemented pathways render through the unchanged compact renderer", () => {
-  const evidence = { ...rit, "cdi-positive-toxin-producing-test": "met", "cdi-unformed-stool-specimen": "met" };
+  const evidence = { "cdi-positive-toxin-producing-test": "met", "cdi-unformed-stool-specimen": "met" };
   const html = renderCompactMenEvidence({ definition: cdiDefinition, evaluation: evaluate(evidence), patientAge: "adult", evidence }).replaceAll("MEN Site Definition", "CDI Site Definition");
   assert.match(html, /🟢 CDI Site Definition Met/);
   assert.match(html, /data-men-renderer="compact-v3"/);

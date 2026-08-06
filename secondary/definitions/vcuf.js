@@ -6,10 +6,10 @@ export const vcufDefinition = Object.freeze({
   source: vcufCriterionSource, implementationStatus: "validated", logic: "anyOf", minimumRequiredCount: 1,
   criteria: Object.freeze([
     Object.freeze({ id: "VCUF-1", label: "Criterion 1 — purulent drainage", source: vcufCriterionSource, allOf: Object.freeze([
-      vcufItem("vcuf-purulent-drainage", "Purulent drainage from the vaginal cuff")
+      vcufItem("vcuf-purulent-drainage", "Purulent drainage from the vaginal cuff on gross anatomic exam")
     ]) }),
     Object.freeze({ id: "VCUF-2", label: "Criterion 2 — abscess or other evidence of infection", source: vcufCriterionSource, allOf: Object.freeze([
-      vcufItem("vcuf-abscess-or-infection-evidence", "Abscess or other evidence of infection at the vaginal cuff on gross anatomic examination or invasive procedure")
+      vcufItem("vcuf-abscess-or-infection-evidence", "Abscess or other evidence of infection at the vaginal cuff on gross anatomic exam")
     ]) }),
     Object.freeze({ id: "VCUF-3", label: "Criterion 3 — organism from vaginal cuff fluid or tissue", source: vcufCriterionSource, allOf: Object.freeze([
       vcufItem("vcuf-cuff-fluid-tissue-organism", "Organism(s) identified from fluid or tissue from the vaginal cuff by an eligible culture or non-culture based microbiologic testing method performed for clinical diagnosis or treatment (not ASC/AST)")

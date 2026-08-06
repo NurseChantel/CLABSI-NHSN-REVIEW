@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "clabsi-review", "runtimeExecutable": "node", "runtimeArgs": [".claude/serve.mjs"], "port": 8777 }
+  ]
+}

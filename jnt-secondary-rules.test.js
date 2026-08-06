@@ -12,10 +12,12 @@ test("JNT criteria 1 and 2 qualify independently", () => {
   assert.equal(evaluate({ "jnt-gross-histopathologic-evidence": "met" }).metCriterion, "JNT-2");
 });
 
+// Manual 17-9 lists sub-criteria 3a (joint fluid WBC or leukocyte esterase) and
+// 3b (organisms and white blood cells on Gram stain of joint fluid) separately.
 test("JNT 3 preserves suspected infection AND two findings AND one supporting alternative", () => {
   assert.equal(evaluate({ ...suspected, "jnt-elevated-joint-wbc": "met" }).metCriterion, "JNT-3a");
   assert.equal(evaluate({ ...suspected, "jnt-positive-leukocyte-esterase": "met" }).metCriterion, "JNT-3a");
-  assert.equal(evaluate({ ...suspected, "jnt-gram-stain-organisms-wbc": "met" }).metCriterion, "JNT-3a");
+  assert.equal(evaluate({ ...suspected, "jnt-gram-stain-organisms-wbc": "met" }).metCriterion, "JNT-3b");
   assert.equal(evaluate({ ...findings, "jnt-elevated-joint-wbc": "met" }).siteDefinitionMet, false);
   assert.equal(evaluate({ "jnt-suspected-infection": "met", "jnt-swelling": "met", "jnt-elevated-joint-wbc": "met" }).siteDefinitionMet, false);
 });

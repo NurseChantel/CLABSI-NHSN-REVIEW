@@ -13,7 +13,10 @@ test("DISC and JNT active definitions contain one retained criterion object for 
   assert.equal(countCriteria(discDefinition, "DISC-3b"), 1);
   assert.equal(countCriteria(jntDefinition, "JNT-3d"), 1);
   assert.deepEqual(discDefinition.criteria.map(({ id }) => id), ["DISC-1", "DISC-2", "DISC-3a-definitive", "DISC-3a-equivocal", "DISC-3b"]);
-  assert.deepEqual(jntDefinition.criteria.map(({ id }) => id), ["JNT-1", "JNT-2", "JNT-3a", "JNT-3c", "JNT-3d"]);
+  // JNT-3b was split out of JNT-3a on 2026-08-05: manual 17-9 lists 3a (joint fluid WBC
+  // or leukocyte esterase) and 3b (organisms and WBCs on Gram stain) as separate
+  // sub-criteria. Deduplication still holds — each id appears exactly once.
+  assert.deepEqual(jntDefinition.criteria.map(({ id }) => id), ["JNT-1", "JNT-2", "JNT-3a", "JNT-3b", "JNT-3c", "JNT-3d"]);
 });
 
 test("legacy duplicate criterion IDs do not remain in active definitions", () => {

@@ -14,6 +14,7 @@ export {
   evaluateSecondarySite,
   icDefinition,
   jntDefinition,
+  lungDefinition,
   medDefinition,
   menDefinition,
   necDefinition,

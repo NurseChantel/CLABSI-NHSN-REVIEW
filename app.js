@@ -1,7 +1,7 @@
 import { loadNhsnOrganisms, searchOrganisms } from "./organism-search.js";
 import { evaluateSecondarySite, placeholderWarning, secondarySiteCategories, secondarySiteDefinitions } from "./secondary-rules.js";
 import { checkboxEvidenceValue, COMPACT_MEN_RENDERER_VERSION, renderSecondaryEvidenceSafely as renderCompactMenEvidence } from "./secondary-evidence-ui.js?v=5";
-import { addLabAlternative, addPnu3CandidaPair, addPnu3Fungus, addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectHostAlternative, selectLabAlternative, setLabOrganism, toggleClinicalFinding, toggleImageFinding } from "./protocol/pneu-ui.js";
+import { addLabAlternative, addPnu3CandidaPair, addPnu3Fungus, addPneuRecord, applyPneuControl, createPneuState, PNEU_UI_REGISTRY, removePneuRecord, renderPneuAbstraction, selectBulletVariant as setBulletVariant, selectHostAlternative, selectLabAlternative, setLabOrganism, toggleClinicalFinding, toggleImageFinding, toggleManualBullet } from "./protocol/pneu-ui.js";
 
 "use strict";
 
@@ -1034,13 +1034,15 @@ function renderPneuReview() {
   container.innerHTML = renderPneuAbstraction(state.pneu, subtype);
   container.querySelector(".pneu-form").addEventListener("change", event => {
     const input = state.pneu.inputs[subtype]; const target = event.target;
-    if (target.dataset.clinicalFinding) toggleClinicalFinding(input, target.dataset.clinicalFinding, target.checked);
+    if (target.dataset.manualBullet) toggleManualBullet(input, target.dataset.manualBullet, target.checked);
+    else if (target.dataset.bulletVariant !== undefined) setBulletVariant(input, target.dataset.kinds, target.value);
+    else if (target.dataset.clinicalFinding) toggleClinicalFinding(input, target.dataset.clinicalFinding, target.checked);
     else if (target.dataset.imageFinding) toggleImageFinding(input, Number(target.dataset.index), target.dataset.imageFinding, target.checked);
     else if (target.dataset.imageSelect !== undefined) toggleImageFinding(input, Number(target.dataset.index), target.value, Boolean(target.value));
     else if (target.dataset.labAlternative) selectLabAlternative(state.pneu, input, target.dataset.algorithm, target.dataset.labAlternative);
     else if (target.dataset.hostAlternative) selectHostAlternative(state.pneu, input, target.dataset.hostAlternative);
     else if (target.dataset.labOrganism !== undefined) setLabOrganism(input, Number(target.dataset.index), target.value);
-    else if (target.dataset.uiOnly !== undefined || target.dataset.measurementConfirm !== undefined) return;
+    else if (target.dataset.uiOnly !== undefined) return;
     else applyPneuControl(input, target);
     renderPneuReview();
   });

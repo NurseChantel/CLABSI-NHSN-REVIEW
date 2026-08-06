@@ -1,7 +1,6 @@
 import { cdiCriterionSource, cdiInstructionSource, cdiAttributionSource } from "../source.js";
 
 const cdiItem = (id, label, options = {}) => Object.freeze({ id, label, source: cdiCriterionSource, ...options });
-const cdiRitItem = cdiItem("cdi-new-event-rit-eligible", "No existing GI-CDI Repeat Infection Timeframe (RIT) prevents this from being reported as a new GI-CDI event", { source: cdiInstructionSource });
 
 export const cdiDefinition = Object.freeze({
   majorCategoryCode: "GI", majorCategoryName: "Gastrointestinal System Infection", siteCode: "CDI", siteName: "Clostridioides difficile Infection",
@@ -9,12 +8,12 @@ export const cdiDefinition = Object.freeze({
   criteria: Object.freeze([
     Object.freeze({ id: "CDI-1", label: "Criterion 1 — toxin-producing C. difficile test from an unformed stool specimen", source: cdiCriterionSource, allOf: Object.freeze([
       cdiItem("cdi-positive-toxin-producing-test", "Positive test for toxin-producing C. difficile"),
-      cdiItem("cdi-unformed-stool-specimen", "The tested stool specimen was unformed (conformed to the shape of the container)"),
-      cdiRitItem
+      cdiItem("cdi-unformed-stool-specimen", "The tested stool specimen was unformed (conformed to the shape of the container)")
     ]) }),
-    Object.freeze({ id: "CDI-2", label: "Criterion 2 — pseudomembranous colitis", source: cdiCriterionSource, allOf: Object.freeze([
-      cdiRitItem
-    ]), groups: Object.freeze([
+    // Manual 17-18 lists only the two criteria below. The Repeat Infection Timeframe is
+    // a reporting instruction, not an element of the site definition, so it is not a
+    // required checkbox here.
+    Object.freeze({ id: "CDI-2", label: "Criterion 2 — pseudomembranous colitis", source: cdiCriterionSource, allOf: Object.freeze([]), groups: Object.freeze([
       Object.freeze({ id: "CDI-2-evidence", label: "At least one qualifying examination finding", minimumRequiredCount: 1, anyOf: Object.freeze([
         cdiItem("cdi-pseudomembranous-colitis-gross", "Evidence of pseudomembranous colitis on gross anatomic examination (including endoscopic examination)"),
         cdiItem("cdi-pseudomembranous-colitis-histopathology", "Evidence of pseudomembranous colitis on histopathologic examination")

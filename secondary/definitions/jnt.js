@@ -16,14 +16,19 @@ export const jntDefinition = Object.freeze({
   criteria: Object.freeze([
     Object.freeze({ id: "JNT-1", label: "Criterion 1 — organism identified from joint fluid or synovial biopsy", source: jntCriterionSource, allOf: Object.freeze([jntItem("jnt-site-organism", "Organism(s) identified from joint fluid or synovial biopsy by culture or non-culture based microbiologic testing performed for purposes of clinical diagnosis and treatment (not ASC/AST)")]) }),
     Object.freeze({ id: "JNT-2", label: "Criterion 2 — gross anatomic or histopathologic evidence", source: jntCriterionSource, allOf: Object.freeze([jntItem("jnt-gross-histopathologic-evidence", "Evidence of joint or bursa infection on gross anatomic or histopathologic examination")]) }),
-    Object.freeze({ id: "JNT-3a", label: "Criterion 3a — suspected infection, findings, and joint-fluid laboratory evidence", source: jntCriterionSource, allOf: Object.freeze([jntItem("jnt-suspected-infection", "Suspected joint or bursa infection")]), groups: Object.freeze([
+    // Manual 17-9 lists 3a and 3b as separate sub-criteria; keep them distinct so the
+    // criterion reported back to the reviewer is the one the evidence actually met.
+    Object.freeze({ id: "JNT-3a", label: "Criterion 3a — suspected infection, findings, and joint-fluid cell-count evidence", source: jntCriterionSource, allOf: Object.freeze([jntItem("jnt-suspected-infection", "Suspected joint or bursa infection")]), groups: Object.freeze([
       jntFindingsGroup,
-      Object.freeze({ id: "JNT-3a-support", label: "At least one qualifying joint-fluid laboratory finding", minimumRequiredCount: 1, anyOf: Object.freeze([
+      Object.freeze({ id: "JNT-3a-support", label: "At least one qualifying joint-fluid finding", minimumRequiredCount: 1, anyOf: Object.freeze([
         jntItem("jnt-elevated-joint-wbc", "Elevated joint fluid white blood cell count (per reporting laboratory's reference range)"),
-        jntItem("jnt-positive-leukocyte-esterase", "Positive leukocyte esterase test strip of joint fluid"),
-        jntItem("jnt-gram-stain-organisms-wbc", "Organism(s) and white blood cells seen on Gram stain of joint fluid")
+        jntItem("jnt-positive-leukocyte-esterase", "Positive leukocyte esterase test strip of joint fluid")
       ]) })
     ]) }),
+    Object.freeze({ id: "JNT-3b", label: "Criterion 3b — suspected infection, findings, and joint-fluid Gram stain", source: jntCriterionSource, allOf: Object.freeze([
+      jntItem("jnt-suspected-infection", "Suspected joint or bursa infection"),
+      jntItem("jnt-gram-stain-organisms-wbc", "Organism(s) and white blood cells seen on Gram stain of joint fluid")
+    ]), groups: Object.freeze([jntFindingsGroup]) }),
     Object.freeze({ id: "JNT-3c", label: "Criterion 3c — suspected infection, findings, and blood organism", source: jntCriterionSource, allOf: Object.freeze([
       jntItem("jnt-suspected-infection", "Suspected joint or bursa infection"),
       jntItem("jnt-blood-organism", "Organism(s) identified from blood by culture or non-culture based microbiologic testing performed for purposes of clinical diagnosis and treatment (not ASC/AST)")

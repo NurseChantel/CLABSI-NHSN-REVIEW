@@ -23,11 +23,34 @@ test("PJI criterion 2 accepts each listed operative or gross anatomic alternativ
   assert.equal(evaluate(restriction).siteDefinitionMet, false);
 });
 
-test("PJI criterion 3 requires three distinct minor-criterion groups", () => {
+// Manual 17-9–17-10 lists seven minor criteria, a through g. Three distinct ones are
+// required; two conditions inside minor criterion b still count as a single criterion.
+test("PJI criterion 3 requires three distinct minor criteria", () => {
   const three = { ...restriction, "pji-elevated-crp-and-esr": "met", "pji-elevated-synovial-pmn": "met", "pji-positive-histology": "met" };
   assert.equal(evaluate(three).metCriterion, "PJI-3");
   assert.equal(evaluate({ ...three, "pji-positive-histology": "notMet" }).siteDefinitionMet, false);
-  assert.equal(evaluate({ ...restriction, "pji-elevated-crp-and-esr": "met", "pji-leukocyte-esterase": "met", "pji-alpha-defensin": "met" }).siteDefinitionMet, false);
+});
+
+test("PJI minor criterion b counts elevated synovial WBC as well as leukocyte esterase", () => {
+  // "elevated synovial fluid white blood cell (WBC; >10,000 cells/uL) count OR
+  // '++' (or greater) change on leukocyte esterase test strip of synovial fluid"
+  const viaWbc = { ...restriction, "pji-elevated-crp-and-esr": "met", "pji-elevated-synovial-wbc": "met", "pji-elevated-synovial-pmn": "met" };
+  assert.equal(evaluate(viaWbc).metCriterion, "PJI-3");
+  const viaEsterase = { ...restriction, "pji-elevated-crp-and-esr": "met", "pji-leukocyte-esterase": "met", "pji-elevated-synovial-pmn": "met" };
+  assert.equal(evaluate(viaEsterase).metCriterion, "PJI-3");
+});
+
+test("PJI minor criteria a and b are two separate minor criteria", () => {
+  // a (CRP and ESR) + b (synovial WBC) + c (PMN%) is three minor criteria.
+  assert.equal(evaluate({ ...restriction, "pji-elevated-crp-and-esr": "met", "pji-leukocyte-esterase": "met", "pji-alpha-defensin": "met" }).metCriterion, "PJI-3");
+  // Both halves of minor criterion b together still count only once, so b + f is two.
+  assert.equal(evaluate({ ...restriction, "pji-elevated-synovial-wbc": "met", "pji-leukocyte-esterase": "met", "pji-alpha-defensin": "met" }).siteDefinitionMet, false);
+});
+
+test("PJI exposes all seven minor criteria from the manual", () => {
+  const group = pjiDefinition.criteria.find(criterion => criterion.id === "PJI-3").groups[0];
+  assert.equal(group.minimumRequiredCount, 3);
+  assert.deepEqual(group.anyOf.map(entry => entry.id), ["PJI-3a", "PJI-3b", "PJI-3c", "PJI-3d", "PJI-3e", "PJI-3f", "PJI-3g"]);
 });
 
 test("PJI criterion 3 supports specimen microbiology, alpha-defensin, and physician diagnosis", () => {

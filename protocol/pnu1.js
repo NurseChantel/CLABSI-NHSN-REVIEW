@@ -58,11 +58,22 @@ function findingMet(input, kinds, window) {
   return input.clinicalFindings.some(item => kinds.includes(item.kind) && dateInWindow(item.date, window).value);
 }
 
+// NHSN pneumonia.pdf footnote 5, printed page 6-13:
+//   Adults                                          > 25 breaths per minute
+//   Children > 1 year old                           > 30
+//   Children 2 months – 12 months old               > 50
+//   Infants < 2 months old                          > 60
+//   Premature infants born at < 37 weeks gestation
+//     and until the 40th week                       > 75
+// The footnote names "Adults" and "Children > 1 year old" without giving a cut-point
+// between them. We place it at 12 years because that is the boundary NHSN itself uses
+// for the PNU1 alternate paediatric criteria (Table 1, 6-6: "for child > 1 year old or
+// <= 12 years old"). Recorded in docs/audits/2026-secondary-bsi-and-pneu-fidelity-audit.md.
 export function pnuTachypneaThreshold(patientContext, eventDate) {
-  const years = evaluateAgeApplicability(patientContext, eventDate, { unit: "years", operator: "gt", value: 5 });
-  if (years.ok && years.value.met) return 30;
+  const adult = evaluateAgeApplicability(patientContext, eventDate, { unit: "years", operator: "gt", value: 12 });
+  if (adult.ok && adult.value.met) return 25;
   const olderThanOne = evaluateAgeApplicability(patientContext, eventDate, { unit: "years", operator: "gt", value: 1 });
-  if (olderThanOne.ok && olderThanOne.value.met) return 40;
+  if (olderThanOne.ok && olderThanOne.value.met) return 30;
   const months = evaluateAgeApplicability(patientContext, eventDate, { unit: "months", operator: "gte", value: 2 });
   if (months.ok && months.value.met) return 50;
   const ageDays = ageAtEvent(patientContext, eventDate, "days");
@@ -72,7 +83,8 @@ export function pnuTachypneaThreshold(patientContext, eventDate) {
 
 function clinicalGroups(input, window, branch, eventDate) {
   const fever = measurementMet(input, "temperature", window, [{ comparator: "gt", value: 38, unit: "C" }]);
-  const hypothermia = measurementMet(input, "temperature", window, [{ comparator: "lt", value: 36.5, unit: "C" }]);
+  // Table 1, 6-6, child branch: "hypothermia (< 36.0 C or < 96.8 F)".
+  const hypothermia = measurementMet(input, "temperature", window, [{ comparator: "lt", value: 36, unit: "C" }]);
   const wbcAdult = measurementMet(input, "wbc", window, [{ comparator: "lte", value: 4000, unit: "cells/mm3" }, { comparator: "gte", value: 12000, unit: "cells/mm3" }]);
   const wbcPediatric = measurementMet(input, "wbc", window, [{ comparator: "lte", value: 4000, unit: "cells/mm3" }, { comparator: "gte", value: 15000, unit: "cells/mm3" }]);
   const leftShift = measurementMet(input, "bands", window, [{ comparator: "gte", value: 10, unit: "percent" }]);
@@ -100,7 +112,9 @@ function clinicalGroups(input, window, branch, eventDate) {
   return {
     required: 3,
     prerequisite: true,
-    groups: [fever || hypothermia, wbcPediatric, sputum, findingMet(input, ["dyspnea", "apnea", "cough"], window) || tachypnea, findingMet(input, ["rales", "bronchial-breath-sounds"], window), gas],
+    // Table 1, 6-6, child bullet 4: "Dyspnea, or apnea, or tachypnea (5), or new onset
+    // or worsening cough". Plain "cough" is the infant bullet 6 finding, not this one.
+    groups: [fever || hypothermia, wbcPediatric, sputum, findingMet(input, ["dyspnea", "apnea", "new-or-worsening-cough"], window) || tachypnea, findingMet(input, ["rales", "crackles", "bronchial-breath-sounds"], window), gas],
     missing: [requirement("child-findings", "Three qualifying child clinical finding groups")]
   };
 }

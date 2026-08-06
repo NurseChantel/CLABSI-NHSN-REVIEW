@@ -7,11 +7,17 @@ import { evaluateSecondarySite, selectSecondarySite } from "./secondary/evaluato
 import { secondarySiteDefinitions } from "./secondary/registry.js";
 
 const sites = ["BONE", "DISC", "JNT", "PJI"];
+// Behaviour-lock hashes over every evidence combination. Rebaselined 2026-08-05 for the
+// Chapter 17 fidelity corrections documented in
+// docs/audits/2026-secondary-bsi-and-pneu-fidelity-audit.md: BONE 3b no longer demands a
+// physician diagnosis (17-8), JNT 3a/3b are separate sub-criteria (17-9), and PJI
+// criterion 3 exposes all seven minor criteria including elevated synovial fluid WBC
+// (17-9–17-10). DISC is unchanged. Only change these with a manual citation.
 const expectedSnapshots = Object.freeze({
-  BONE: "320d2d86a461c504fadffa8c343a4705d0ddda61b847b6a30b575b9c742e0952",
+  BONE: "293b47d662227666bdd594c57b1ef5e65ff0fb8c5ebdb4357272a352ec31e3ad",
   DISC: "94d2cb6ad525edd8c9d0c4e575af9ef40a07bdd0fd82bba5f3cb2c4300eea885",
-  JNT: "aff126d3eea09702da7632a17638ba62fd5732b455fd63cfb7b5347e5686cb84",
-  PJI: "801be8b46886a40cf0318d861db70f16c4ebc5699afa2a3b096f8064cdd1555f"
+  JNT: "f61e362964bed9113477e6c72cc3b920774db53d0c787b031fe51a1cc34ac97e",
+  PJI: "b031a12e52c4aab36e59194b91399945b229bcb79547048b591e0d9fdaad31eb"
 });
 
 function atoms(definition) {
