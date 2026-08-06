@@ -42,7 +42,8 @@ test("unchecked and unknown SKIN evidence never count as met", () => {
 });
 
 test("meeting SKIN unlocks but does not automatically establish Secondary BSI attribution", () => {
-  const evidence = { "skin-vesicles": "met" };
+  // Table B1 (clabsi nhsn.pdf 4-34) admits SKIN criterion 2a only for a secondary BSI.
+  const evidence = { "skin-erythema": "met", "skin-heat": "met", "skin-site-organism": "met" };
   assert.equal(evaluate(evidence).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes" }).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, true);

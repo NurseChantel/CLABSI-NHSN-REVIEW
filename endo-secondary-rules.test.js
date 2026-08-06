@@ -38,8 +38,12 @@ test("ENDO 7 requires all six distinct elements", () => {
 test("ENDO negative, incomplete, and attribution boundary cases do not overqualify", () => {
   assert.equal(evaluate({}).status, "notStarted");
   assert.equal(evaluate({ "endo-operative": "notMet" }).siteDefinitionMet, false);
-  assert.equal(evaluate({ "endo-operative": "met" }, { organismRelationship: "yes", attributionTiming: "no" }).secondaryAttributionMet, false);
-  assert.equal(evaluate({ "endo-operative": "met" }, { organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, true);
+  // Table B1 (clabsi nhsn.pdf 4-34) admits ENDO criterion 1 for Scenario 1; ENDO 3
+  // (intraoperative gross anatomic evidence) is not listed.
+  const endo1 = { "endo-site-organism": "met" };
+  assert.equal(evaluate(endo1, { organismRelationship: "yes", attributionTiming: "no" }).secondaryAttributionMet, false);
+  assert.equal(evaluate(endo1, { organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, true);
+  assert.equal(evaluate({ "endo-operative": "met" }, { organismRelationship: "yes", attributionTiming: "yes" }).status, "secondaryAttributionCriterionNotEligible");
 });
 
 test("ENDO metadata traces criteria, footnotes, and extended attribution timing", () => {

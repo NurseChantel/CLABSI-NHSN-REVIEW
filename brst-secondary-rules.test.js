@@ -48,7 +48,8 @@ test("the manual states reporting boundaries rather than a BRST site-definition 
 });
 
 test("meeting BRST unlocks but does not automatically establish Secondary BSI attribution", () => {
-  const evidence = { "brst-gross-anatomic-evidence": "met" };
+  // Table B1 (clabsi nhsn.pdf 4-34) admits BRST criterion 1 only for a secondary BSI.
+  const evidence = { "brst-invasive-tissue-or-fluid-organism": "met" };
   assert.equal(evaluate(evidence).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes" }).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, true);

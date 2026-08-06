@@ -35,6 +35,8 @@ export const cardAttributionSource = source("17-1–17-3", "2–4", "Secondary b
 export const vascCriterionSource = source("17-14", 15, "VASC — Arterial or venous infection", "VASC");
 export const vascInstructionSource = source("17-14", 15, "VASC — Reporting Instructions", "VASC.reporting-instructions");
 export const vascAttributionSource = source("17-1–17-3", "2–4", "Secondary bloodstream infection and matching organisms", "VASC.secondary-bsi");
+// clabsi nhsn.pdf, Chapter 4, Appendix: Secondary BSI Guide, printed page 4-35.
+export const vascSecondaryBsiProhibitionSource = Object.freeze({ document: "clabsi nhsn.pdf", chapter: "Chapter 4 — Bloodstream Infection Event", printedPage: "4-34–4-35", pdfPage: "35–36", sectionHeading: "Appendix: Secondary BSI Guide — Table B1 and Secondary BSI Reporting Instructions", sourceDataId: "VASC.secondary-bsi-prohibited" });
 export const necSource = Object.freeze({ document: "clabsi nhsn.pdf", chapter: "Chapter 4 — Bloodstream Infection Event (Central Line-Associated Bloodstream Infection and Non-central Line Associated Bloodstream Infection)", printedPage: "4-30–4-31", pdfPage: "31–32", sectionHeading: "Appendix: Secondary BSI Guide — Exception to Scenarios 1 & 2: Necrotizing Enterocolitis (NEC)", sourceDataId: "NEC" });
 export const necChapter17Source = source("17-22", 23, "NEC — Necrotizing enterocolitis (See Chapter 4)", "NEC.chapter-17-note");
 export const necAttributionSource = Object.freeze({ ...necSource, sourceDataId: "NEC.secondary-bsi-exception" });

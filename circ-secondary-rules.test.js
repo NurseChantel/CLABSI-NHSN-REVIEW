@@ -50,7 +50,8 @@ test("UMB, SKIN, and ST evidence cannot qualify CIRC, and unchecked evidence doe
 });
 
 test("meeting CIRC unlocks but does not automatically establish Secondary BSI attribution", () => {
-  const evidence = { ...age, "circ-site-purulent-drainage": "met" };
+  // Table B1 (clabsi nhsn.pdf 4-34) admits CIRC criteria 2 or 3 for a secondary BSI.
+  const evidence = { ...age, "circ-site-erythema": "met", "circ-site-pathogen": "met" };
   assert.equal(evaluate(evidence).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes" }).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes", attributionTiming: "yes" }).secondaryAttributionMet, true);

@@ -51,7 +51,9 @@ test("excluded and alternate gastrointestinal pathway evidence cannot qualify GI
 
 test("unchecked evidence does not count and GIT does not automatically establish secondary BSI attribution", () => {
   assert.equal(evaluate({}).siteDefinitionMet, false);
-  const evidence = { ...symptoms, "git-definitive-imaging": "met" };
+  // Table B1 (clabsi nhsn.pdf 4-34) admits GIT 2a and 2b (yeast only) under Scenario 1 and
+  // GIT 1b or 2c under Scenario 2. GIT 2d (imaging alone) carries no secondary BSI.
+  const evidence = { ...symptoms, "git-invasive-specimen-organism": "met" };
   assert.equal(evaluate(evidence).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "yes", attributionTiming: "no" }).secondaryAttributionMet, false);
   assert.equal(evaluate(evidence, { organismRelationship: "no", attributionTiming: "yes" }).secondaryAttributionMet, false);
